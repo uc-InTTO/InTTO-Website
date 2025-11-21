@@ -1,0 +1,3 @@
+[submodule "InTTO-Website"]
+path = InTTO-Website
+url = https://github.com/uc-InTTO/InTTO-Website.git

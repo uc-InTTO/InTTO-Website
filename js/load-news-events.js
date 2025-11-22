@@ -3,15 +3,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const paginationContainer = document.getElementById('pagination-container');
     const filterButtons = document.querySelectorAll('.filter-btn');
     const searchInput = document.getElementById('search-input');
-    
+
     if (!newsCardsContainer || !paginationContainer) {
         return;
     }
+    
+    paginationContainer.style.fontFamily = "'Poppins', sans-serif";
+    newsCardsContainer.style.fontFamily = "'Poppins', sans-serif";
+
     if (!window.db) {
         return;
     }
 
     const PAGE_SIZE = 6;
+    const MAX_VISIBLE_PAGES = 10; 
     let allNewsEvents = [];
     let currentPage = 1;
     let currentFilter = 'all';
@@ -105,17 +110,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.className = 'news-card';
         card.dataset.newsId = item.id;
         card.dataset.type = item.type || 'news';
+        card.style.fontFamily = "'Poppins', sans-serif";
         
         card.innerHTML = `
             <img src="${coverImage}" alt="${item.title}" onerror="this.src='graphics/news.png'">
             <div class="news-content">
                 <div class="news-meta">
-                    <span class="tag">${tagText}</span>
-                    <span class="date">${displayDate}</span>
+                    <span class="tag" style="font-family: 'Poppins', sans-serif;">${tagText}</span>
+                    <span class="date" style="font-family: 'Poppins', sans-serif;">${displayDate}</span>
                 </div>
-                <h3 class="news-title">${item.title || 'Untitled'}</h3>
-                <p class="news-desc">${(item.content || '').substring(0, 150)}...</p>
-                <a href="newsEventPage.html?id=${item.id}" class="read-more">Read More →</a>
+                <h3 class="news-title" style="font-family: 'Poppins', sans-serif;">${item.title || 'Untitled'}</h3>
+                <p class="news-desc" style="font-family: 'Poppins', sans-serif;">${(item.content || '').substring(0, 150)}...</p>
+                <a href="newsEventPage.html?id=${item.id}" class="read-more" style="font-family: 'Poppins', sans-serif;">Read More →</a>
             </div>
         `;
         return card;
@@ -128,7 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const totalPages = Math.ceil(totalItems / PAGE_SIZE);
 
         if (totalItems === 0) {
-            newsCardsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">No news or events match your current selection.</p>';
+            newsCardsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); grid-column: 1/-1; font-family: \'Poppins\', sans-serif;">No news or events match your current selection.</p>';
             return;
         }
 
@@ -159,10 +165,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         paginationContainer.style.display = 'flex';
         
+        let startPage, endPage;
+
+        if (totalPages <= MAX_VISIBLE_PAGES) {
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            const maxPagesBeforeCurrent = Math.floor(MAX_VISIBLE_PAGES / 2);
+            const maxPagesAfterCurrent = Math.ceil(MAX_VISIBLE_PAGES / 2) - 1;
+
+            if (currentPage <= maxPagesBeforeCurrent) {
+                startPage = 1;
+                endPage = MAX_VISIBLE_PAGES;
+            } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+                startPage = totalPages - MAX_VISIBLE_PAGES + 1;
+                endPage = totalPages;
+            } else {
+                startPage = currentPage - maxPagesBeforeCurrent;
+                endPage = currentPage + maxPagesAfterCurrent;
+            }
+        }
+        
         const prevButton = document.createElement('a');
         prevButton.href = '#';
         prevButton.className = `page-btn arrow prev ${currentPage === 1 ? 'disabled' : ''}`;
         prevButton.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+        prevButton.style.fontFamily = "'Poppins', sans-serif";
         prevButton.addEventListener('click', (e) => {
             e.preventDefault();
             if (currentPage > 1) {
@@ -173,11 +201,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         paginationContainer.appendChild(prevButton);
 
-        for (let i = 1; i <= totalPages; i++) {
+        for (let i = startPage; i <= endPage; i++) {
             const pageButton = document.createElement('a');
             pageButton.href = '#';
             pageButton.className = `page-btn ${i === currentPage ? 'active' : ''}`;
             pageButton.textContent = i;
+            pageButton.style.fontFamily = "'Poppins', sans-serif";
             pageButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (i !== currentPage) {
@@ -193,6 +222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         nextButton.href = '#';
         nextButton.className = `page-btn arrow next ${currentPage === totalPages ? 'disabled' : ''}`;
         nextButton.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+        nextButton.style.fontFamily = "'Poppins', sans-serif";
         nextButton.addEventListener('click', (e) => {
             e.preventDefault();
             if (currentPage < totalPages) {

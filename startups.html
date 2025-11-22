@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Startups - InTTO</title>
+  
+  <link rel="stylesheet" href="css/home.css">
   <link rel="stylesheet" href="css/startups.css">
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -32,7 +35,6 @@
                     <a href="events.html">Events</a>
                     <a href="ucolab/index.html">UColab</a>
                     <a href="sdgPage.html">SDG</a>
-                    
                     <a href="incubation.html" class="mobile-btn">Apply for Incubation</a>
                 </div>
             </div>
@@ -42,8 +44,8 @@
     </div>
 
     <section class="startups-section">
-        <div class="section-label">Our Startups</div>
-        <h2 class="service-title">Meet Our Startups</h2>
+        <div class="section-label">Our Portfolio</div>
+        <h2 class="service-title">Incubated Startups</h2>
 
         <div class="filter-bar">
             <div class="filter-item search">
@@ -53,64 +55,28 @@
 
             <div class="filter-item dropdown-wrapper">
                 <select id="filter-category">
-                    <option value="">All Categories</option>
-                    <option value="AI and Data Science">AI and Data Science</option>
-                    <option value="SaaS and Enterprise Solutions">SaaS and Enterprise Solutions</option>
-                    <option value="Fintech">Fintech</option>
-                    <option value="E-Commerce">E-Commerce</option>
-                    <option value="Health">Health</option>
-                    <option value="Agriculture and Food">Agriculture and Food</option>
-                    <option value="Education Technologies">Education Technologies</option>
-                    <option value="Creative Industries">Creative Industries</option>
-                    <option value="Sustainability and Cleantech">Sustainability and Cleantech</option>
-                    <option value="Smart Cities and Mobility">Smart Cities and Mobility</option>
-                </select>
-                <i class="fa fa-chevron-down arrow-icon"></i>
-            </div>
-
-            <div class="filter-item dropdown-wrapper multi-select" id="sdg-wrapper">
-                <div class="select-btn" id="sdg-btn">
-                    <span id="sdg-btn-text">Select SDGs</span>
-                    <i class="fa fa-chevron-down arrow-icon"></i>
-                </div>
-                <div class="list-items">
-                    <label class="item"><input type="checkbox" value="SDG 1"> SDG 1: No Poverty</label>
-                    <label class="item"><input type="checkbox" value="SDG 2"> SDG 2: Zero Hunger</label>
-                    <label class="item"><input type="checkbox" value="SDG 3"> SDG 3: Good Health</label>
-                    <label class="item"><input type="checkbox" value="SDG 4"> SDG 4: Quality Education</label>
-                    <label class="item"><input type="checkbox" value="SDG 5"> SDG 5: Gender Equality</label>
-                    <label class="item"><input type="checkbox" value="SDG 6"> SDG 6: Clean Water</label>
-                    <label class="item"><input type="checkbox" value="SDG 7"> SDG 7: Clean Energy</label>
-                    <label class="item"><input type="checkbox" value="SDG 8"> SDG 8: Decent Work</label>
-                    <label class="item"><input type="checkbox" value="SDG 9"> SDG 9: Industry</label>
-                    <label class="item"><input type="checkbox" value="SDG 10"> SDG 10: Reduced Inequalities</label>
-                    <label class="item"><input type="checkbox" value="SDG 11"> SDG 11: Sustainable Cities</label>
-                    <label class="item"><input type="checkbox" value="SDG 12"> SDG 12: Consumption</label>
-                    <label class="item"><input type="checkbox" value="SDG 13"> SDG 13: Climate Action</label>
-                    <label class="item"><input type="checkbox" value="SDG 14"> SDG 14: Life Below Water</label>
-                    <label class="item"><input type="checkbox" value="SDG 15"> SDG 15: Life on Land</label>
-                    <label class="item"><input type="checkbox" value="SDG 16"> SDG 16: Peace & Justice</label>
-                    <label class="item"><input type="checkbox" value="SDG 17"> SDG 17: Partnerships</label>
-                </div>
-            </div>
-
-            <div class="filter-item dropdown-wrapper">
-                <select id="sort-order">
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="a-z">Name (A-Z)</option>
+                    <option value="all">All Categories</option>
+                    <option value="ai and data science">AI and Data Science</option>
+                    <option value="saas and enterprise solutions">SaaS and Enterprise Solutions</option>
+                    <option value="fintech">Fintech</option>
+                    <option value="e-commerce">E-Commerce</option>
+                    <option value="health">Health</option>
+                    <option value="agriculture and food">Agriculture and Food</option>
+                    <option value="education technologies">Education Technologies</option>
+                    <option value="creative industries">Creative Industries</option>
+                    <option value="sustainability and cleantech">Sustainability and Cleantech</option>
+                    <option value="smart cities and mobility">Smart Cities and Mobility</option>
                 </select>
                 <i class="fa fa-chevron-down arrow-icon"></i>
             </div>
         </div>
 
-        <p class="results-count">Loading...</p>
+        <p class="results-count" id="results-count">Loading...</p>
         
         <div class="startups-container">
-            <div class="cards-grid" id="cardsGrid"></div> 
+            <div class="cards-grid" id="cardsGrid">
+                </div> 
         </div> 
-
-        <div class="pagination"></div>
     </section>
 
     <section class="closing-section">
@@ -203,9 +169,118 @@
            firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
-        window.db = db;
     </script>
     
-    <script src="js/load-startups.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const cardsGrid = document.getElementById('cardsGrid');
+        const searchInput = document.getElementById('search-input');
+        const categorySelect = document.getElementById('filter-category');
+        const countLabel = document.getElementById('results-count');
+
+        if (!cardsGrid) return;
+
+        let allStartups = [];
+
+        try {
+            // 1. Fetch ONLY Active Startups
+            const snapshot = await db.collection('startups')
+                                     .where('status', '==', 'active')
+                                     .get();
+
+            if (snapshot.empty) {
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No active startups found.</p>';
+                countLabel.textContent = "0 Startups";
+                return;
+            }
+
+            // 2. Filter for INCUBATED Only
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                // --- CRITICAL: Only include if incubated ---
+                if (data.incubationStatus === 'incubated') {
+                    allStartups.push({ id: doc.id, ...data });
+                }
+            });
+
+            // 3. Initial Render
+            renderCards(allStartups);
+
+        } catch (error) {
+            console.error("Error:", error);
+            cardsGrid.innerHTML = '<p>Error loading content.</p>';
+        }
+
+        // --- Render Function ---
+        function renderCards(startups) {
+            if (startups.length === 0) {
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No incubated startups found matching criteria.</p>';
+                countLabel.textContent = "0 Startups";
+                return;
+            }
+
+            countLabel.textContent = `${startups.length} Startups`;
+            let html = '';
+
+            startups.forEach(startup => {
+                const imgUrl = (startup.imageUrls && startup.imageUrls.length > 0) ? startup.imageUrls[0] : 'ucolab/Logo/No image.png';
+                const category = startup.category || 'Innovation';
+                const trl = startup.trl || 'TRL ?';
+
+                // ALWAYS show badge here because this page is ONLY for incubated projects
+                const badgeHTML = `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`;
+
+                html += `
+                    <div class="startup-card">
+                        ${badgeHTML}
+                        
+                        <div class="card-head">
+                            <img src="${imgUrl}" class="startup-logo" alt="Logo">
+                            <div class="card-meta">
+                                <h3 class="startup-name">${startup.name}</h3>
+                                <div class="tags">
+                                    <span class="tag">${category}</span>
+                                    <span class="tag small">${trl}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="startup-desc">
+                            ${startup.shortDescription || startup.description || 'No description available.'}
+                        </p>
+                        
+                        <a href="ucolab/project-detail.html?id=${startup.id}" class="card-cta">
+                            View Details <span class="cta-circle">➜</span>
+                        </a>
+                    </div>
+                `;
+            });
+
+            cardsGrid.innerHTML = html;
+        }
+
+        // --- Filter Logic ---
+        function filterStartups() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const catFilter = categorySelect.value.toLowerCase();
+
+            const filtered = allStartups.filter(startup => {
+                const nameMatch = (startup.name || '').toLowerCase().includes(searchTerm);
+                const descMatch = (startup.shortDescription || '').toLowerCase().includes(searchTerm);
+                const catMatch = (catFilter === 'all' || catFilter === '') || 
+                                 (startup.category || '').toLowerCase().includes(catFilter);
+
+                return (nameMatch || descMatch) && catMatch;
+            });
+
+            renderCards(filtered);
+        }
+
+        // Listeners
+        if(searchInput) searchInput.addEventListener('input', filterStartups);
+        if(categorySelect) categorySelect.addEventListener('change', filterStartups);
+    });
+    </script>
+
 </body>
 </html>

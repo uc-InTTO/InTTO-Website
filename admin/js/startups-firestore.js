@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ? startup.sdgs.map(sdg => `<span class="tag tag-sdg">${sdg}</span>`).join('')
                 : '';
             
-            // Determine Status Badge Style
+            // Status Badge
             let statusClass = 'tag-status-' + (startup.status || 'pending');
             let statusText = startup.status || 'pending';
             
@@ -120,8 +120,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const tagsArray = Array.isArray(startup.tags) ? startup.tags : [];
             
+            // --- LOGIC: Only show "Not Incubated" tag, NEVER show Green Badge on Admin ---
+            let incubationTagHTML = '';
+            if (startup.incubationStatus !== 'incubated' && startup.status !== 'pending') { 
+                incubationTagHTML = `<span class="tag tag-not-incubated">Not Incubated</span>`;
+            }
+            // -----------------------------------------------------------------------------
+
             const tagsHTML = `
                 <span class="tag ${statusClass}">${statusText}</span>
+                ${incubationTagHTML}
                 <span class="tag">${startup.category || 'Uncategorized'}</span>
                 <span class="tag">TRL ${startup.trl || '?'}</span>
                 ${startup.collab ? `<span class="tag tag-collab">Open for Collab</span>` : ''}
@@ -178,12 +186,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         
-        // --- THIS IS THE KEY EDIT LOGIC ---
+        // --- EDIT BUTTON: OPENS NEW TAB ---
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const firestoreId = e.target.closest('.startup-card').dataset.firestoreId;
-                // Open the new edit page in a new tab
+                // Opens the edit page in a new tab as requested
                 window.open(`../ucolab/edit-project.html?id=${firestoreId}`, '_blank');
             });
         });
@@ -216,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     sortDropdown.addEventListener('change', renderStartups);
 
-    // --- Auto-Reload on Window Focus (Refreshes list after you close edit tab) ---
+    // --- Auto-Reload ---
     window.addEventListener('focus', async () => {
         await loadStartupsFromFirestore();
         renderStartups();

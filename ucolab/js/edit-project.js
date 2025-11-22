@@ -47,6 +47,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             setVal('project-type', data.type);
             setVal('industry', data.category || data.industry);
             setVal('trl-level', data.trl);
+            
+            // --- LOAD INCUBATION STATUS ---
+            setVal('incubation-status', data.incubationStatus || 'not-incubated');
+
             setVal('short-description', data.shortDescription || data.description);
             setVal('detailed-description', data.detailedDescription);
             setVal('problem-statement', data.problemStatement);
@@ -127,6 +131,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 category: getVal('industry'),
                 industry: getVal('industry'),
                 trl: getVal('trl-level'),
+                
+                // --- SAVE INCUBATION STATUS ---
+                incubationStatus: getVal('incubation-status'),
+
                 shortDescription: getVal('short-description'),
                 description: getVal('short-description'),
                 detailedDescription: getVal('detailed-description'),

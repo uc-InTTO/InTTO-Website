@@ -13,47 +13,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const itemCountEl = document.getElementById('item-count');
     const itemCountLabelEl = document.getElementById('item-count-label');
     const chartCanvas = document.getElementById('sdgPieChart');
+    const breakdownListEl = document.getElementById('sdg-breakdown-list'); // Added
 
-    // --- SDG Colors (Official) ---
-    const SDG_COLORS = {
-        1: '#E5243B',  // No Poverty
-        2: '#DDA63A',  // Zero Hunger
-        3: '#4C9F38',  // Good Health
-        4: '#C5192D',  // Quality Education
-        5: '#FF3A21',  // Gender Equality
-        6: '#26BDE2',  // Clean Water
-        7: '#FCC30B',  // Clean Energy
-        8: '#A21942',  // Decent Work
-        9: '#FD6925',  // Industry, Innovation
-        10: '#DD1367', // Reduced Inequalities
-        11: '#FD9D24', // Sustainable Cities
-        12: '#BF8B2E', // Responsible Consumption
-        13: '#3F7E44', // Climate Action
-        14: '#0A97D9', // Life Below Water
-        15: '#56C02B', // Life on Land
-        16: '#00689D', // Peace, Justice
-        17: '#19486A'  // Partnerships
-    };
-
-    const SDG_NAMES = {
-        1: 'SDG 1: No Poverty',
-        2: 'SDG 2: Zero Hunger',
-        3: 'SDG 3: Good Health',
-        4: 'SDG 4: Quality Education',
-        5: 'SDG 5: Gender Equality',
-        6: 'SDG 6: Clean Water',
-        7: 'SDG 7: Clean Energy',
-        8: 'SDG 8: Decent Work',
-        9: 'SDG 9: Industry, Innovation',
-        10: 'SDG 10: Reduced Inequalities',
-        11: 'SDG 11: Sustainable Cities',
-        12: 'SDG 12: Responsible Consumption',
-        13: 'SDG 13: Climate Action',
-        14: 'SDG 14: Life Below Water',
-        15: 'SDG 15: Life on Land',
-        16: 'SDG 16: Peace, Justice',
-        17: 'SDG 17: Partnerships'
-    };
+    // --- Master List of SDGs (1-17 Ordered) ---
+    const SDG_CONSTANTS = [
+        { id: 1,  code: "SDG 1",  name: "No Poverty", color: "#E5243B" },
+        { id: 2,  code: "SDG 2",  name: "Zero Hunger", color: "#DDA63A" },
+        { id: 3,  code: "SDG 3",  name: "Good Health and Well-being", color: "#4C9F38" },
+        { id: 4,  code: "SDG 4",  name: "Quality Education", color: "#C5192D" },
+        { id: 5,  code: "SDG 5",  name: "Gender Equality", color: "#FF3A21" },
+        { id: 6,  code: "SDG 6",  name: "Clean Water and Sanitation", color: "#26BDE2" },
+        { id: 7,  code: "SDG 7",  name: "Affordable and Clean Energy", color: "#FCC30B" },
+        { id: 8,  code: "SDG 8",  name: "Decent Work and Economic Growth", color: "#A21942" },
+        { id: 9,  code: "SDG 9",  name: "Industry, Innovation and Infrastructure", color: "#FD6925" },
+        { id: 10, code: "SDG 10", name: "Reduced Inequalities", color: "#DD1367" },
+        { id: 11, code: "SDG 11", name: "Sustainable Cities and Communities", color: "#FD9D24" },
+        { id: 12, code: "SDG 12", name: "Responsible Consumption and Production", color: "#BF8B2E" },
+        { id: 13, code: "SDG 13", name: "Climate Action", color: "#3F7E44" },
+        { id: 14, code: "SDG 14", name: "Life Below Water", color: "#0A97D9" },
+        { id: 15, code: "SDG 15", name: "Life on Land", color: "#56C02B" },
+        { id: 16, code: "SDG 16", name: "Peace, Justice and Strong Institutions", color: "#00689D" },
+        { id: 17, code: "SDG 17", name: "Partnerships for the Goals", color: "#19486A" }
+    ];
 
     // --- Load Data from Firestore ---
     const loadStartupsFromFirestore = async () => {
@@ -61,10 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snapshot = await db.collection(STARTUPS_COLLECTION).get();
             const startups = [];
             snapshot.forEach(doc => {
-                startups.push({
-                    firestoreId: doc.id,
-                    ...doc.data()
-                });
+                startups.push({ firestoreId: doc.id, ...doc.data() });
             });
             return startups;
         } catch (error) {
@@ -78,10 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snapshot = await db.collection(NEWS_EVENTS_COLLECTION).get();
             const newsEvents = [];
             snapshot.forEach(doc => {
-                newsEvents.push({
-                    firestoreId: doc.id,
-                    ...doc.data()
-                });
+                newsEvents.push({ firestoreId: doc.id, ...doc.data() });
             });
             return newsEvents;
         } catch (error) {
@@ -94,21 +69,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const updateDashboard = async (filter) => {
         console.log('🔄 Updating dashboard with filter:', filter);
         
-        // Show loading state
+        // UI Loading State
         totalUsageEl.textContent = '...';
         uniqueSdgsEl.textContent = '...';
         itemCountEl.textContent = '...';
+        if(breakdownListEl) breakdownListEl.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Loading data...</p>';
 
-        // Load all data from Firestore
         const startups = await loadStartupsFromFirestore();
         const newsEvents = await loadNewsEventsFromFirestore();
-
-        console.log('📊 Loaded data:', { startups: startups.length, newsEvents: newsEvents.length });
 
         let itemsToProcess = [];
         let itemCountLabel = 'Items';
 
-        // Filter data based on tab
         if (filter === 'all') {
             itemsToProcess = [...startups, ...newsEvents];
             itemCountLabel = 'Total Items';
@@ -120,41 +92,43 @@ document.addEventListener('DOMContentLoaded', async () => {
             itemCountLabel = 'News & Events';
         }
 
-        console.log('📋 Processing', itemsToProcess.length, 'items for filter:', filter);
-
-        // Process the data
+        // Initialize counters for all 17 SDGs
         let totalUsage = 0;
         let itemCount = 0;
-        const sdgFrequency = {};
+        const sdgCounts = {};
+        
+        // Initialize count 0 for all IDs 1-17
+        SDG_CONSTANTS.forEach(sdg => sdgCounts[sdg.id] = 0);
 
         itemsToProcess.forEach(item => {
-            // Get SDGs from item (handle both array of numbers and array of strings)
             let itemSDGs = item.sdgs || [];
             
-            // Convert string SDGs to numbers if needed
+            // --- Normalize SDG data to numbers correctly ---
             if (Array.isArray(itemSDGs)) {
                 itemSDGs = itemSDGs.map(sdg => {
-                    const num = typeof sdg === 'string' ? parseInt(sdg, 10) : sdg;
-                    return isNaN(num) ? null : num;
+                    let num = sdg;
+                    if (typeof sdg === 'string') {
+                        const match = sdg.match(/\d+/);
+                        num = match ? parseInt(match[0], 10) : NaN;
+                    }
+                    return (isNaN(num) || num === null) ? null : parseInt(num, 10);
                 }).filter(sdg => sdg !== null);
             }
 
             if (itemSDGs.length > 0) {
                 itemCount++;
                 totalUsage += itemSDGs.length;
-
-                // Count frequency of each SDG
+                
                 itemSDGs.forEach(sdgNum => {
                     if (sdgNum >= 1 && sdgNum <= 17) {
-                        sdgFrequency[sdgNum] = (sdgFrequency[sdgNum] || 0) + 1;
+                        sdgCounts[sdgNum]++;
                     }
                 });
             }
         });
 
-        const uniqueSdgs = Object.keys(sdgFrequency).length;
-
-        console.log('📈 Results:', { totalUsage, uniqueSdgs, itemCount, sdgFrequency });
+        // Calculate how many *different* SDGs are active
+        const uniqueSdgs = Object.values(sdgCounts).filter(count => count > 0).length;
 
         // --- Update Stat Cards ---
         totalUsageEl.textContent = totalUsage;
@@ -162,76 +136,53 @@ document.addEventListener('DOMContentLoaded', async () => {
         itemCountEl.textContent = itemCount;
         itemCountLabelEl.textContent = itemCountLabel;
 
-        // --- Prepare Chart Data ---
-        const sortedSdgs = Object.keys(sdgFrequency).sort((a, b) => sdgFrequency[b] - sdgFrequency[a]);
-        
-        if (sortedSdgs.length === 0) {
-            console.log('⚠️ No SDG data to display');
-            // No data - show empty chart or message
-            renderPieChart({ labels: [], datasets: [{ data: [] }] }, filter);
-            return;
-        }
+        // --- Prepare Data for Visualization (Strictly 1-17) ---
+        const preparedData = SDG_CONSTANTS.map(sdg => ({
+            ...sdg,
+            count: sdgCounts[sdg.id] || 0
+        }));
 
-        const chartData = {
-            labels: sortedSdgs.map(sdg => SDG_NAMES[parseInt(sdg)] || `SDG ${sdg}`),
-            datasets: [{
-                data: sortedSdgs.map(sdg => sdgFrequency[sdg]),
-                backgroundColor: sortedSdgs.map(sdg => SDG_COLORS[parseInt(sdg)] || '#cccccc'),
-                borderColor: '#ffffff',
-                borderWidth: 2
-            }]
-        };
-
-        console.log('📊 Chart data prepared:', { 
-            labels: chartData.labels.length, 
-            dataPoints: chartData.datasets[0].data.length 
-        });
-
-        // --- Render the Chart ---
-        renderPieChart(chartData, filter);
+        updateGraph(preparedData);
+        updateList(preparedData);
     };
 
-    // --- Function to Render Pie Chart ---
-    const renderPieChart = (data, filter) => {
-        console.log('🎨 Rendering chart for filter:', filter);
-        
-        if (!chartCanvas) {
-            console.error('❌ Chart canvas not found');
-            return;
-        }
+    // --- Render the Graph (Sorted 1-17) ---
+    const updateGraph = (data) => {
+        if (!chartCanvas) return;
 
-        // Check if Chart.js is loaded
         if (typeof Chart === 'undefined') {
             console.error('❌ Chart.js not loaded');
             return;
         }
 
-        // If a chart instance exists, destroy it first
         if (sdgChart) {
-            console.log('🗑️ Destroying previous chart instance');
             sdgChart.destroy();
-            sdgChart = null;
         }
 
-        // Handle empty data
-        if (!data.labels || data.labels.length === 0) {
-            console.log('⚠️ No data available for chart');
-            // Create a placeholder chart with a message
+        // Filter labels/data for chart:
+        const activeData = data.filter(item => item.count > 0); 
+
+        // If no data at all
+        if (activeData.length === 0) {
             const ctx = chartCanvas.getContext('2d');
             ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-            ctx.font = '16px Inter, sans-serif';
+            ctx.font = '14px Poppins, sans-serif';
             ctx.fillStyle = '#999';
             ctx.textAlign = 'center';
-            ctx.fillText('No SDG data available', chartCanvas.width / 2, chartCanvas.height / 2);
+            ctx.fillText('No SDG data found', chartCanvas.width / 2, chartCanvas.height / 2);
             return;
         }
 
-        console.log('✅ Creating new chart with', data.labels.length, 'data points');
-
-        // Create new chart
         sdgChart = new Chart(chartCanvas, {
             type: 'doughnut',
-            data: data,
+            data: {
+                labels: activeData.map(item => `${item.code}: ${item.name}`),
+                datasets: [{
+                    data: activeData.map(item => item.count),
+                    backgroundColor: activeData.map(item => item.color),
+                    borderWidth: 1
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -239,51 +190,53 @@ document.addEventListener('DOMContentLoaded', async () => {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            font: {
-                                family: "'Inter', sans-serif",
-                                size: 12
-                            },
-                            padding: 15,
-                            usePointStyle: true
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.parsed || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((value / total) * 100).toFixed(1);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
+                            boxWidth: 12,
+                            font: { family: "'Poppins', sans-serif", size: 11 }
                         }
                     }
                 }
             }
         });
+    };
 
-        console.log('✅ Chart rendered successfully');
+    // --- Render the List (Strictly 1-17) ---
+    const updateList = (data) => {
+        if (!breakdownListEl) return;
+        
+        breakdownListEl.innerHTML = '';
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'sdg-item-card';
+            card.style.borderLeftColor = item.color;
+
+            // Fade out cards with 0 count
+            if (item.count === 0) {
+                card.style.opacity = '0.6'; 
+            }
+
+            card.innerHTML = `
+                <div class="sdg-item-info">
+                    <h4 style="color: ${item.color}">${item.code}</h4>
+                    <p>${item.name}</p>
+                </div>
+                <div class="sdg-item-count">
+                    ${item.count}
+                </div>
+            `;
+            breakdownListEl.appendChild(card);
+        });
     };
 
     // --- Tab Event Listeners ---
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Update active tab style
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
-            // Update dashboard with the new filter
-            const filter = tab.dataset.filter;
-            updateDashboard(filter);
+            updateDashboard(tab.dataset.filter);
         });
     });
 
-    // --- Initial Load ---
-    console.log('🎯 SDG Dashboard initializing...');
-    console.log('Firebase DB:', db ? '✅ Connected' : '❌ Not connected');
-    console.log('Chart.js:', typeof Chart !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-    
-    await updateDashboard('all'); // Load the 'All' tab by default
-    
-    console.log('✅ SDG Dashboard initialized');
+    // --- Init ---
+    await updateDashboard('all');
 });

@@ -69,6 +69,21 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="form-row" style="background: #e8f5e9; padding: 15px; border-radius: 8px; border: 1px solid #c8e6c9;">
+                        <div class="form-group full-width">
+                            <label for="incubation-status" style="color: #1b5e20; font-weight: 700;">Incubation Status (Admin)</label>
+                            <select id="incubation-status" required style="border-color: #1b5e20;">
+                                <option value="" disabled>Select Status</option>
+                                <option value="incubated">✅ Incubated (Goes to Startups Tab)</option>
+                                <option value="not-incubated">❌ Not Incubated (Goes to UCoLab Tab)</option>
+                            </select>
+                            <p style="font-size: 12px; color: #2e7d32; margin-top: 5px;">
+                                "Incubated" projects get the green verified checkmark and appear on the main Startups page.
+                            </p>
+                        </div>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label for="college-dropdown-btn">College <span class="required">*</span></label>
@@ -257,20 +272,6 @@
                 </div>
 
                 <div class="form-section">
-                    <h2>Project Information</h2>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="start-date">Start Date <span class="required">*</span></label>
-                            <input type="date" id="start-date" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="team-size">Team Size <span class="required">*</span></label>
-                            <input type="text" id="team-size" placeholder="e.g., 4-6 members" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-section">
                     <h2>Founder Information</h2>
                     <div class="form-row">
                         <div class="form-group">
@@ -300,6 +301,16 @@
                         <div class="form-group">
                             <label for="founder-phone">Phone (Optional)</label>
                             <input type="tel" id="founder-phone" placeholder="+63 917 123 4567">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="start-date">Start Date <span class="required">*</span></label>
+                            <input type="date" id="start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="team-size">Team Size <span class="required">*</span></label>
+                            <input type="text" id="team-size" placeholder="e.g., 4-6 members" required>
                         </div>
                     </div>
                 </div>

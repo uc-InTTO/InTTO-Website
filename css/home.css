@@ -294,7 +294,7 @@ body {
     box-sizing: border-box;
     z-index: 1000;
     display: none;
-    align-self: center; /* Center horizontally within its flex container */
+    align-self: center;
     margin-top: 10px;
     margin-bottom: 10px;
 }
@@ -539,8 +539,6 @@ body {
   max-width: 90%;
   margin: 0 auto 50px;
 }
-
-
 
 .stats-row {
   display: flex;
@@ -1279,7 +1277,8 @@ body {
     display:grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 22px;
-    align-items: stretch;
+    align-items: start;
+    grid-auto-rows: minmax(314px, auto);
     max-width: 100%;
     margin: 30px auto 0;
 }
@@ -1294,8 +1293,7 @@ body {
     flex-direction:column;
     justify-content:space-between;
     width: 100%;
-    height: auto;
-    min-height: 314px;
+    height: 100%;
     transition: transform .18s, box-shadow .18s;
     position: relative;
 }
@@ -2179,4 +2177,121 @@ textarea {
 .home-dropdown-wrapper select option {
     color: #333;
     background: #fff;
+}
+
+/* =========================================
+   Fix for "Meet Our Startups" Grid on Homepage
+   ========================================= */
+
+/* 1. Fix the green background container */
+.startups-container {
+    height: auto !important;       /* Allow height to grow with content */
+    min-height: unset !important;  /* Remove fixed height constraint */
+    overflow: visible !important;  /* Stop scrollbars/clipping */
+    padding-bottom: 40px;          /* Add spacing at bottom */
+}
+
+/* 2. Fix the grid itself (Targeting the correct ID: cardsGrid) */
+#cardsGrid {
+    display: grid !important;
+    /* This makes it responsive: fits as many 300px cards as possible per row */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 25px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+}
+
+/* 3. Ensure cards fill the space properly */
+#cardsGrid .startup-card {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* 4. Mobile adjustments */
+@media (max-width: 768px) {
+    #cardsGrid {
+        grid-template-columns: 1fr !important; /* 1 card per row on mobile */
+        padding: 0 10px;
+    }
+}
+
+/* =========================================
+   FIX: Card Text Overflow & Wrapping
+   ========================================= */
+
+/* 1. Fix the Project Title Overflow */
+.startup-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; line-clamp: 2; /* Limits title to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3; /* Adjust line spacing */
+    height: 2.6em;    /* Fixed height keeps cards aligned */
+    margin-bottom: 8px;
+    word-break: break-word; /* Prevents long words from breaking layout */
+}
+
+/* 2. Fix the Description Overflow */
+.startup-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3; line-clamp: 3; /* Limits description to 3 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.5;
+    height: 4.5em;    /* Fixed height for description area */
+    margin-bottom: 15px;
+    color: #666;      /* Ensure text color is readable */
+}
+
+/* 3. Ensure the card itself doesn't stretch weirdly */
+.startup-card .card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Fills the card */
+}
+
+/* 4. Push the button to the bottom */
+.card-footer {
+    margin-top: auto; /* Pushes the 'View Details' button to the bottom */
+}
+
+/* =========================================
+   VERIFIED / INCUBATED BADGE (Home Page)
+   ========================================= */
+
+/* Ensure the card can hold the floating badge */
+.startup-card, 
+.project-card {
+    position: relative !important; 
+    overflow: visible !important;
+}
+
+/* Green Checkmark Badge */
+.incubated-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #166647; /* Solid Green */
+    color: white;             /* White Check */
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 20;
+    border: 2px solid #ffffff;
+}
+
+.incubated-badge:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
 }

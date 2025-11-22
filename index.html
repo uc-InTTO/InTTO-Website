@@ -15,17 +15,14 @@
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="module" src="./Contact-Us-DB/scriptC.js"></script>
-    <script type="module" src="./Contact-Us-DB/authC.js"></script>
     <script type="module" src="./Contact-Us-DB/infoC.js"></script>
     <script type="module" src="./Contact-Us-DB/saveInfoC.js"></script>
-    <script type="text/javascript"
-    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
-    </script>
+    <script type="text/javascript"src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
     (function(){
-        emailjs.init({
-            publicKey: "jtgfZ8_TmLu3KT1Kx",
-        });
+        try {
+            emailjs.init({ publicKey: "5_58lLK_G13DczpUQ" });
+        } catch(e) { console.log("EmailJS Error", e); }
     })();
     </script>
     
@@ -149,7 +146,8 @@
 
         <div class="startups-container">
             <div class="cards-grid" id="cardsGrid">
-                </div> 
+                <p style="text-align: center; width: 100%; color: #fff;">Loading startups...</p>
+            </div> 
         </div> 
 
         <div class="join-cta">
@@ -169,7 +167,7 @@
             <a href="events.html" class="news-nav-btn">View More<span class="arrow-icon">➜</span></a>
         </div>
         <div class="news-cards">
-          </div>
+            </div>
       </div>
     </section>
 
@@ -292,45 +290,8 @@
       });
     </script>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const categorySelect = document.getElementById('home-category-filter');
-        const cardsGrid = document.getElementById('cardsGrid');
-        
-        if (!cardsGrid || !categorySelect) return;
-
-        // Function to filter cards
-        function applyFilter(category) {
-            const startupCards = cardsGrid.querySelectorAll('.startup-card');
-            
-            startupCards.forEach(card => {
-                // Get category string safely
-                const cardCatString = (card.getAttribute('data-category') || '').toLowerCase();
-                
-                // Check match
-                if (category === 'all' || cardCatString.includes(category)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-        // Listen for Dropdown Change
-        categorySelect.addEventListener('change', (e) => {
-            applyFilter(e.target.value);
-        });
-
-        // Watch for new cards loading (Firebase) and re-apply filter if needed
-        const observer = new MutationObserver(() => {
-            applyFilter(categorySelect.value);
-        });
-        
-        observer.observe(cardsGrid, { childList: true });
-    });
-    </script>
-
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
         const firebaseConfig = {
@@ -343,12 +304,113 @@
             measurementId: "G-ETY9E0F1K6"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        var auth = firebase.auth();
+        var db = firebase.firestore();
+        window.auth = auth;
         window.db = db;
     </script>
     
-    <script src="js/load-startups.js"></script>
     <script src="js/load-news-home.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const cardsGrid = document.getElementById('cardsGrid');
+        const categorySelect = document.getElementById('home-category-filter');
+        
+        if (!cardsGrid) return;
+
+        try {
+            // 1. Fetch ACTIVE Startups
+            const snapshot = await db.collection('startups')
+                                     .where('status', '==', 'active')
+                                     .get();
+
+            if (snapshot.empty) {
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No active startups found.</p>';
+                return;
+            }
+
+            // 2. Filter for INCUBATED Only
+            let incubatedStartups = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                // Only keep projects marked as 'incubated'
+                if (data.incubationStatus === 'incubated') {
+                    incubatedStartups.push({ id: doc.id, ...data });
+                }
+            });
+
+            // 3. Render Function (With LIMIT 6)
+            function renderStartups(filterCategory = 'all') {
+                cardsGrid.innerHTML = '';
+                
+                // Filter by Category
+                let filtered = incubatedStartups.filter(data => {
+                    return filterCategory === 'all' || 
+                           (data.category || '').toLowerCase() === filterCategory.toLowerCase();
+                });
+
+                // Limit to 6
+                const displayList = filtered.slice(0, 6);
+
+                if (displayList.length === 0) {
+                    cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No incubated startups match this category.</p>';
+                    return;
+                }
+
+                let html = '';
+                displayList.forEach(data => {
+                    // Badge is always present since we filtered for incubated
+                    const badgeHTML = `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`;
+                    
+                    const imgUrl = (data.imageUrls && data.imageUrls.length > 0) ? data.imageUrls[0] : 'ucolab/Logo/No image.png';
+                    const category = data.category || 'Innovation';
+                    const trl = data.trl || 'TRL ?';
+
+                    html += `
+                        <div class="startup-card" data-category="${category.toLowerCase()}">
+                            ${badgeHTML}
+                            
+                            <div class="card-head">
+                                <img src="${imgUrl}" class="startup-logo" alt="Logo">
+                                <div class="card-meta">
+                                    <h3 class="startup-name">${data.name}</h3>
+                                    <div class="tags">
+                                        <span class="tag">${category}</span>
+                                        <span class="tag small">${trl}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p class="startup-desc">
+                                ${data.shortDescription || data.description || 'No description available.'}
+                            </p>
+                            
+                            <a href="ucolab/project-detail.html?id=${data.id}" class="card-cta">
+                                View Details <span class="cta-circle">➜</span>
+                            </a>
+                        </div>
+                    `;
+                });
+                cardsGrid.innerHTML = html;
+            }
+
+            // Initial Render
+            renderStartups();
+
+            // Dropdown Listener
+            if (categorySelect) {
+                categorySelect.addEventListener('change', (e) => {
+                    renderStartups(e.target.value);
+                });
+            }
+
+        } catch (error) {
+            console.error("Error loading startups:", error);
+            cardsGrid.innerHTML = '<p style="color:white;">Error loading content.</p>';
+        }
+    });
+    </script>
 
 </body>
 </html>

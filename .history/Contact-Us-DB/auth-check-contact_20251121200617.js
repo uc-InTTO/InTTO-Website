@@ -47,6 +47,15 @@ export function initContactFormAuth() {
                     <i class="fas fa-sign-in-alt"></i> Login / Sign Up
                 </a>
             </div>
+            <div class="login-benefits">
+                <p class="benefits-title">Why login?</p>
+                <ul>
+                    <li><i class="fas fa-check-circle"></i> Direct communication with our team</li>
+                    <li><i class="fas fa-check-circle"></i> Track your inquiries and responses</li>
+                    <li><i class="fas fa-check-circle"></i> Access to exclusive resources</li>
+                    <li><i class="fas fa-check-circle"></i> Spam-free guaranteed experience</li>
+                </ul>
+            </div>
         </div>
     `;
 

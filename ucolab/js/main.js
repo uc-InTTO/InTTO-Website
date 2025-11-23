@@ -3,248 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get Firebase instances from global scope (initialized in index.html)
     const auth = window.auth || firebase.auth();
     const db = window.db || firebase.firestore();
-    const defaultProjects = [
-        {
-            id: 15, views: 204, inquiries: 15, title: "FarmConnect", type: "Thesis", industry: "Agritech", college: ["College of Business"], trl: "TRL 4",
-            shortDescription: "Digital cooperative management system for highland farmers.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "This innovative project addresses critical challenges in the agritech sector through cutting-edge technology and research. Developed by students and faculty from the College of Business, the initiative showcases the University of the Cordilleras' commitment to innovation and community impact. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 4, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Communities in the Cordillera region face unique challenges in agritech, requiring localized solutions that account for geographical, cultural, and economic factors. Traditional approaches have proven insufficient in addressing these complex needs.",
-            solution: "FarmConnect leverages innovative technology to provide a sustainable, scalable solution tailored to the unique needs of the Cordillera region. By combining local insights with cutting-edge research, the project delivers measurable impact while remaining accessible and affordable for the target community.",
-            features: [
-                {title: "Innovation", description: "Novel approach combining technology with local knowledge"},
-                {title: "Sustainability", description: "Environmentally conscious design with long-term viability"},
-                {title: "Scalability", description: "Designed for expansion across similar communities"},
-                {title: "Community Impact", description: "Direct benefits to local stakeholders and communities"}
-            ],
-            startDate: "October 2025", teamSize: "4-6 members",
-            founderName: "Dr. Maria Santos", founderRole: "Project Lead & Principal Investigator", founderAffiliation: "College of Business, University of the Cordilleras", founderEmail: "maria.santos@uc-bcf.edu.ph", founderPhone: "+63 917 123 4567"
-        },
-        {
-            id: 14, views: 150, inquiries: 10, title: "VeggieTrack", type: "Capstone", industry: "Agriculture and Food", college: ["College of Computer Studies"], trl: "TRL 5",
-            shortDescription: "IoT-based supply chain monitoring for vegetable produce from farm to.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "VeggieTrack ensures transparency and quality in the vegetable supply chain through real-time IoT monitoring from harvest to consumer. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 5, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Vegetable farmers face significant post-harvest losses and price uncertainty due to lack of supply chain visibility and quality degradation during transport.",
-            solution: "IoT sensors and blockchain technology track produce conditions throughout the supply chain, providing traceability, quality assurance, and fair pricing mechanisms.",
-            features: [
-                {title: "Real-Time Tracking", description: "GPS and condition monitoring during transport"},
-                {title: "Quality Sensors", description: "Temperature and humidity tracking"},
-                {title: "Blockchain Ledger", description: "Immutable record of supply chain journey"},
-                {title: "Price Transparency", description: "Fair market pricing information"}
-            ],
-            startDate: "February 2025", teamSize: "4-6 members",
-            founderName: "Prof. Antonio Bautista", founderRole: "Capstone Project Adviser", founderAffiliation: "College of Computer Studies, University of the Cordilleras", founderEmail: "a.bautista@uc-bcf.edu.ph", founderPhone: "+63 917 890 1234"
-        },
-        {
-            id: 13, views: 301, inquiries: 25, title: "SafeCity", type: "Capstone", industry: "Criminology, Forensics, and Public Safety", college: ["College of Computer Studies"], trl: "TRL 5",
-            shortDescription: "Community-based crime reporting and prevention mobile application.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "SafeCity aims to enhance community safety by providing a user-friendly mobile platform for reporting incidents and receiving timely alerts. Developed by students from the College of Computer Studies, this project leverages technology to foster a more connected and secure environment.",
-            problemStatement: "Delayed crime reporting and lack of real-time safety information can hinder effective prevention and response efforts within communities. Existing channels may be slow or inaccessible to some residents.",
-            solution: "A mobile application allowing residents to quickly report incidents (anonymously if desired), view a map of recent activity, and receive official safety alerts, empowering community members and aiding local authorities.",
-            features: [
-                {title: "Incident Reporting", description: "Easy submission of crime or safety concerns"},
-                {title: "Safety Alerts", description: "Push notifications for official warnings"},
-                {title: "Activity Map", description: "Visual representation of reported incidents"},
-                {title: "Optional Anonymity", description: "Users can choose to submit reports anonymously"}
-            ],
-            startDate: "March 2025", teamSize: "3-5 members",
-            founderName: "Prof. Juan Dela Cruz", founderRole: "Capstone Adviser", founderAffiliation: "College of Computer Studies, University of the Cordilleras", founderEmail: "j.delacruz@uc-bcf.edu.ph", founderPhone: "+63 917 111 2222"
-        },
-        {
-            id: 12, views: 220, inquiries: 12, title: "MediCord", type: "Capstone", industry: "Health", college: ["College of Nursing"], trl: "TRL 4",
-            shortDescription: "AI-powered health monitoring for rural clinics.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "MediCord brings advanced diagnostic capabilities to rural health centers through AI-powered health monitoring and decision support systems. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 4, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Rural clinics lack diagnostic equipment and specialist expertise, leading to delayed or inaccurate diagnoses and patient referrals to distant hospitals.",
-            solution: "AI-powered diagnostic tools that analyze symptoms, vital signs, and medical images to provide decision support for rural healthcare workers.",
-            features: [
-                {title: "AI Diagnosis", description: "Machine learning diagnostic assistance"},
-                {title: "Vital Signs Monitoring", description: "Continuous patient monitoring"},
-                {title: "Image Analysis", description: "X-ray and ultrasound interpretation"},
-                {title: "Referral System", description: "Smart patient triage and referrals"}
-            ],
-            startDate: "December 2024", teamSize: "4-6 members",
-            founderName: "Prof. Grace Ramos", founderRole: "Project Supervisor", founderAffiliation: "College of Nursing, University of the Cordilleras", founderEmail: "g.ramos@uc-bcf.edu.ph", founderPhone: "+63 917 224 5501"
-        },
-        {
-            id: 11, views: 88, inquiries: 5, title: "CraftConnect", type: "Thesis", industry: "E-commerce", college: ["College of Architecture"], trl: "TRL 4",
-            shortDescription: "Digital marketplace connecting indigenous craftspeople with global.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "CraftConnect preserves and promotes indigenous craftsmanship while providing economic opportunities for artisans in the Cordillera region through a modern e-commerce platform. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 4, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Indigenous craftspeople struggle to access broader markets due to geographical isolation and lack of digital infrastructure, resulting in limited income opportunities and potential loss of traditional skills.",
-            solution: "A dedicated marketplace platform that showcases indigenous crafts to global audiences while providing fair trade mechanisms, cultural storytelling, and logistical support for artisan communities.",
-            features: [
-                {title: "Cultural Storytelling", description: "Rich narratives behind each craft and artisan"},
-                {title: "Fair Trade", description: "Transparent pricing ensuring artisan benefits"},
-                {title: "Quality Assurance", description: "Authentication and quality verification system"},
-                {title: "Logistics Support", description: "Streamlined shipping and payment processing"}
-            ],
-            startDate: "September 2024", teamSize: "4-6 members",
-            founderName: "Dr. Patricia Gomez", founderRole: "Project Coordinator", founderAffiliation: "College of Architecture, University of the Cordilleras", founderEmail: "p.gomez@uc-bcf.edu.ph", founderPhone: "+63 917 557 8901"
-        },
-        {
-            id: 10, views: 450, inquiries: 30, title: "NutriTrack", type: "Startup", industry: "Health", college: ["College of Nursing"], trl: "TRL 5",
-            shortDescription: "AI-powered nutrition monitoring app for maternal and child health.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "NutriTrack revolutionizes maternal and child healthcare through advanced AI technology. This comprehensive nutrition monitoring platform provides real-time insights and personalized recommendations to improve health outcomes in underserved communities. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 5, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Maternal and child malnutrition remains a critical challenge in the Cordillera region, with limited access to professional nutrition monitoring and guidance. Healthcare workers struggle to track and manage multiple cases efficiently.",
-            solution: "Using artificial intelligence and mobile technology, NutriTrack enables healthcare workers and mothers to monitor nutritional status, receive alerts for concerning trends, and access evidence-based feeding recommendations tailored to local dietary practices.",
-            features: [
-                {title: "AI Analysis", description: "Machine learning algorithms for nutrition assessment"},
-                {title: "Mobile Access", description: "Easy-to-use smartphone interface for all users"},
-                {title: "Real-time Alerts", description: "Immediate notifications for health concerns"},
-                {title: "Cultural Adaptation", description: "Localized recommendations based on regional foods"}
-            ],
-            startDate: "August 2024", teamSize: "3-5 members",
-            founderName: "Prof. Jennifer Dela Cruz", founderRole: "Research Adviser", founderAffiliation: "College of Nursing, University of the Cordilleras", founderEmail: "j.delacruz@uc-bcf.edu.ph", founderPhone: "+63 917 234 5678"
-        },
-        {
-            id: 9, views: 120, inquiries: 8, title: "CrimSight", type: "Research", industry: "Criminology, Forensics, and Public Safety", college: ["College of Arts & Sciences"], trl: "TRL 5",
-            shortDescription: "Digital forensic analysis toolkit for local law enforcement.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "CrimSight provides affordable digital forensic capabilities to local law enforcement agencies, enabling them to investigate cybercrimes and digital evidence effectively. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 5, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Local police units lack the tools and expertise for digital forensics, limiting their ability to investigate modern crimes involving digital evidence.",
-            solution: "A user-friendly toolkit that automates common digital forensic procedures and provides guided workflows for non-expert investigators.",
-            features: [
-                {title: "Automated Analysis", description: "Pre-configured forensic procedures"},
-                {title: "User Friendly", description: "Interface designed for non-specialists"},
-                {title: "Evidence Chain", description: "Maintains legal chain of custody"},
-                {title: "Training Modules", description: "Built-in investigator training"}
-            ],
-            startDate: "August 2024", teamSize: "3-5 members",
-            founderName: "Prof. Diana Santiago", founderRole: "Research Director", founderAffiliation: "College of Arts & Sciences, University of the Cordilleras", founderEmail: "d.santiago@uc-bcf.edu.ph", founderPhone: "+63 917 456 0123"
-        },
-        {
-            id: 8, views: 95, inquiries: 7, title: "EcoBlock", type: "Thesis", industry: "Sustainability and Cleantech", college: ["College of Engineering"], trl: "TRL 3",
-            shortDescription: "Sustainable concrete blend using local bio-waste materials.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "EcoBlock develops environmentally sustainable construction materials by incorporating local agricultural waste into concrete production. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 3, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Traditional concrete production is carbon-intensive, while agricultural waste disposal creates environmental problems in the region.",
-            solution: "A novel concrete blend incorporating rice husks, coffee grounds, and other local bio-waste materials, reducing environmental impact while maintaining structural integrity.",
-            features: [
-                {title: "Carbon Reduction", description: "Lower CO2 emissions than traditional concrete"},
-                {title: "Waste Utilization", description: "Converts agricultural waste to value"},
-                {title: "Local Materials", description: "Uses readily available regional biomass"},
-                {title: "Cost Effective", description: "Competitive pricing with traditional concrete"}
-            ],
-            startDate: "July 2024", teamSize: "2-4 members",
-            founderName: "Engr. Carlos Mendoza", founderRole: "Thesis Adviser", founderAffiliation: "College of Engineering, University of the Cordilleras", founderEmail: "c.mendoza@uc-bcf.edu.ph", founderPhone: "+63 917 113 4560"
-        },
-        {
-            id: 7, views: 180, inquiries: 11, title: "WaterSense", type: "Research", industry: "Sustainability and Cleantech", college: ["College of Engineering"], trl: "TRL 4",
-            shortDescription: "Smart water quality monitoring system for Baguio's watershed areas.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "WaterSense addresses critical water quality concerns in Baguio's watershed areas through IoT-enabled monitoring and early warning systems. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 4, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Watershed areas face increasing pollution threats, but traditional monitoring methods are labor-intensive and provide delayed results, limiting effective intervention.",
-            solution: "Deployed sensor networks continuously monitor water quality parameters, providing real-time data and automated alerts to authorities and communities when contamination is detected.",
-            features: [
-                {title: "IoT Sensors", description: "Continuous monitoring of key water parameters"},
-                {title: "Early Warning", description: "Automated alerts for contamination events"},
-                {title: "Data Analytics", description: "Trend analysis and predictive insights"},
-                {title: "Community Access", description: "Public dashboard for transparency"}
-            ],
-            startDate: "June 2024", teamSize: "3-5 members",
-            founderName: "Engr. Thomas Aquino", founderRole: "Research Supervisor", founderAffiliation: "College of Engineering, University of the Cordilleras", founderEmail: "t.aquino@uc-bcf.edu.ph", founderPhone: "+63 917 878 9012"
-        },
-        {
-            id: 6, views: 75, inquiries: 3, title: "LearnHub CAR", type: "Research", industry: "Education Technologies", college: ["College of Teacher Education"], trl: "TRL 5",
-            shortDescription: "Adaptive learning platform for indigenous communities in the.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "LearnHub CAR creates culturally responsive educational content and adaptive learning experiences for indigenous learners in the Cordillera Administrative Region. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 5, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Indigenous students face educational disadvantages due to curriculum that doesn't reflect their cultural context and language, leading to lower engagement and achievement.",
-            solution: "An adaptive learning platform that incorporates indigenous languages, cultural knowledge, and learning styles while meeting national curriculum standards.",
-            features: [
-                {title: "Cultural Content", description: "Curriculum aligned with indigenous knowledge"},
-                {title: "Multi-language", description: "Supports Cordillera indigenous languages"},
-                {title: "Adaptive Learning", description: "Personalized learning paths"},
-                {title: "Offline Access", description: "Works in low-connectivity areas"}
-            ],
-            startDate: "May 2024", teamSize: "5-7 members",
-            founderName: "Dr. Elena Cordero", founderRole: "Principal Investigator", founderAffiliation: "College of Teacher Education, University of the Cordilleras", founderEmail: "e.cordero@uc-bcf.edu.ph", founderPhone: "+63 917 901 2345"
-        },
-        {
-            id: 5, views: 512, inquiries: 45, title: "HealthBridge", type: "Startup", industry: "Health", college: ["College of Nursing"], trl: "TRL 6",
-            shortDescription: "Telemedicine platform connecting rural patients with urban healthcare", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "HealthBridge breaks down geographical barriers to healthcare access by connecting rural patients with qualified medical professionals through an integrated telemedicine platform. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 6, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Rural communities face severe healthcare access challenges due to distance from medical facilities, shortage of healthcare workers, and high transportation costs.",
-            solution: "A comprehensive telemedicine platform enabling video consultations, digital prescriptions, and remote monitoring, bringing quality healthcare to underserved rural areas.",
-            features: [
-                {title: "Video Consultation", description: "HIPAA-compliant secure video calls"},
-                {title: "E-Prescriptions", description: "Digital prescription and pharmacy integration"},
-                {title: "Health Records", description: "Centralized patient health information"},
-                {title: "Local Partnerships", description: "Network of rural health units and clinics"}
-            ],
-            startDate: "April 2024", teamSize: "6-8 members",
-            founderName: "Dr. Sarah Fernandez", founderRole: "Startup Mentor & Co-founder", founderAffiliation: "College of Nursing, University of the Cordilleras", founderEmail: "s.fernandez@uc-bcf.edu.ph", founderPhone: "+63 917 789 0123"
-        },
-        {
-            id: 4, views: 60, inquiries: 2, title: "GreenArch", type: "Research", industry: "Sustainability and Cleantech", college: ["College of Architecture"], trl: "TRL 3",
-            shortDescription: "Passive cooling design framework for tropical highland architecture.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "GreenArch pioneers sustainable architectural solutions for the unique climate conditions of tropical highland regions. This research-based framework integrates traditional knowledge with modern design principles. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 3, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "High-land tropical architecture faces unique challenges in maintaining comfortable indoor temperatures without excessive energy consumption. Current building designs often rely heavily on mechanical cooling systems.",
-            solution: "A comprehensive passive-cooling framework that leverages natural ventilation, thermal mass, and strategic building orientation to reduce energy consumption while maintaining thermal comfort.",
-            features: [
-                {title: "Energy Efficiency", description: "Reduce cooling energy needs by up to 40%"},
-                {title: "Local Materials", description: "Utilizes readily available regional building materials"},
-                {title: "Traditional Integration", description: "Incorporates indigenous architectural wisdom"},
-                {title: "Climate Responsive", description: "Adapted to highland tropical conditions"}
-            ],
-            startDate: "March 2024", teamSize: "2-4 members",
-            founderName: "Arch. Roberto Villanueva", founderRole: "Lead Researcher", founderAffiliation: "College of Architecture, University of the Cordilleras", founderEmail: "r.villanueva@uc-bcf.edu.ph", founderPhone: "+63 917 345 6780"
-        },
-        {
-            id: 3, views: 333, inquiries: 22, title: "Agrilera", type: "Startup", industry: "Agriculture and Food", college: ["College of Engineering"], trl: "TRL 6",
-            shortDescription: "Automated tray-seeding and smart farming solution for Benguet farmers.", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "Agrilera introduces an automated tray-seeding system designed to significantly improve efficiency and reduce labor costs for vegetable farmers. Coupled with smart farming sensors, this solution aims to optimize crop yields and resource management.",
-            problemStatement: "Traditional tray seeding is a labor-intensive and time-consuming process for Benguet farmers. Additionally, optimizing irrigation and fertilization often relies on manual methods, leading to potential resource waste and inconsistent yields.",
-            solution: "An automated seeding machine that precisely plants seeds into trays, dramatically increasing speed and consistency. Integrated sensors provide real-time data on soil moisture and nutrient levels, enabling data-driven smart farming decisions.",
-            features: [
-                {title: "Automated Seeding", description: "High-speed, precise planting in seedling trays"},
-                {title: "Smart Sensors", description: "Real-time soil moisture and nutrient monitoring"},
-                {title: "Labor Reduction", description: "Significantly decreases manual labor required"},
-                {title: "Resource Optimization", description: "Efficient water and fertilizer use"}
-            ],
-            startDate: "January 2024", teamSize: "4-5 members",
-            founderName: "Engr. Isabella Reyes", founderRole: "Project Lead & Co-founder", founderAffiliation: "College of Engineering, University of the Cordilleras", founderEmail: "i.reyes@uc-bcf.edu.ph", founderPhone: "+63 917 333 4444"
-        },
-        {
-            id: 2, views: 210, inquiries: 19, title: "SunShare", type: "Startup", industry: "Sustainability and Cleantech", college: ["College of Engineering"], trl: "TRL 6",
-            shortDescription: "Peer-to-peer solar energy trading platform connecting Baguio", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "SunShare enables households with solar panels to sell excess energy to neighbors, creating a decentralized and sustainable local energy grid. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 6, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "Households with solar panels have no way to monetize excess energy production, while neighbors without solar continue to rely entirely on traditional power sources.",
-            solution: "A blockchain-based platform for peer-to-peer energy trading within microgrids, allowing solar households to sell excess power to nearby residents.",
-            features: [
-                {title: "P2P Trading", description: "Direct energy transactions between neighbors"},
-                {title: "Smart Metering", description: "Real-time energy production and consumption"},
-                {title: "Blockchain Settlement", description: "Automated and transparent payments"},
-                {title: "Carbon Credits", description: "Track and trade environmental impact"}
-            ],
-            startDate: "January 2024", teamSize: "5-7 members",
-            founderName: "Engr. Luis Navarro", founderRole: "Startup Co-founder", founderAffiliation: "College of Computer Studies, University of the Cordilleras", founderEmail: "l.navarro@uc-bcf.edu.ph", founderPhone: "+63 917 567 0124"
-        },
-        {
-            id: 1, views: 490, inquiries: 51, title: "FinGuard", type: "Startup", industry: "Fintech", college: ["College of Business"], trl: "TRL 7",
-            shortDescription: "Blockchain-based microfinance platform for SMEs in the Cordillera", userId:"default",
-            imageUrls: [], // <-- FIXED
-            detailedDescription: "FinGuard revolutionizes access to capital for small and medium enterprises through blockchain-enabled microfinance and transparent lending mechanisms. The project demonstrates significant potential for commercialization and has garnered interest from industry partners and potential investors. With its current Technology Readiness Level (TRL) of 7, the team is actively seeking collaboration opportunities to advance the project toward market deployment.",
-            problemStatement: "SMEs in the region struggle to access traditional financing due to lack of collateral, credit history, and formal business documentation.",
-            solution: "A blockchain-based platform that uses alternative credit scoring, peer-to-peer lending, and smart contracts to provide accessible, transparent microfinance.",
-            features: [
-                {title: "Alternative Credit", description: "AI-based scoring using business data"},
-                {title: "Smart Contracts", description: "Automated and transparent loan agreements"},
-                {title: "P2P Lending", description: "Community-funded loan opportunities"},
-                {title: "Financial Literacy", description: "Built-in business training resources"}
-            ],
-            startDate: "November 2023", teamSize: "7-9 members",
-            founderName: "Prof. Ramon Torres", founderRole: "Business Adviser & Mentor", founderAffiliation: "College of Business, University of the Cordilleras", founderEmail: "r.torres@uc-bcf.edu.ph", founderPhone: "+63 917 012 3456"
-        }
-    ];
+    
+    // --- REMOVED DEFAULT PROJECTS (IDs 1-15) ---
+    const defaultProjects = []; 
 
     // --- 2. GLOBAL VARIABLES ---
     let allProjectsData = [];
@@ -820,9 +581,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // === THIS IS THE UPDATED BLOCK ===
+        // Changed default to 'All Categories' matching the new HTML dropdown
         const filters = {
             search: searchInput ? searchInput.value.toLowerCase() : '',
-            industry: industryFilter?.querySelector('span:not(.visually-hidden)').textContent || 'All Startups', // <-- VALUE CHANGED
+            industry: industryFilter?.querySelector('span:not(.visually-hidden)').textContent || 'All Categories',
             college: collegeFilter?.querySelector('span:not(.visually-hidden)').textContent || 'All Colleges',
             trl: trlFilter?.querySelector('span:not(.visually-hidden)').textContent || 'All TRL Levels',
             type: typeFilter?.querySelector('span:not(.visually-hidden)').textContent || 'All Types'
@@ -842,7 +604,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const searchMatch = (project.title?.toLowerCase().includes(filters.search) || project.shortDescription?.toLowerCase().includes(filters.search));
             
             // === THIS IS THE UPDATED BLOCK ===
-            const industryMatch = (filters.industry === 'All Startups') || (project.industry === filters.industry); // <-- VALUE CHANGED
+            // Allow 'All Categories' or 'Startup Categories' (fallback) to match everything
+            const industryMatch = (filters.industry === 'All Categories') || 
+                                  (filters.industry === 'All Startups') || 
+                                  (project.industry === filters.industry); 
             // === END OF UPDATED BLOCK ===
             
             const trlMatch = (filters.trl === 'All TRL Levels') || (project.trl && project.trl.startsWith(filters.trl.split(' ')[0]));
@@ -1178,6 +943,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- INITIAL PAGE LOAD ---
     loadProjects();
     createRandomCircles();
+
+    // --- AUTO-RELOAD (NEW) ---
+    window.addEventListener('focus', () => {
+        console.log('🔄 Tab focused: Reloading projects...');
+        loadProjects();
+        renderProjects();
+    });
 
 }); // --- END OF DOMCONTENTLOADED ---
 

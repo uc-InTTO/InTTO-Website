@@ -2211,7 +2211,7 @@ textarea {
 }
 
 /* 4. Mobile adjustments */
-@media (max-width: 768px) {
+@media (max-width: 100%) {
     #cardsGrid {
         grid-template-columns: 1fr !important; /* 1 card per row on mobile */
         padding: 0 10px;

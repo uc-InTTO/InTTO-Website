@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UC InTTO Public API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .api-version {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .endpoint-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .endpoint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .endpoint-card h3 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .endpoint-card .icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .endpoint-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .endpoint-url {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: opacity 0.3s;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .features {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .features h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .feature-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-item h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .feature-item p {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .footer {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #2ecc71;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .example-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .example-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .code-block .keyword {
+            color: #f6993f;
+        }
+
+        .code-block .string {
+            color: #68d391;
+        }
+
+        @media (max-width: 768px) {
+            .endpoints-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 UC InTTO Public API</h1>
+            <p>Access published news, events, and SDG statistics from the University of the Cordilleras Innovation, Technology Transfer Office</p>
+            <span class="api-version">v1.0</span>
+            <span class="status-badge">LIVE</span>
+        </div>
+
+        <div class="endpoints-grid">
+            <div class="endpoint-card">
+                <h3>
+                    <div class="icon">📰</div>
+                    News & Events Feed
+                </h3>
+                <p>Get published news and events with full content, images, SDG tags, and metadata. Perfect for WordPress integration and content syndication.</p>
+                <div class="endpoint-url">
+                    GET /api/news-events.html
+                </div>
+                <a href="news-events.html" class="btn" target="_blank">View Live Data</a>
+                <a href="news-events.html?limit=5" class="btn btn-secondary" target="_blank">Example (5 items)</a>
+            </div>
+
+            <div class="endpoint-card">
+                <h3>
+                    <div class="icon">🎯</div>
+                    SDG Statistics
+                </h3>
+                <p>Get Sustainable Development Goals statistics across startups, news, and events. Track SDG distribution and impact metrics.</p>
+                <div class="endpoint-url">
+                    GET /api/sdg-stats.html
+                </div>
+                <a href="sdg-stats.html" class="btn" target="_blank">View Statistics</a>
+                <a href="sdg-stats.html?sdg=9" class="btn btn-secondary" target="_blank">SDG 9 Only</a>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>✨ API Features</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <h4>🔓 No Authentication</h4>
+                    <p>Public read-only access. No API keys or tokens required.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>📄 Pagination Support</h4>
+                    <p>Handle large datasets efficiently with offset and limit parameters.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🎨 WordPress Ready</h4>
+                    <p>JSON format optimized for WordPress plugins and importers.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🔍 Advanced Filtering</h4>
+                    <p>Filter by date, type, SDG tags, and more.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>🖼️ Image URLs Included</h4>
+                    <p>Direct Cloudinary URLs for all uploaded images.</p>
+                </div>
+                <div class="feature-item">
+                    <h4>⚡ Real-time Data</h4>
+                    <p>Connects directly to Firestore for latest content.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <h2>💻 Quick Start Examples</h2>
+            
+            <h3 style="margin-top: 20px; margin-bottom: 10px; color: #667eea;">JavaScript / Fetch</h3>
+            <div class="code-block">
+<span class="keyword">const</span> response = <span class="keyword">await</span> fetch(<span class="string">'https://uc-intto.com/api/news-events.html?limit=10'</span>);
+<span class="keyword">const</span> data = <span class="keyword">await</span> response.json();
+
+console.log(data.items); <span style="color: #718096;">// Array of news & events</span>
+            </div>
+
+            <h3 style="margin-top: 20px; margin-bottom: 10px; color: #667eea;">PHP / WordPress</h3>
+            <div class="code-block">
+<span class="keyword">$response</span> = wp_remote_get(<span class="string">'https://uc-intto.com/api/news-events.html'</span>);
+<span class="keyword">$data</span> = json_decode(wp_remote_retrieve_body(<span class="keyword">$response</span>), <span class="keyword">true</span>);
+
+<span class="keyword">foreach</span> (<span class="keyword">$data</span>[<span class="string">'items'</span>] <span class="keyword">as</span> <span class="keyword">$item</span>) {
+    <span style="color: #718096;">// Create WordPress post</span>
+    wp_insert_post([...]);
+}
+            </div>
+
+            <h3 style="margin-top: 20px; margin-bottom: 10px; color: #667eea;">Python / Requests</h3>
+            <div class="code-block">
+<span class="keyword">import</span> requests
+
+response = requests.get(<span class="string">'https://uc-intto.com/api/news-events.html'</span>)
+data = response.json()
+
+<span class="keyword">for</span> item <span class="keyword">in</span> data[<span class="string">'items'</span>]:
+    print(item[<span class="string">'title'</span>])
+            </div>
+        </div>
+
+        <div class="example-section">
+            <h2>📚 Common Use Cases</h2>
+            
+            <h4 style="margin-top: 15px; color: #667eea;">Get latest 20 news items:</h4>
+            <div class="endpoint-url">
+                <a href="news-events.html?type=news&limit=20" target="_blank" style="color: inherit; text-decoration: none;">
+                    /api/news-events.html?type=news&limit=20
+                </a>
+            </div>
+
+            <h4 style="margin-top: 15px; color: #667eea;">Get events published after Jan 1, 2024:</h4>
+            <div class="endpoint-url">
+                <a href="news-events.html?type=event&since=2024-01-01" target="_blank" style="color: inherit; text-decoration: none;">
+                    /api/news-events.html?type=event&since=2024-01-01
+                </a>
+            </div>
+
+            <h4 style="margin-top: 15px; color: #667eea;">Get SDG 9 (Innovation) statistics:</h4>
+            <div class="endpoint-url">
+                <a href="sdg-stats.html?sdg=9&include=startups,news,events" target="_blank" style="color: inherit; text-decoration: none;">
+                    /api/sdg-stats.html?sdg=9&include=startups,news,events
+                </a>
+            </div>
+
+            <h4 style="margin-top: 15px; color: #667eea;">Pagination - Get items 10-20:</h4>
+            <div class="endpoint-url">
+                <a href="news-events.html?limit=10&offset=10" target="_blank" style="color: inherit; text-decoration: none;">
+                    /api/news-events.html?limit=10&offset=10
+                </a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                📖 <a href="README.md" target="_blank">Read Full Documentation</a> | 
+                🌐 <a href="https://uc-intto.com" target="_blank">UC InTTO Website</a> | 
+                📧 Contact: UC InTTO Technical Team
+            </p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Last Updated: November 22, 2024 | API Version 1.0
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -4,12 +4,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Startups - InTTO</title>
-  
-  <link rel="stylesheet" href="css/home.css">
   <link rel="stylesheet" href="css/startups.css">
-  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+      .pagination-container {
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 50px;
+          padding-bottom: 20px;
+      }
+      
+      .page-btn {
+          width: 45px;
+          height: 45px;
+          border: 1px solid #e0e0e0;
+          background: white;
+          border-radius: 50%;
+          cursor: pointer;
+          font-family: 'Poppins', sans-serif;
+          font-weight: 600;
+          color: #333;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .page-btn:hover {
+          background-color: #f0f0f0;
+          border-color: #ccc;
+          transform: translateY(-2px);
+      }
+
+      .page-btn.active {
+          background-color: #1C7F56; /* Your Primary Green */
+          color: white;
+          border-color: #1C7F56;
+          box-shadow: 0 4px 10px rgba(28, 127, 86, 0.3);
+      }
+
+      .page-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
+      }
+  </style>
 </head>
 <body>
 
@@ -22,7 +65,9 @@
                     </a>
                 </div>
                 <div class="hamburger-menu" id="hamburger">
-                    <span></span><span></span><span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
             </div>
 
@@ -31,10 +76,11 @@
                     <a href="index.html">Home</a>
                     <a href="aboutUs.html">About</a>
                     <a href="services.html">Services</a>
-                    <a href="startups.html" class="active">Startups</a>
+                    <a href="startups.html"  class="active">Startups</a>
                     <a href="events.html">Events</a>
                     <a href="ucolab/index.html">UColab</a>
                     <a href="sdgPage.html">SDG</a>
+                    
                     <a href="incubation.html" class="mobile-btn">Apply for Incubation</a>
                 </div>
             </div>
@@ -77,6 +123,10 @@
             <div class="cards-grid" id="cardsGrid">
                 </div> 
         </div> 
+
+        <div class="pagination-container" id="pagination-controls">
+            </div>
+
     </section>
 
     <section class="closing-section">
@@ -177,10 +227,16 @@
         const searchInput = document.getElementById('search-input');
         const categorySelect = document.getElementById('filter-category');
         const countLabel = document.getElementById('results-count');
+        const paginationControls = document.getElementById('pagination-controls');
 
         if (!cardsGrid) return;
 
         let allStartups = [];
+        let currentFilteredList = [];
+        
+        // --- PAGINATION SETTINGS ---
+        const ITEMS_PER_PAGE = 6;
+        let currentPage = 1;
 
         try {
             // 1. Fetch ONLY Active Startups
@@ -197,43 +253,67 @@
             // 2. Filter for INCUBATED Only
             snapshot.forEach(doc => {
                 const data = doc.data();
-                // --- CRITICAL: Only include if incubated ---
                 if (data.incubationStatus === 'incubated') {
                     allStartups.push({ id: doc.id, ...data });
                 }
             });
 
-            // 3. Initial Render
-            renderCards(allStartups);
+            // 3. Initial Filter & Render
+            filterStartups();
 
         } catch (error) {
             console.error("Error:", error);
             cardsGrid.innerHTML = '<p>Error loading content.</p>';
         }
 
-        // --- Render Function ---
-        function renderCards(startups) {
-            if (startups.length === 0) {
+        // --- Main Filter Logic ---
+        function filterStartups() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const catFilter = categorySelect.value.toLowerCase();
+
+            // Apply Search & Category filters
+            currentFilteredList = allStartups.filter(startup => {
+                const nameMatch = (startup.name || '').toLowerCase().includes(searchTerm);
+                const descMatch = (startup.shortDescription || '').toLowerCase().includes(searchTerm);
+                const catMatch = (catFilter === 'all' || catFilter === '') || 
+                                 (startup.category || '').toLowerCase().includes(catFilter);
+
+                return (nameMatch || descMatch) && catMatch;
+            });
+
+            // Reset to page 1 when filtering
+            currentPage = 1;
+            
+            renderPage();
+        }
+
+        // --- Render Specific Page ---
+        function renderPage() {
+            if (currentFilteredList.length === 0) {
                 cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No incubated startups found matching criteria.</p>';
                 countLabel.textContent = "0 Startups";
+                paginationControls.innerHTML = ''; // Clear buttons
                 return;
             }
 
-            countLabel.textContent = `${startups.length} Startups`;
-            let html = '';
+            countLabel.textContent = `${currentFilteredList.length} Startups`;
 
-            startups.forEach(startup => {
+            // Calculate Start & End indices
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            const startupsToShow = currentFilteredList.slice(startIndex, endIndex);
+
+            let html = '';
+            startupsToShow.forEach(startup => {
                 const imgUrl = (startup.imageUrls && startup.imageUrls.length > 0) ? startup.imageUrls[0] : 'ucolab/Logo/No image.png';
                 const category = startup.category || 'Innovation';
                 const trl = startup.trl || 'TRL ?';
 
-                // ALWAYS show badge here because this page is ONLY for incubated projects
                 const badgeHTML = `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`;
 
                 html += `
                     <div class="startup-card">
                         ${badgeHTML}
-                        
                         <div class="card-head">
                             <img src="${imgUrl}" class="startup-logo" alt="Logo">
                             <div class="card-meta">
@@ -244,11 +324,9 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <p class="startup-desc">
                             ${startup.shortDescription || startup.description || 'No description available.'}
                         </p>
-                        
                         <a href="ucolab/project-detail.html?id=${startup.id}" class="card-cta">
                             View Details <span class="cta-circle">➜</span>
                         </a>
@@ -257,23 +335,60 @@
             });
 
             cardsGrid.innerHTML = html;
+            
+            // Render Pagination Buttons
+            renderPaginationControls();
         }
 
-        // --- Filter Logic ---
-        function filterStartups() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const catFilter = categorySelect.value.toLowerCase();
+        // --- Render Pagination Buttons ---
+        function renderPaginationControls() {
+            paginationControls.innerHTML = '';
+            
+            const totalPages = Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE);
+            
+            // Only show controls if more than 1 page
+            if (totalPages <= 1) return;
 
-            const filtered = allStartups.filter(startup => {
-                const nameMatch = (startup.name || '').toLowerCase().includes(searchTerm);
-                const descMatch = (startup.shortDescription || '').toLowerCase().includes(searchTerm);
-                const catMatch = (catFilter === 'all' || catFilter === '') || 
-                                 (startup.category || '').toLowerCase().includes(catFilter);
-
-                return (nameMatch || descMatch) && catMatch;
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPage();
+                    document.querySelector('.startups-section').scrollIntoView({ behavior: 'smooth' });
+                }
             });
+            paginationControls.appendChild(prevBtn);
 
-            renderCards(filtered);
+            // Number Buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.textContent = i;
+                btn.addEventListener('click', () => {
+                    currentPage = i;
+                    renderPage();
+                    document.querySelector('.startups-section').scrollIntoView({ behavior: 'smooth' });
+                });
+                paginationControls.appendChild(btn);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderPage();
+                    document.querySelector('.startups-section').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+            paginationControls.appendChild(nextBtn);
         }
 
         // Listeners

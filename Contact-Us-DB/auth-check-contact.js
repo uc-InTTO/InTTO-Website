@@ -86,26 +86,6 @@ export function initContactFormAuth() {
             console.log('✅ User authenticated:', user.email);
             loginPrompt.style.display = 'none';
             contactForm.style.display = 'block';
-            
-            // Show user info banner
-            userInfoBanner.style.display = 'block';
-            userInfoBanner.innerHTML = `
-                <div class="user-banner-content">
-                    <div class="user-avatar">
-                        ${user.photoURL ? 
-                            `<img src="${user.photoURL}" alt="${user.displayName || 'User'}">` : 
-                            `<i class="fas fa-user-circle"></i>`
-                        }
-                    </div>
-                    <div class="user-info">
-                        <span class="user-greeting">Welcome back, <strong>${user.displayName || user.email}</strong>!</span>
-                        <span class="user-status">✓ Authenticated</span>
-                    </div>
-                    <a href="./ucolab/index.html" class="user-dashboard-link">
-                        <i class="fas fa-th-large"></i> My Dashboard
-                    </a>
-                </div>
-            `;
 
             // Pre-fill form with user info
             const nameInput = document.getElementById('name');

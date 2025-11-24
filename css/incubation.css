@@ -1418,3 +1418,15 @@ height: 64px;
       padding: 30px 15px;
   }
 }
+.card-icon {
+    /* Existing green circle styles usually go here, keep them */
+    
+    /* ADD THESE LINES to center the icon */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Icon Styling */
+    color: #ffffff; /* White icon */
+    font-size: 24px; /* Adjust size as needed */
+}

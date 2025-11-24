@@ -981,7 +981,7 @@ body {
   padding: 5px 10px;
   border-radius: 6px;
   font-size: 12px;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .date {
@@ -1303,32 +1303,35 @@ body {
     box-shadow: 0 12px 28px rgba(0,0,0,0.12);
 }
 
-.card-head{
-    display:flex;
-    gap:14px;
-    align-items:center;
-    flex-shrink: 0;
+.card-head {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    width: 100%;
+    position: relative;
 }
 
-.startup-logo{
-    width:96px;
-    height:96px;
-    border-radius:50%;
-    object-fit:cover;
+.startup-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
     flex-shrink: 0;
     display: block;
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 .startup-logo-emoji {
-    width: 96px;
-    height: 96px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background: #f3f3f3;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 48px;
+    font-size: 32px;
     flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
 .tag.sdg-tag {
@@ -1337,35 +1340,53 @@ body {
     font-weight: 600;
 }
 
-.card-meta .startup-name{
-    margin:0;
-    font-size:24px;
-    font-weight:700;
-    color:#111;
-    line-height: 1.2;
+.card-meta {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    min-height: 60px;
 }
 
-.tags{
-    margin-top:6px;
-    display:flex;
-    gap:8px;
-    align-items:center;
+.card-meta .startup-name {
+    margin: 0 0 6px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+.tags {
+    display: flex;
+    gap: 8px;
+    align-items: center;
     flex-wrap: wrap;
+    width: 100%;
 }
 
-.tag{
+.tag {
     background: #1C7F56;
     color: white;
-    padding:6px 10px;
-    border-radius: 16px;
-    font-size:12px;
-    font-weight:700;
-    width: auto;
-    height: 26px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    height: auto;
+    min-height: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    white-space: nowrap;
+    line-height: 1.2;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
 }
 
 .tag.small{
@@ -1877,6 +1898,17 @@ textarea {
     font-family: poppins;
   }
 
+ .tag {
+    white-space: normal;
+    height: auto;
+    min-height: 26px;
+    padding: 8px 12px;
+    line-height: 1.3;
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+
   .contact-wrapper {
     flex-direction: column;
     gap: 40px;
@@ -1942,7 +1974,7 @@ textarea {
     align-items: center;
     font-family: poppins;
   }
-}
+
 
 @media (max-width: 576px) {
   .contact-title {
@@ -2179,11 +2211,6 @@ textarea {
     background: #fff;
 }
 
-/* =========================================
-   Fix for "Meet Our Startups" Grid on Homepage
-   ========================================= */
-
-/* 1. Fix the green background container */
 .startups-container {
     height: auto !important;       /* Allow height to grow with content */
     min-height: unset !important;  /* Remove fixed height constraint */

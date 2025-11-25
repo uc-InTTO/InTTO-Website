@@ -152,7 +152,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if(avatar) {
                 const name = project.founderName || 'U';
                 avatar.textContent = name.charAt(0).toUpperCase();
-                avatar.style.backgroundColor = `hsl(${stringToHash(name) % 360}, 70%, 80%)`;
             }
 
             // TRL Logic

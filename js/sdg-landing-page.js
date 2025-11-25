@@ -7,7 +7,27 @@ const sdgFilterIcons = document.querySelectorAll('.sdg-icon-wrapper');
 const projectResultsInfo = document.querySelectorAll('.results-info p')[0];
 const newsResultsInfo = document.querySelectorAll('.results-info p')[1];
 
-let activeSdg = 9;
+const sdgNames = {
+    1: "No Poverty",
+    2: "Zero Hunger",
+    3: "Good Health and Well-being",
+    4: "Quality Education",
+    5: "Gender Equality",
+    6: "Clean Water and Sanitation",
+    7: "Affordable and Clean Energy",
+    8: "Decent Work and Economic Growth",
+    9: "Industry, Innovation and Infrastructure",
+    10: "Reduced Inequalities",
+    11: "Sustainable Cities and Communities",
+    12: "Responsible Consumption and Production",
+    13: "Climate Action",
+    14: "Life Below Water",
+    15: "Life on Land",
+    16: "Peace, Justice and Strong Institutions",
+    17: "Partnerships for the Goals"
+};
+
+let activeSdg = 'all';
 
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchAllData();
@@ -20,7 +40,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     sdgFilterIcons.forEach(icon => {
         icon.addEventListener('click', () => {
-            const newSdg = parseInt(icon.getAttribute('data-sdg'));
+            const dataSdg = icon.getAttribute('data-sdg');
+            const newSdg = dataSdg === 'all' ? 'all' : parseInt(dataSdg);
             
             sdgFilterIcons.forEach(i => i.classList.remove('active'));
             icon.classList.add('active');
@@ -48,27 +69,35 @@ async function fetchAllData() {
 }
 
 function filterAndDisplay(sdg, searchTerm) {
+    const isAll = sdg === 'all';
+
     const filteredProjects = allProjects.filter(project => {
         const projectSdgsArray = Array.isArray(project.sdgs) ? project.sdgs : [project.sdg].filter(s => s);
-        const matchesSdg = projectSdgsArray.includes(sdg.toString());
+        const matchesSdg = isAll || projectSdgsArray.includes(sdg.toString());
         
+        const projectSdgNames = projectSdgsArray.map(s => (sdgNames[s] || '').toLowerCase()).join(' ');
+
         const matchesSearch = (project.name && project.name.toLowerCase().includes(searchTerm)) || 
                               (project.category ? project.category.toLowerCase().includes(searchTerm) : false) || 
                               (project.trl ? project.trl.toString().toLowerCase().includes(searchTerm) : false) ||
-                              projectSdgsArray.map(s => s.toString()).includes(searchTerm);
+                              projectSdgsArray.map(s => s.toString()).includes(searchTerm) ||
+                              projectSdgNames.includes(searchTerm);
         
         return matchesSdg && matchesSearch;
     });
 
     const filteredNewsEvents = allNewsEvents.filter(event => {
         const eventSdgArray = Array.isArray(event.sdgs) ? event.sdgs.map(String) : (event.sdg ? [String(event.sdg)] : []);
-        const matchesSdg = eventSdgArray.includes(sdg.toString());
+        const matchesSdg = isAll || eventSdgArray.includes(sdg.toString());
         
         const tagsString = Array.isArray(event.tags) ? event.tags.join(' ').toLowerCase() : '';
+        const eventSdgNames = eventSdgArray.map(s => (sdgNames[s] || '').toLowerCase()).join(' ');
         
         const matchesSearch = (event.title && event.title.toLowerCase().includes(searchTerm)) || 
                               (tagsString.includes(searchTerm)) || 
-                              eventSdgArray.map(s => s.toString()).includes(searchTerm);
+                              eventSdgArray.map(s => s.toString()).includes(searchTerm) ||
+                              eventSdgNames.includes(searchTerm);
+
         return matchesSdg && matchesSearch;
     });
 
@@ -83,7 +112,7 @@ function renderProjects(projects) {
     projectsContainer.innerHTML = ''; 
 
     if (projects.length === 0) {
-        projectsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%; margin-top: 20px;">No projects found for the selected SDG and search term.</p>`;
+        projectsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%; margin-top: 20px;">No projects found for the selected criteria.</p>`;
         return;
     }
 
@@ -119,7 +148,7 @@ function renderNews(newsEvents) {
     newsContainer.innerHTML = ''; 
     
     if (newsEvents.length === 0) {
-        newsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%; margin-top: 20px;">No news or events found for the selected SDG and search term.</p>`;
+        newsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%; margin-top: 20px;">No news or events found for the selected criteria.</p>`;
         return;
     }
 

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
-  <link rel="stylesheet" href="css/sdgPage.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG PAGE</title>
+    <link rel="stylesheet" href="css/sdgPage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -100,6 +100,11 @@
 
     <div class="sdg-container">
         <div class="sdg-filter-bar">
+            
+            <div class="sdg-icon-wrapper active" data-sdg="all">
+                <img src="graphics/sdgwheel.png" alt="All SDGs" class="sdg-icon-filter">
+            </div>
+
             <div class="sdg-icon-wrapper" data-sdg="1">
                 <img src="graphics/goal1.png" alt="SDG 1" class="sdg-icon-filter">
             </div>
@@ -124,7 +129,7 @@
             <div class="sdg-icon-wrapper" data-sdg="8">
                 <img src="graphics/goal8.png" alt="SDG 8" class="sdg-icon-filter">
             </div>
-            <div class="sdg-icon-wrapper active" data-sdg="9">
+            <div class="sdg-icon-wrapper" data-sdg="9">
                 <img src="graphics/goal9.png" alt="SDG 9" class="sdg-icon-filter">
             </div>
             <div class="sdg-icon-wrapper" data-sdg="10">
@@ -154,136 +159,19 @@
         </div>
     </div>
         <div class="results-info">
-            <p>Showing 3 related projects</p>
+            <p>Showing 0 related projects</p>
         </div>
 
         <div class="cards-grid" id="cardsGrid">
-            <article class="startup-card" data-category="cleantech">
-                <div class="card-head">
-                <img src="graphics/sunshare.png" alt="Sunshare logo" class="startup-logo">
-                <div class="card-meta">
-                    <h3 class="startup-name">Sunshare</h3>
-                    <div class="tags">
-                    <span class="tag">CleanTech</span>
-                    <span class="tag small">TRL 7</span>
-                    <span class="tag small">SDG 9</span>
-                    </div>
-                </div>
-                </div>
-                <p class="startup-desc">A blockchain marketplace for community to exchange solar-energy.</p>
-                <a href="#" class="card-cta">View More <span class="cta-circle">➜</span></a>
-            </article>
-
-            <article class="startup-card" data-category="agritech">
-                <div class="card-head">
-                <img src="graphics/sunshare.png" alt="logo" class="startup-logo">
-                <div class="card-meta">
-                    <h3 class="startup-name">AgroPulse</h3>
-                    <div class="tags">
-                    <span class="tag">AgriTech</span>
-                    <span class="tag small">TRL 5</span>
-                    <span class="tag small">SDG 9</span>
-                    </div>
-                </div>
-                </div>
-                <p class="startup-desc">Smart sensors and forecasting tools for smallholder farms.</p>
-                <a href="#" class="card-cta">View More <span class="cta-circle">➜</span></a>
-            </article>
-
-            <article class="startup-card" data-category="healthtech">
-                <div class="card-head">
-                <img src="graphics/sunshare.png" alt="logo" class="startup-logo">
-                <div class="card-meta">
-                    <h3 class="startup-name">MediTrack</h3>
-                    <div class="tags">
-                    <span class="tag">HealthTech</span>
-                    <span class="tag small">TRL 6</span>
-                    <span class="tag small">SDG 9</span>
-                    </div>
-                </div>
-                </div>
-                <p class="startup-desc">A telehealth toolkit for remote clinics and students.</p>
-                <a href="#" class="card-cta">View More <span class="cta-circle">➜</span></a>
-            </article>
+            
         </div>
         
         <div class="results-info">
-            <p>Showing 6 related events</p>
+            <p>Showing 0 related events</p>
         </div>
 
         <div class="news-cards">
-          <div class="news-card">
-              <img src="graphics/news.png" alt="News Image">
-              <div class="news-content">
-                  <div class="news-meta">
-                      <span class="tag">Competition</span>
-                      <span class="date">October 1, 2025</span>
-                  </div>
-                  <h3 class="news-title">Philippine Startup Challenge 10</h3>
-                  <p class="news-desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
-                  <a href="newsEventPage.html" class="read-more">Read More →</a>
-              </div>
-          </div>
-          <div class="news-card">
-              <img src="graphics/news.png" alt="News Image">
-              <div class="news-content">
-                  <div class="news-meta">
-                      <span class="tag">Competition</span>
-                      <span class="date">October 1, 2025</span>
-                  </div>
-                  <h3 class="news-title">Philippine Startup Challenge 10</h3>
-                  <p class="news-desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
-                  <a href="newsEventPage.html" class="read-more">Read More →</a>
-              </div>
-          </div>
-          <div class="news-card">
-              <img src="graphics/news.png" alt="News Image">
-              <div class="news-content">
-                  <div class="news-meta">
-                      <span class="tag">Competition</span>
-                      <span class="date">October 1, 2025</span>
-                  </div>
-                  <h3 class="news-title">Philippine Startup Challenge 10</h3>
-                  <p class="news-desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
-                  <a href="newsEventPage.html" class="read-more">Read More →</a>
-              </div>
-          </div>
-          <div class="news-card">
-              <img src="graphics/news.png" alt="News Image">
-              <div class="news-content">
-                  <div class="news-meta">
-                      <span class="tag">Competition</span>
-                      <span class="date">October 1, 2025</span>
-                  </div>
-                  <h3 class="news-title">Philippine Startup Challenge 10</h3>
-                  <p class="news-desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
-                  <a href="newsEventPage.html" class="read-more">Read More →</a>
-              </div>
-          </div>
-          <div class="news-card">
-              <img src="graphics/news.png" alt="News Image">
-              <div class="news-content">
-                  <div class="news-meta">
-                      <span class="tag">Competition</span>
-                      <span class="date">October 1, 2025</span>
-                  </div>
-                  <h3 class="news-title">Philippine Startup Challenge 10</h3>
-                  <p class="news-desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
-                  <a href="newsEventPage.html" class="read-more">Read More →</a>
-              </div>
-          </div>
-          <div class="news-card">
-              <img src="graphics/news.png" alt="News Image">
-              <div class="news-content">
-                  <div class="news-meta">
-                      <span class="tag">Competition</span>
-                      <span class="date">October 1, 2025</span>
-                  </div>
-                  <h3 class="news-title">Philippine Startup Challenge 10</h3>
-                  <p class="news-desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...</p>
-                  <a href="newsEventPage.html" class="read-more">Read More →</a>
-              </div>
-          </div>
+          
         </div>
     </section>
 

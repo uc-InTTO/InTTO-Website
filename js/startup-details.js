@@ -39,11 +39,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.title = `${data.name || 'Details'} - InTTO`;
         document.getElementById('detail-title').textContent = data.name || 'Unnamed Startup';
 
+        // Handle logo/icon display
         const iconContainer = document.getElementById('detail-icon');
-        if (data.imageUrls && data.imageUrls.length > 0 && (data.imageUrls[0].startsWith('http') || data.imageUrls[0].startsWith('data:'))) {
-             iconContainer.innerHTML = `<img src="${data.imageUrls[0]}" alt="Logo">`;
+        
+        // Priority: 1. First image from imageUrls array, 2. logo field, 3. default emoji
+        if (data.imageUrls && Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
+            const firstImage = data.imageUrls[0];
+            if (firstImage && (firstImage.startsWith('http://') || firstImage.startsWith('https://') || firstImage.startsWith('data:image'))) {
+                iconContainer.innerHTML = `<img src="${firstImage}" alt="${data.name} Logo" onerror="this.style.display='none'; this.parentElement.textContent='🚀';">`;
+            } else {
+                iconContainer.textContent = data.logo || firstImage || "🚀";
+            }
+        } else if (data.logo) {
+            // Check if logo is an image URL or emoji/text
+            if (data.logo.startsWith('http://') || data.logo.startsWith('https://') || data.logo.startsWith('data:image')) {
+                iconContainer.innerHTML = `<img src="${data.logo}" alt="${data.name} Logo" onerror="this.style.display='none'; this.parentElement.textContent='🚀';">`;
+            } else {
+                iconContainer.textContent = data.logo;
+            }
         } else {
-             iconContainer.textContent = data.logo || "🚀";
+            iconContainer.textContent = "🚀";
         }
 
         const tagsContainer = document.getElementById('detail-tags');
@@ -76,13 +91,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         const galleryGrid = document.getElementById('detail-gallery-grid');
         galleryGrid.innerHTML = ''; 
         if (imageUrls.length > 0) {
-            imageUrls.forEach(url => {
-                const img = document.createElement('img');
-                img.className = 'gallery-image';
-                img.src = url;
-                img.onclick = () => openLightbox(url);
-                galleryGrid.appendChild(img);
+            imageUrls.forEach((url, index) => {
+                // Validate URL before adding to gallery
+                if (url && (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image'))) {
+                    const img = document.createElement('img');
+                    img.className = 'gallery-image';
+                    img.src = url;
+                    img.alt = `${data.name} - Image ${index + 1}`;
+                    img.onerror = function() {
+                        this.style.display = 'none';
+                        console.warn('Failed to load image:', url);
+                    };
+                    img.onclick = () => openLightbox(url);
+                    galleryGrid.appendChild(img);
+                }
             });
+            
+            // Check if any images were actually added
+            if (galleryGrid.children.length === 0) {
+                galleryGrid.innerHTML = '<p style="color:#888; font-style:italic;">No additional images.</p>';
+            }
         } else {
             galleryGrid.innerHTML = '<p style="color:#888; font-style:italic;">No additional images.</p>';
         }
@@ -180,7 +208,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateHeroImage() {
         const imgElement = document.getElementById('detail-image');
         if (imageUrls.length > 0) {
-            imgElement.src = imageUrls[currentImageIndex];
+            const currentUrl = imageUrls[currentImageIndex];
+            // Validate URL before setting
+            if (currentUrl && (currentUrl.startsWith('http://') || currentUrl.startsWith('https://') || currentUrl.startsWith('data:image'))) {
+                imgElement.src = currentUrl;
+                imgElement.alt = `Startup Image ${currentImageIndex + 1}`;
+                imgElement.onerror = function() {
+                    console.warn('Failed to load image:', currentUrl);
+                    this.src = 'graphics/default-cover.jpg';
+                };
+            } else {
+                imgElement.src = 'graphics/default-cover.jpg';
+            }
         } else {
             imgElement.src = 'graphics/default-cover.jpg'; 
             return;

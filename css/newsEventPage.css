@@ -215,12 +215,13 @@ font-family: poppins;
 
 .hero {
     position: relative;
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../graphics/services1.png') center/cover no-repeat;
+    background-color: #1a1a1a;
     padding: 100px 30px;
     text-align: center;
     height: 600px;
     width: auto;
-    font-family: 'poppins', sans-serif;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 32px;
 }
 
 .hero h1 {
@@ -822,6 +823,7 @@ font-family: poppins;
     margin-bottom: 30px;
     padding-left: 20px; 
     font-family: 'Poppins', sans-serif;
+    color: black;
 }
 
 
@@ -1379,4 +1381,205 @@ font-family: poppins;
     .social-links {
       justify-content: center;
     }
+}
+/* Image Lightbox Styles */
+.lightbox {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-content {
+  max-width: 90%;
+  max-height: 90vh;
+  object-fit: contain;
+  animation: zoomIn 0.3s ease;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  color: #fff;
+  font-size: 50px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  z-index: 10000;
+  user-select: none;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close:hover,
+.lightbox-close:focus {
+  color: #bbb;
+  transform: scale(1.1);
+}
+
+.lightbox-prev,
+.lightbox-next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 16px 20px;
+  color: white;
+  font-weight: bold;
+  font-size: 40px;
+  transition: 0.3s;
+  border-radius: 4px;
+  user-select: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.lightbox-prev {
+  left: 20px;
+}
+
+.lightbox-next {
+  right: 20px;
+}
+
+.lightbox-caption {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  text-align: center;
+  padding: 12px 24px;
+  font-size: 16px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  max-width: 80%;
+  backdrop-filter: blur(10px);
+}
+
+/* Make gallery images clickable */
+.gallery-img {
+  cursor: pointer;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.gallery-img:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Mobile responsive lightbox */
+@media (max-width: 768px) {
+  .lightbox-content {
+    max-width: 95%;
+    max-height: 80vh;
+  }
+
+  .lightbox-close {
+    top: 10px;
+    right: 15px;
+    font-size: 35px;
+  }
+
+  .lightbox-prev,
+  .lightbox-next {
+    font-size: 30px;
+    padding: 12px 16px;
+  }
+
+  .lightbox-prev {
+    left: 10px;
+  }
+
+  .lightbox-next {
+    right: 10px;
+  }
+
+  .lightbox-caption {
+    bottom: 20px;
+    font-size: 14px;
+    padding: 8px 16px;
+    max-width: 90%;
+  }
+}
+
+.skeleton-loader {
+    width: 100%;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-hero {
+    height: 600px;
+    width: 100%;
+    background-color: #2a2a2a; 
+    margin-bottom: 20px;
+}
+
+.skeleton-text {
+    height: 20px;
+    background-color: #ddd;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.skeleton-title {
+    height: 40px;
+    width: 60%;
+    background-color: #ddd;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.skeleton-card {
+    height: 100px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+}
+
+.skeleton-image {
+    height: 400px;
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+#real-content {
+    display: none; 
 }

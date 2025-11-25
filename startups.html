@@ -12,45 +12,51 @@
       .pagination-container {
           display: flex;
           justify-content: center;
-          gap: 10px;
-          margin-top: 50px;
-          padding-bottom: 20px;
+          align-items: center;
+          gap: 12px;
+          margin-top: 40px;
+          margin-bottom: 60px;
+          flex-wrap: wrap;
       }
       
       .page-btn {
-          width: 45px;
-          height: 45px;
-          border: 1px solid #e0e0e0;
-          background: white;
+          width: 56px;
+          height: 56px;
           border-radius: 50%;
-          cursor: pointer;
-          font-family: 'Poppins', sans-serif;
-          font-weight: 600;
-          color: #333;
-          font-size: 16px;
-          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
+          font-size: 16px;
+          font-weight: 600;
+          text-decoration: none;
+          color: #1C7F56;
+          border: 1px solid rgba(28, 127, 86, 0.2);
+          transition: all 0.2s ease-in-out;
+          flex-shrink: 0;
+          font-family: 'Poppins', sans-serif;
+          background: white;
+          cursor: pointer;
       }
 
-      .page-btn:hover {
-          background-color: #f0f0f0;
-          border-color: #ccc;
-          transform: translateY(-2px);
+      .page-btn i {
+          font-size: 16px;
       }
 
       .page-btn.active {
-          background-color: #1C7F56; /* Your Primary Green */
+          background: #1C7F56;
           color: white;
           border-color: #1C7F56;
-          box-shadow: 0 4px 10px rgba(28, 127, 86, 0.3);
       }
 
+      .page-btn:hover:not(.disabled) {
+          background: rgba(28, 127, 86, 0.1);
+      }
+
+      .page-btn.disabled,
       .page-btn:disabled {
-          opacity: 0.5;
+          opacity: 0.3;
+          pointer-events: none;
           cursor: not-allowed;
-          transform: none;
       }
   </style>
 </head>
@@ -112,6 +118,7 @@
                     <option value="creative industries">Creative Industries</option>
                     <option value="sustainability and cleantech">Sustainability and Cleantech</option>
                     <option value="smart cities and mobility">Smart Cities and Mobility</option>
+                    <option value="Criminology, Forensics, and Public Safety">Criminology, Forensics, and Public Safety</option>
                 </select>
                 <i class="fa fa-chevron-down arrow-icon"></i>
             </div>
@@ -236,27 +243,24 @@
         let currentFilteredList = [];
         
         // --- PAGINATION SETTINGS ---
-        const ITEMS_PER_PAGE = 6;
+        const ITEMS_PER_PAGE = 9; // 9 startups per page
+        const MAX_PAGES = 10; // Maximum 10 pages
         let currentPage = 1;
 
         try {
-            // 1. Fetch ONLY Active Startups
-            const snapshot = await db.collection('startups')
-                                     .where('status', '==', 'active')
-                                     .get();
+            // 1. Fetch ALL Startups (no filters)
+            const snapshot = await db.collection('startups').get();
 
             if (snapshot.empty) {
-                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No active startups found.</p>';
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No startups found.</p>';
                 countLabel.textContent = "0 Startups";
                 return;
             }
 
-            // 2. Filter for INCUBATED Only
+            // 2. Collect all startups
             snapshot.forEach(doc => {
                 const data = doc.data();
-                if (data.incubationStatus === 'incubated') {
-                    allStartups.push({ id: doc.id, ...data });
-                }
+                allStartups.push({ id: doc.id, ...data });
             });
 
             // 3. Initial Filter & Render
@@ -291,7 +295,7 @@
         // --- Render Specific Page ---
         function renderPage() {
             if (currentFilteredList.length === 0) {
-                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No incubated startups found matching criteria.</p>';
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No startups found matching criteria.</p>';
                 countLabel.textContent = "0 Startups";
                 paginationControls.innerHTML = ''; // Clear buttons
                 return;
@@ -306,17 +310,28 @@
 
             let html = '';
             startupsToShow.forEach(startup => {
-                const imgUrl = (startup.imageUrls && startup.imageUrls.length > 0) ? startup.imageUrls[0] : 'ucolab/Logo/No image.png';
+                // Validate and get image URL
+                let imgUrl = 'ucolab/Logo/No image.png';
+                if (startup.imageUrls && Array.isArray(startup.imageUrls) && startup.imageUrls.length > 0) {
+                    const firstImg = startup.imageUrls[0];
+                    if (firstImg && (firstImg.startsWith('http://') || firstImg.startsWith('https://') || firstImg.startsWith('data:image'))) {
+                        imgUrl = firstImg;
+                    }
+                }
+                
                 const category = startup.category || 'Innovation';
                 const trl = startup.trl || 'TRL ?';
 
-                const badgeHTML = `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`;
+                // Only show badge if actually incubated
+                const badgeHTML = (startup.incubationStatus === 'incubated') 
+                    ? `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`
+                    : '';
 
                 html += `
                     <div class="startup-card">
                         ${badgeHTML}
                         <div class="card-head">
-                            <img src="${imgUrl}" class="startup-logo" alt="Logo">
+                            <img src="${imgUrl}" class="startup-logo" alt="${startup.name || 'Startup'} Logo" onerror="this.src='ucolab/Logo/No image.png';">
                             <div class="card-meta">
                                 <h3 class="startup-name">${startup.name}</h3>
                                 <div class="tags">
@@ -345,17 +360,23 @@
         function renderPaginationControls() {
             paginationControls.innerHTML = '';
             
-            const totalPages = Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE);
+            let totalPages = Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE);
+            
+            // Limit to maximum 6 pages
+            if (totalPages > MAX_PAGES) {
+                totalPages = MAX_PAGES;
+            }
             
             // Only show controls if more than 1 page
             if (totalPages <= 1) return;
 
             // Previous Button
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'page-btn';
+            const prevBtn = document.createElement('a');
+            prevBtn.href = '#';
+            prevBtn.className = `page-btn arrow ${currentPage === 1 ? 'disabled' : ''}`;
             prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
-            prevBtn.disabled = currentPage === 1;
-            prevBtn.addEventListener('click', () => {
+            prevBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 if (currentPage > 1) {
                     currentPage--;
                     renderPage();
@@ -366,10 +387,12 @@
 
             // Number Buttons
             for (let i = 1; i <= totalPages; i++) {
-                const btn = document.createElement('button');
+                const btn = document.createElement('a');
+                btn.href = '#';
                 btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
                 btn.textContent = i;
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
                     currentPage = i;
                     renderPage();
                     document.querySelector('.startups-section').scrollIntoView({ behavior: 'smooth' });
@@ -378,11 +401,12 @@
             }
 
             // Next Button
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'page-btn';
+            const nextBtn = document.createElement('a');
+            nextBtn.href = '#';
+            nextBtn.className = `page-btn arrow ${currentPage === totalPages ? 'disabled' : ''}`;
             nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
-            nextBtn.disabled = currentPage === totalPages;
-            nextBtn.addEventListener('click', () => {
+            nextBtn.addEventListener('click', (e) => {
+                e.preventDefault();
                 if (currentPage < totalPages) {
                     currentPage++;
                     renderPage();

@@ -344,24 +344,20 @@
         if (!cardsGrid) return;
 
         try {
-            // 1. Fetch ACTIVE Startups
-            const snapshot = await db.collection('startups')
-                                     .where('status', '==', 'active')
-                                     .get();
+            // 1. Fetch ALL Startups (no status filter - show everything)
+            const snapshot = await db.collection('startups').get();
 
             if (snapshot.empty) {
-                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No active startups found.</p>';
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No startups found.</p>';
                 return;
             }
 
-            // 2. Filter for INCUBATED Only
+            // 2. Collect all startups
             let incubatedStartups = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                // Only keep projects marked as 'incubated'
-                if (data.incubationStatus === 'incubated') {
-                    incubatedStartups.push({ id: doc.id, ...data });
-                }
+                // Include all startups, but prioritize those with incubationStatus
+                incubatedStartups.push({ id: doc.id, ...data });
             });
 
             // 3. Render Function (With LIMIT 6)
@@ -378,14 +374,16 @@
                 const displayList = filtered.slice(0, 6);
 
                 if (displayList.length === 0) {
-                    cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No incubated startups match this category.</p>';
+                    cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No startups match this category.</p>';
                     return;
                 }
 
                 let html = '';
                 displayList.forEach(data => {
-                    // Badge is always present since we filtered for incubated
-                    const badgeHTML = `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`;
+                    // Show badge only if actually incubated
+                    const badgeHTML = (data.incubationStatus === 'incubated') 
+                        ? `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`
+                        : '';
                     
                     const imgUrl = (data.imageUrls && data.imageUrls.length > 0) ? data.imageUrls[0] : 'ucolab/Logo/No image.png';
                     const category = data.category || 'Innovation';

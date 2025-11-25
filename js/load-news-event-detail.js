@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get('id');
     
-<<<<<<< Updated upstream
     // Lightbox elements
     const lightbox = document.getElementById('image-lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
@@ -14,11 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentImages = [];
     let currentImageIndex = 0;
     
-=======
     const skeleton = document.getElementById('loading-skeleton');
     const realContent = document.getElementById('real-content');
 
->>>>>>> Stashed changes
     if (!eventId) {
         console.error('No event ID provided');
         showError('No event ID provided');
@@ -149,7 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     thumbnailContainer.appendChild(img);
                 }
-<<<<<<< Updated upstream
                 
                 // Add "View More" if there are more than 4 images
                 if (event.images.length > 4) {
@@ -162,8 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     thumbnailContainer.appendChild(viewMoreDiv);
                 }
-=======
->>>>>>> Stashed changes
             }
         } else {
             const galleryTitle = document.querySelector('.gallery-title');
@@ -228,7 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Error loading related posts:', error);
             });
     }
-<<<<<<< Updated upstream
     
     // Lightbox Functions
     function openLightbox(index) {
@@ -281,6 +274,3 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'ArrowRight') showNextImage();
     });
 });
-=======
-});
->>>>>>> Stashed changes

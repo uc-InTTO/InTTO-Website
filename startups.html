@@ -40,22 +40,23 @@
           margin-top: 40px;
           margin-bottom: 60px;
           flex-wrap: wrap;
+          font-family: 'Poppins', sans-serif;
       }
       
       .page-btn {
           height: 56px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: 600;
-    text-decoration: none;
-    color: #1C7F56;
-    border: 1px solid rgba(28, 127, 86, 0.2);
-    transition: all 0.2s ease-in-out;
-    flex-shrink: 0;
-    font-family: 'Poppins', sans-serif;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          font-weight: 600;
+          text-decoration: none;
+          color: #1C7F56;
+          border: 1px solid rgba(28, 127, 86, 0.2);
+          transition: all 0.2s ease-in-out;
+          flex-shrink: 0;
+          font-family: 'Poppins', sans-serif;
       }
 
       .page-btn i {
@@ -157,7 +158,7 @@
         
         <div class="startups-container">
             <div class="cards-grid" id="cardsGrid">
-                <p style="text-align: center; width: 100%; color: #fff;">Loading startups...</p>
+                <p style="text-align: center; width: 100%; color: #fff; font-family: 'Poppins', sans-serif;">Loading startups...</p>
             </div> 
         </div> 
 
@@ -272,14 +273,13 @@
         let currentFilteredList = [];
         
         const ITEMS_PER_PAGE = 6;
-        const MAX_VISIBLE_BUTTONS = 10;
         let currentPage = 1;
 
         try {
             const snapshot = await db.collection('startups').get();
 
             if (snapshot.empty) {
-                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No startups found.</p>';
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; font-family: \'Poppins\', sans-serif;">No startups found.</p>';
                 countLabel.textContent = "0 Startups";
                 return;
             }
@@ -293,7 +293,7 @@
 
         } catch (error) {
             console.error("Error:", error);
-            cardsGrid.innerHTML = '<p>Error loading content.</p>';
+            cardsGrid.innerHTML = '<p style="font-family: \'Poppins\', sans-serif;">Error loading content.</p>';
         }
 
         function filterStartups() {
@@ -315,7 +315,7 @@
 
         function renderPage() {
             if (currentFilteredList.length === 0) {
-                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No startups found matching criteria.</p>';
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666; font-family: \'Poppins\', sans-serif;">No startups found matching criteria.</p>';
                 countLabel.textContent = "0 Startups";
                 paginationControls.innerHTML = '';
                 return;
@@ -345,22 +345,22 @@
                     : '';
 
                 html += `
-                    <div class="startup-card">
+                    <div class="startup-card" style="font-family: 'Poppins', sans-serif;">
                         ${badgeHTML}
                         <div class="card-head">
                             <img src="${imgUrl}" class="startup-logo" alt="${startup.name || 'Startup'} Logo" onerror="this.src='ucolab/Logo/No image.png';">
                             <div class="card-meta">
-                                <h3 class="startup-name">${startup.name}</h3>
+                                <h3 class="startup-name" style="font-family: 'Poppins', sans-serif;">${startup.name}</h3>
                                 <div class="tags">
-                                    <span class="tag">${category}</span>
-                                    <span class="tag small">${trl}</span>
+                                    <span class="tag" style="font-family: 'Poppins', sans-serif;">${category}</span>
+                                    <span class="tag small" style="font-family: 'Poppins', sans-serif;">${trl}</span>
                                 </div>
                             </div>
                         </div>
-                        <p class="startup-desc">
+                        <p class="startup-desc" style="font-family: 'Poppins', sans-serif;">
                             ${startup.shortDescription || startup.description || 'No description available.'}
                         </p>
-                        <a href="ucolab/project-detail.html?id=${startup.id}" class="card-cta">
+                        <a href="ucolab/project-detail.html?id=${startup.id}" class="card-cta" style="font-family: 'Poppins', sans-serif;">
                             View Details <span class="cta-circle">➜</span>
                         </a>
                     </div>
@@ -378,20 +378,23 @@
             
             if (totalPages <= 1) return;
 
+            const isMobile = window.innerWidth <= 768;
+            const maxVisibleButtons = isMobile ? 3 : 10;
+
             let startPage, endPage;
 
-            if (totalPages <= MAX_VISIBLE_BUTTONS) {
+            if (totalPages <= maxVisibleButtons) {
                 startPage = 1;
                 endPage = totalPages;
             } else {
-                const maxPagesBeforeCurrent = Math.floor(MAX_VISIBLE_BUTTONS / 2);
-                const maxPagesAfterCurrent = Math.ceil(MAX_VISIBLE_BUTTONS / 2) - 1;
+                const maxPagesBeforeCurrent = Math.floor(maxVisibleButtons / 2);
+                const maxPagesAfterCurrent = Math.ceil(maxVisibleButtons / 2) - 1;
 
                 if (currentPage <= maxPagesBeforeCurrent) {
                     startPage = 1;
-                    endPage = MAX_VISIBLE_BUTTONS;
+                    endPage = maxVisibleButtons;
                 } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
-                    startPage = totalPages - MAX_VISIBLE_BUTTONS + 1;
+                    startPage = totalPages - maxVisibleButtons + 1;
                     endPage = totalPages;
                 } else {
                     startPage = currentPage - maxPagesBeforeCurrent;
@@ -403,6 +406,7 @@
             prevBtn.href = '#';
             prevBtn.className = `page-btn arrow ${currentPage === 1 ? 'disabled' : ''}`;
             prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+            prevBtn.style.fontFamily = "'Poppins', sans-serif";
             prevBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (currentPage > 1) {
@@ -418,6 +422,7 @@
                 btn.href = '#';
                 btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
                 btn.textContent = i;
+                btn.style.fontFamily = "'Poppins', sans-serif";
                 btn.addEventListener('click', (e) => {
                     e.preventDefault();
                     currentPage = i;
@@ -431,6 +436,7 @@
             nextBtn.href = '#';
             nextBtn.className = `page-btn arrow ${currentPage === totalPages ? 'disabled' : ''}`;
             nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+            nextBtn.style.fontFamily = "'Poppins', sans-serif";
             nextBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 if (currentPage < totalPages) {
@@ -441,6 +447,10 @@
             });
             paginationControls.appendChild(nextBtn);
         }
+
+        window.addEventListener('resize', () => {
+            renderPaginationControls();
+        });
 
         if(searchInput) searchInput.addEventListener('input', filterStartups);
         if(categorySelect) categorySelect.addEventListener('change', filterStartups);

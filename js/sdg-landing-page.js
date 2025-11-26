@@ -1,14 +1,12 @@
 let allProjects = [];
 let allNewsEvents = [];
 
-// Global State
 let currentFilteredProjects = []; 
 let currentFilteredNews = [];
 let currentProjectPage = 1;
 let currentNewsPage = 1;
 
 const ITEMS_PER_PAGE = 6;
-const MAX_VISIBLE_PAGES = 10; // User limitation: Show max 10 numbers
 
 const projectsContainer = document.getElementById('cardsGrid');
 const newsContainer = document.querySelector('.news-cards');
@@ -53,6 +51,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             filterAndDisplay(activeSdg, '');
         });
     });
+
+    window.addEventListener('resize', () => {
+        renderProjects();
+        renderNews();
+    });
 });
 
 async function fetchAllData() {
@@ -72,7 +75,6 @@ async function fetchAllData() {
 function filterAndDisplay(sdg, searchTerm) {
     const isAll = sdg === 'all';
 
-    // 1. Filter Projects
     const filteredProjects = allProjects.filter(project => {
         const projectSdgsArray = Array.isArray(project.sdgs) ? project.sdgs : [project.sdg].filter(s => s);
         const matchesSdg = isAll || projectSdgsArray.includes(sdg.toString());
@@ -93,7 +95,6 @@ function filterAndDisplay(sdg, searchTerm) {
         return matchesSdg && matchesSearch;
     });
 
-    // 2. Filter News
     const filteredNewsEvents = allNewsEvents.filter(event => {
         const eventSdgArray = Array.isArray(event.sdgs) ? event.sdgs.map(String) : (event.sdg ? [String(event.sdg)] : []);
         const matchesSdg = isAll || eventSdgArray.includes(sdg.toString());
@@ -113,7 +114,10 @@ function filterAndDisplay(sdg, searchTerm) {
     });
 
     if (projectResultsInfo) projectResultsInfo.textContent = `Showing ${filteredProjects.length} related projects`;
+    if (projectResultsInfo) projectResultsInfo.style.fontFamily = "Poppins, sans-serif";
+
     if (newsResultsInfo) newsResultsInfo.textContent = `Showing ${filteredNewsEvents.length} related news & events`;
+    if (newsResultsInfo) newsResultsInfo.style.fontFamily = "Poppins, sans-serif";
     
     currentFilteredProjects = filteredProjects;
     currentFilteredNews = filteredNewsEvents;
@@ -141,9 +145,9 @@ function renderProjects() {
     const projectsToShow = currentFilteredProjects.slice(startIndex, endIndex);
 
     projectsToShow.forEach(project => {
-        const projectCard = document.createElement('article');
+        const projectCard = document.createElement('div');
         projectCard.className = 'startup-card';
-        projectCard.setAttribute('data-category', (project.category || '').toLowerCase());
+        projectCard.style.fontFamily = "Poppins, sans-serif";
         
         let imgUrl = 'ucolab/Logo/No image.png';
         if (project.imageUrls && Array.isArray(project.imageUrls) && project.imageUrls.length > 0) {
@@ -155,24 +159,31 @@ function renderProjects() {
             imgUrl = project.logoUrl;
         }
 
-        const sdgTags = (project.sdgs && Array.isArray(project.sdgs))
-            ? project.sdgs.map(s => `<span class="tag small" style="font-family: Poppins, sans-serif;">SDG ${s}</span>`).join('')
-            : (project.sdg ? `<span class="tag small" style="font-family: Poppins, sans-serif;">SDG ${project.sdg}</span>` : '');
+        const category = project.category || 'Innovation';
+        const trl = project.trl || 'TRL ?';
+        
+        const badgeHTML = (project.incubationStatus === 'incubated') 
+            ? `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`
+            : '';
 
         projectCard.innerHTML = `
+            ${badgeHTML}
             <div class="card-head">
-                <img src="${imgUrl}" alt="${project.name || 'Startup'} logo" class="startup-logo" onerror="this.src='ucolab/Logo/No image.png';">
+                <img src="${imgUrl}" class="startup-logo" alt="${project.name || 'Startup'} Logo" onerror="this.src='ucolab/Logo/No image.png';">
                 <div class="card-meta">
                     <h3 class="startup-name" style="font-family: Poppins, sans-serif;">${project.name || 'Untitled Project'}</h3>
                     <div class="tags">
-                        ${project.category ? `<span class="tag" style="font-family: Poppins, sans-serif;">${project.category}</span>` : ''}
-                        ${project.trl ? `<span class="tag small" style="font-family: Poppins, sans-serif;">TRL ${project.trl}</span>` : ''}
-                        ${sdgTags}
+                        <span class="tag" style="font-family: Poppins, sans-serif;">${category}</span>
+                        <span class="tag small" style="font-family: Poppins, sans-serif;">${trl}</span>
                     </div>
                 </div>
             </div>
-            <p class="startup-desc" style="font-family: Poppins, sans-serif;">${project.description || 'No description available.'}</p>
-            <a href="ucolab/project-detail.html?id=${project.id}" class="card-cta" style="font-family: Poppins, sans-serif;">View More <span class="cta-circle">➜</span></a>
+            <p class="startup-desc" style="font-family: Poppins, sans-serif;">
+                ${project.shortDescription || project.description || 'No description available.'}
+            </p>
+            <a href="ucolab/project-detail.html?id=${project.id}" class="card-cta" style="font-family: Poppins, sans-serif;">
+                View Details <span class="cta-circle">➜</span>
+            </a>
         `;
         projectsContainer.appendChild(projectCard);
     });
@@ -202,6 +213,7 @@ function renderNews() {
     newsToShow.forEach(event => {
         const eventCard = document.createElement('div');
         eventCard.className = 'news-card';
+        eventCard.style.fontFamily = "Poppins, sans-serif";
         
         const imageUrl = (event.images && event.images.length > 0) ? event.images[0] : 'graphics/news.png';
         const tag = (event.tags && Array.isArray(event.tags) && event.tags.length > 0) ? event.tags[0] : (event.type || 'News');
@@ -229,8 +241,6 @@ function renderNews() {
     });
 }
 
-// --- SHARED PAGINATION LOGIC (FIXED FOR 10-PAGE AUTO-SCROLL) ---
-
 function togglePagination(id, show) {
     const el = document.getElementById(id);
     if (el) el.style.display = show ? 'flex' : 'none';
@@ -242,18 +252,12 @@ function renderPaginationControls(containerId, targetElement, totalPages, curren
     if (!pagContainer) {
         pagContainer = document.createElement('div');
         pagContainer.id = containerId;
-        pagContainer.style.display = 'flex';
-        pagContainer.style.justifyContent = 'center';
-        pagContainer.style.alignItems = 'center';
-        pagContainer.style.gap = '8px';
-        pagContainer.style.marginTop = '30px';
-        pagContainer.style.marginBottom = '20px';
-        pagContainer.style.flexWrap = 'wrap';
-        pagContainer.style.fontFamily = 'Poppins, sans-serif';
+        pagContainer.className = 'pagination-container';
         targetElement.parentNode.insertBefore(pagContainer, targetElement.nextSibling);
     }
 
     pagContainer.innerHTML = '';
+    pagContainer.className = 'pagination-container';
 
     if (totalPages <= 1) {
         pagContainer.style.display = 'none';
@@ -261,58 +265,47 @@ function renderPaginationControls(containerId, targetElement, totalPages, curren
     }
     pagContainer.style.display = 'flex';
 
-    // --- LOGIC TO AUTO-SCROLL NUMBERS WHEN HITTING 10 ---
+    const isMobile = window.innerWidth <= 768;
+    const maxVisiblePages = isMobile ? 3 : 10;
+
     let startPage, endPage;
 
-    // If total pages are less than limit, show all
-    if (totalPages <= MAX_VISIBLE_PAGES) {
+    if (totalPages <= maxVisiblePages) {
         startPage = 1;
         endPage = totalPages;
     } else {
-        // If current page is less than 10 (1-9), stick to 1-10 range
-        // This ensures the list doesn't shift constantly while browsing early pages
-        if (currentPage < MAX_VISIBLE_PAGES) {
+        const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+        const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+
+        if (currentPage <= maxPagesBeforeCurrent) {
             startPage = 1;
-            endPage = MAX_VISIBLE_PAGES;
-        } 
-        // If near the very end, show the last chunk
-        else if (currentPage + 4 >= totalPages) {
-            startPage = totalPages - MAX_VISIBLE_PAGES + 1;
+            endPage = maxVisiblePages;
+        } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+            startPage = totalPages - maxVisiblePages + 1;
             endPage = totalPages;
-        } 
-        // OTHERWISE (e.g., clicking 10, 11, 12...), sliding window
-        // This makes 11 appear when you click 10.
-        else {
-            startPage = currentPage - 5;
-            endPage = currentPage + 4;
+        } else {
+            startPage = currentPage - maxPagesBeforeCurrent;
+            endPage = currentPage + maxPagesAfterCurrent;
         }
     }
-    // -----------------------------------------------------
 
-    // Previous Arrow
     const prevBtn = createPageBtn('<i class="fa-solid fa-chevron-left"></i>', currentPage > 1);
     prevBtn.onclick = () => {
         if (currentPage > 1) onPageChange(currentPage - 1);
     };
     pagContainer.appendChild(prevBtn);
 
-    // Number Buttons
     for (let i = startPage; i <= endPage; i++) {
         const btn = createPageBtn(i, true); 
-        
         if (i === currentPage) {
-            btn.style.backgroundColor = '#1C7F56';
-            btn.style.color = '#fff';
-            btn.style.borderColor = '#1C7F56';
+            btn.classList.add('active');
         }
-
         btn.onclick = () => {
             if (i !== currentPage) onPageChange(i);
         };
         pagContainer.appendChild(btn);
     }
 
-    // Next Arrow
     const nextBtn = createPageBtn('<i class="fa-solid fa-chevron-right"></i>', currentPage < totalPages);
     nextBtn.onclick = () => {
         if (currentPage < totalPages) onPageChange(currentPage + 1);
@@ -323,38 +316,11 @@ function renderPaginationControls(containerId, targetElement, totalPages, curren
 function createPageBtn(content, enabled) {
     const btn = document.createElement('button');
     btn.innerHTML = content;
-    btn.style.width = '40px';
-    btn.style.height = '40px';
-    btn.style.display = 'flex';
-    btn.style.alignItems = 'center';
-    btn.style.justifyContent = 'center';
-    btn.style.borderRadius = '50%';
-    btn.style.border = '1px solid #ddd';
-    btn.style.backgroundColor = '#fff';
-    btn.style.color = '#1C7F56';
-    btn.style.fontSize = '14px';
-    btn.style.fontWeight = '500';
-    btn.style.cursor = 'pointer';
-    btn.style.transition = 'all 0.2s ease';
-    btn.style.outline = 'none';
+    btn.className = 'page-btn';
 
     if (!enabled) {
-        btn.style.opacity = '0.5';
-        btn.style.cursor = 'default';
-        btn.style.pointerEvents = 'none';
-    } else {
-        btn.onmouseover = () => {
-            if (btn.style.backgroundColor !== 'rgb(28, 127, 86)') {
-                btn.style.backgroundColor = '#f0f9f4';
-                btn.style.borderColor = '#1C7F56';
-            }
-        };
-        btn.onmouseout = () => {
-            if (btn.style.backgroundColor !== 'rgb(28, 127, 86)') {
-                btn.style.backgroundColor = '#fff';
-                btn.style.borderColor = '#ddd';
-            }
-        };
+        btn.classList.add('disabled');
     }
+    
     return btn;
 }

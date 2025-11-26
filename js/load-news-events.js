@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const PAGE_SIZE = 6;
-    const MAX_VISIBLE_PAGES = 10; 
     let allNewsEvents = [];
     let currentPage = 1;
     let currentFilter = 'all';
@@ -165,20 +164,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         paginationContainer.style.display = 'flex';
         
+        const isMobile = window.innerWidth <= 768;
+        const maxVisiblePages = isMobile ? 3 : 10;
+        
         let startPage, endPage;
 
-        if (totalPages <= MAX_VISIBLE_PAGES) {
+        if (totalPages <= maxVisiblePages) {
             startPage = 1;
             endPage = totalPages;
         } else {
-            const maxPagesBeforeCurrent = Math.floor(MAX_VISIBLE_PAGES / 2);
-            const maxPagesAfterCurrent = Math.ceil(MAX_VISIBLE_PAGES / 2) - 1;
+            const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+            const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
 
             if (currentPage <= maxPagesBeforeCurrent) {
                 startPage = 1;
-                endPage = MAX_VISIBLE_PAGES;
+                endPage = maxVisiblePages;
             } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
-                startPage = totalPages - MAX_VISIBLE_PAGES + 1;
+                startPage = totalPages - maxVisiblePages + 1;
                 endPage = totalPages;
             } else {
                 startPage = currentPage - maxPagesBeforeCurrent;
@@ -265,28 +267,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             applyFiltersAndSearch();
         });
     }
-    // --- START OF NEW UPCOMING EVENTS LOGIC ---
+    
     async function loadUpcomingEvents() {
         const upcomingSection = document.querySelector('.upcoming-events-section');
         const container = document.querySelector('.events-horizontal-list');
 
-        // Safety check
         if (!upcomingSection || !container) return;
 
         try {
-            // 1. Fetch only 'draft' events
             const snapshot = await db.collection('newsEvents')
                 .where('status', '==', 'draft')
                 .where('type', '==', 'event')
                 .get();
 
-            // 2. Hide the entire section if no drafts exist
             if (snapshot.empty) {
                 upcomingSection.style.display = 'none';
                 return;
             }
 
-            // 3. Show section and clear placeholder content
             upcomingSection.style.display = 'block';
             container.innerHTML = '';
 
@@ -295,19 +293,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 events.push({ id: doc.id, ...doc.data() });
             });
 
-            // Sort by date (ascending: nearest date first)
             events.sort((a, b) => {
                 const dateA = a.date ? (typeof a.date === 'string' ? new Date(a.date) : a.date.toDate()) : new Date(0);
                 const dateB = b.date ? (typeof b.date === 'string' ? new Date(b.date) : b.date.toDate()) : new Date(0);
                 return dateA - dateB;
             });
 
-            // 4. Create cards for upcoming events
             events.forEach(event => {
                 const dateObj = event.date ? (typeof event.date === 'string' ? new Date(event.date) : event.date.toDate()) : new Date();
                 const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 
-                // Use uploaded image or default
                 const imageUrl = (event.images && event.images[0]) ? event.images[0] : 'graphics/students.png';
 
                 const eventHTML = `
@@ -328,14 +323,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
         } catch (error) {
-            console.error("Error loading upcoming events:", error);
             upcomingSection.style.display = 'none';
         }
     }
 
-    // Call the function immediately
+    window.addEventListener('resize', () => {
+        renderPagination();
+    });
+
     loadUpcomingEvents();
-    // --- END OF NEW UPCOMING EVENTS LOGIC ---
     
     await loadAllNewsEvents();
     applyFiltersAndSearch();

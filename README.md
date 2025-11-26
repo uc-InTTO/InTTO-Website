@@ -808,4 +808,8 @@ firebase deploy --only hosting
 **End of Developer's Manual**
 
 Last Updated: November 26, 2025
+Lead by: Sir Leandro Rey Gepila
+Project Leader: Al John E. Orpilla
+UI/UX: Kim Hyun Myeong, Hanzel Mae Antolin
+Team Front and Back-end: Carl Joseph Baniaga, Kade Kharon Togana, Al John Orpilla
 Version: 1.0.0

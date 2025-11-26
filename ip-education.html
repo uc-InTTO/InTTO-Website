@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Education - InTTO</title>
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="stylesheet" href="css/contact-auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Page Specific Styles --- */
+        body {
+            background-color: #fff;
+            color: #333;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .main-content-container {
+            max-width: 1000px;
+            margin: 120px auto 60px; /* Top margin for fixed navbar */
+            padding: 0 20px;
+        }
+
+        /* Top Back Button */
+        .top-back-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            transition: color 0.2s;
+        }
+        .top-back-link:hover {
+            color: #1C7F56;
+        }
+        .top-back-link i {
+            margin-right: 8px;
+        }
+
+        /* Header Tags */
+        .service-tag-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .service-tag {
+            background-color: #e8f5e9;
+            color: #1C7F56;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 15px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+        .page-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            color: #000;
+        }
+
+        /* Overview */
+        .content-section {
+            margin-bottom: 50px;
+        }
+        .section-heading {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #000;
+        }
+        .overview-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            text-align: justify;
+            margin-bottom: 30px;
+        }
+
+        /* Gallery Layout */
+        .gallery-container {
+            margin-bottom: 40px;
+        }
+        .main-gallery-img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .thumbnail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .thumb-img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .thumb-img:hover {
+            transform: scale(1.02);
+        }
+
+        /* Learning Outcomes List */
+        .outcomes-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 50px;
+        }
+        .outcomes-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #444;
+            line-height: 1.5;
+        }
+        .outcomes-list li::before {
+            content: "▪";
+            color: #1C7F56;
+            font-size: 20px;
+            position: absolute;
+            left: 0;
+            top: -3px;
+        }
+
+        /* Bottom Back Button */
+        .back-btn-container {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .back-btn {
+            background-color: #2E8B57;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        .back-btn:hover {
+            background-color: #1C7F56;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .thumbnail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-content-container">
+        
+        <a href="#" onclick="history.back(); return false;" class="top-back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+
+        <div class="service-tag-wrapper">
+            <span class="service-tag">Service Details</span>
+        </div>
+        <h1 class="page-title">IP Education</h1>
+
+        <div class="content-section">
+            <h3 class="section-heading">Overview</h3>
+            <p class="overview-text">
+                Our Intellectual Property Education program provides comprehensive education on IP rights, protection strategies, and commercialization opportunities. We help researchers, innovators, and entrepreneurs understand how to identify, protect, and leverage their intellectual property assets effectively.
+            </p>
+
+            <div class="gallery-container">
+                <img src="graphics/aboutUs1.jpg" alt="IP Education Group Photo" class="main-gallery-img">
+                
+                <div class="thumbnail-grid">
+                    <img src="graphics/services1.png" alt="Presentation" class="thumb-img">
+                    <img src="graphics/aboutUs2.jpg" alt="Workshop" class="thumb-img">
+                    <img src="graphics/aboutUs3.jpg" alt="Discussion" class="thumb-img">
+                </div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h3 class="section-heading">Learning Outcomes</h3>
+            <ul class="outcomes-list">
+                <li>Understand the different types of IP rights and when to use each protection mechanism</li>
+                <li>Identify and evaluate the commercial potential of your innovations</li>
+                <li>Navigate the IP application process with confidence</li>
+                <li>Develop strategies for licensing and monetizing your IP assets</li>
+            </ul>
+        </div>
+
+        <div class="back-btn-container">
+            <a href="services.html" class="back-btn">Back to services</a>
+        </div>
+
+    </div>
+
+    <div class="footer-divider"></div>
+    <footer class="footer-section">
+      <div class="footer-top">
+        <div class="footer-column">
+          <h4>Our Services</h4>
+          <ul>
+              <li><a href="incubationProgram.html">Incubation Programs</a></li>
+              <li><a href="ipp.html">Intellectual Property</a></li>
+              <li><a href="tbiAsses.html">TBI Assessment</a></li>
+              <li><a href="training.html">Train the Trainers</a></li>
+              <li><a href="internship.html">Internship</a></li>
+          </ul>
+      </div>
+      <div class="footer-column">
+          <h4>Startups</h4>
+          <ul>
+              <li><a href="services.html">Startup Portfolio</a></li>
+              <li><a href="services.html">Join a Team</a></li>
+              <li><a href="mentor.html">Be a Mentor</a></li>
+          </ul>
+      </div>
+      <div class="footer-column">
+          <h4>Contact Info</h4>
+          <div class="social-links">
+            <a href="https://www.facebook.com/UCInTTO" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+            <a href="intto@uc-bcf.edu.ph" class="social-icon"><i class="fas fa-envelope"></i></a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h4>Visit Us</h4>
+          <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d537.8547548220233!2d120.59130577428844!3d16.4101724118376!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3391a10062bd2aaf%3A0x4a6a895d930a3b3b!2sUniversity%20of%20the%20Cordilleras%20Innovation%20and%20Technology%20Transfer%20Office!5e1!3m2!1sen!2sph!4v1760499396401!5m2!1sen!2sph" width="388" height="224" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </div>
+      </div>
+      <div class="footer-divider bottom-line"></div>
+      <div class="footer-bottom">
+        <p>© 2025 University of the Cordilleras Innovation & Technology Transfer Office. All rights reserved.</p>
+      </div>
+    </footer>
+
+</body>
+</html>

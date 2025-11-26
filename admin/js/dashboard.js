@@ -112,7 +112,6 @@ function loadRecentStartups() {
                 container.appendChild(li);
             });
         }, (error) => {
-            console.error('Error loading recent startups:', error);
         });
 }
 
@@ -177,7 +176,6 @@ function loadRecentActivity() {
                 container.appendChild(li);
             });
         }, (error) => {
-            console.error('Error loading recent activity:', error);
         });
 }
 

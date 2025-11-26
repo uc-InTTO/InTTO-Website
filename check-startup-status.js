@@ -11,8 +11,6 @@ const db = admin.firestore();
 
 (async () => {
   const snapshot = await db.collection('startups').get();
-  console.log('\n=== STARTUP STATUS SUMMARY ===\n');
-  
   let statusCount = {};
   let incubationCount = {};
   let combined = {};

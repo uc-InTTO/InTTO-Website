@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     if (!window.db) {
-        console.error('Firestore not initialized');
         return;
     }
 
@@ -32,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
     } catch (error) {
-        console.error('Error loading news & events:', error);
         newsCardsContainer.innerHTML = '<p style="text-align: center; color: var(--text-light); grid-column: 1/-1;">Error loading news & events.</p>';
     }
     

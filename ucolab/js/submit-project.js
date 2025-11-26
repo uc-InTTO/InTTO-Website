@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("✅ Submit project script loaded");
-    
-    // --- Global vars ---
     let uploadedImageUrls = ["", "", "", "", ""]; 
     let uploadingImages = [false, false, false, false, false]; 
 
@@ -230,12 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 try {
-                    console.log('💾 Saving project to Firestore...');
-                    
-                    // --- 🔥 FIRESTORE CONNECTION IS HERE ---
                     await db.collection('startups').add(newProject);
-                    // ---------------------------------------
-                    
                     alert("Project submitted successfully!");
                     window.location.href = 'index.html';
                 } catch (error) {

@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const realContent = document.getElementById('real-content');
 
     if (!eventId) {
-        console.error('No event ID provided');
         showError('No event ID provided');
         return;
     }
@@ -25,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     db.collection('newsEvents').doc(eventId).get()
         .then((doc) => {
             if (!doc.exists) {
-                console.error('Event not found');
                 showError('Event not found');
                 return;
             }
@@ -40,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 300);
         })
         .catch((error) => {
-            console.error('Error loading event:', error);
             showError('Error loading event details');
         });
     
@@ -219,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             })
             .catch((error) => {
-                console.error('Error loading related posts:', error);
             });
     }
     

@@ -25,7 +25,6 @@ export function initContactFormAuth() {
     const contactFormContainer = contactForm?.parentElement;
     
     if (!contactFormContainer) {
-        console.error('Contact form container not found');
         return;
     }
 
@@ -83,7 +82,6 @@ export function initContactFormAuth() {
 
         if (user) {
             // User is logged in - show form
-            console.log('✅ User authenticated:', user.email);
             loginPrompt.style.display = 'none';
             contactForm.style.display = 'block';
 

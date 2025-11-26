@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log("✅ Edit project script loaded");
     
     let uploadedImageUrls = ["", "", "", "", ""]; 
     let projectId = null;
@@ -40,7 +39,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 return;
             }
             const data = doc.data();
-            console.log("Loaded:", data);
 
             // Standard Fields
             setVal('project-name', data.name);

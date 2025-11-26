@@ -214,3 +214,39 @@
 
 /* Fix specific to admin z-index */
 .checkbox-list { z-index: 9999 !important; max-height: 200px; overflow-y: auto; }
+
+/* Loading Spinner Animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-light);
+}
+
+.loading-spinner i {
+    font-size: 32px;
+    animation: spin 1s linear infinite;
+}
+
+.error-state {
+    text-align: center;
+    padding: 40px;
+    color: #e74c3c;
+}
+
+.error-state i {
+    font-size: 32px;
+    margin-bottom: 16px;
+}
+
+.error-state p {
+    margin: 8px 0;
+}
+
+.error-state .btn {
+    margin-top: 16px;
+}

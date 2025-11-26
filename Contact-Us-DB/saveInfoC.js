@@ -131,7 +131,6 @@ export async function checkRateLimit(email, fingerprint) {
         };
         
     } catch (error) {
-        console.error("Error checking rate limit:", error);
         // If rate limit check fails, allow submission but log the error
         return { allowed: true, remainingSubmissions: null };
     }
@@ -228,7 +227,6 @@ export async function saveApplication(data) {
             remainingSubmissions: rateLimitCheck.remainingSubmissions 
         };
     } catch (e) {
-        console.error("Error adding document:", e);
         throw e;
     }
 }

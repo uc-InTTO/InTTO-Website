@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("Admin.js loaded");
 
     const projectGrid = document.getElementById('project-list');
     const projectsCountHeader = document.getElementById('projects-count');
@@ -13,12 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
     auth.onAuthStateChanged(function(user) {
         if (user && user.email === ADMIN_EMAIL) {
             // User is admin, load the page
-            console.log("Admin user confirmed:", user.email);
             loadProjects();
             renderProjects();
         } else {
             // Not admin or not logged in, kick to index
-            console.log("Access denied. User is not admin.");
             window.location.href = 'index.html';
         }
     });
@@ -38,9 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             pendingProjects = JSON.parse(localStorage.getItem('pendingProjects') || '[]');
             publicProjects = JSON.parse(localStorage.getItem('ucolabProjects') || '[]');
-            console.log(`Loaded ${pendingProjects.length} pending, ${publicProjects.length} public.`);
         } catch (e) {
-            console.error("Error loading projects from localStorage:", e);
             pendingProjects = [];
             publicProjects = [];
         }
@@ -120,7 +115,6 @@ function createPendingCardHTML(project) {
         // Find the project in the pending list
         const projectToApprove = pendingProjects.find(p => String(p.id) === String(id));
         if (!projectToApprove) {
-            console.error("Could not find project to approve:", id);
             return;
         }
 
@@ -133,7 +127,6 @@ function createPendingCardHTML(project) {
         // Save and re-render
         saveProjects();
         renderProjects();
-        console.log("Project approved:", id);
     }
 
     function rejectProject(id) {
@@ -145,7 +138,6 @@ function createPendingCardHTML(project) {
         // Save and re-render
         saveProjects();
         renderProjects();
-        console.log("Project rejected:", id);
     }
 
 });

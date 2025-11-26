@@ -6,11 +6,9 @@
  */
 
 async function migrateIPApplicationsToFirestore() {
-    console.log('🔄 Starting IP Applications migration to Firestore...');
     
     // Check if Firebase is initialized
     if (typeof firebase === 'undefined' || !window.db) {
-        console.error('❌ Firebase not initialized. Make sure you\'re on the IP Applications page.');
         return;
     }
     
@@ -19,13 +17,11 @@ async function migrateIPApplicationsToFirestore() {
     const localData = localStorage.getItem(STORAGE_KEY);
     
     if (!localData) {
-        console.log('ℹ️ No localStorage data found. Nothing to migrate.');
         return;
     }
     
     try {
         const ipApplications = JSON.parse(localData);
-        console.log(`📊 Found ${ipApplications.length} IP applications in localStorage`);
         
         // Check if already migrated
         const existingSnapshot = await db.collection('ipApplications').limit(1).get();
@@ -36,7 +32,6 @@ async function migrateIPApplicationsToFirestore() {
                 `Click OK to add them, or Cancel to skip migration.`
             );
             if (!proceed) {
-                console.log('⏭️ Migration cancelled by user');
                 return;
             }
         }
@@ -60,18 +55,10 @@ async function migrateIPApplicationsToFirestore() {
                 }
                 
                 await db.collection('ipApplications').add(ipData);
-                successCount++;
-                console.log(`✅ Migrated: ${ipData.title}`);
+                successCount;
             } catch (error) {
                 errorCount++;
-                console.error(`❌ Error migrating ${ip.title}:`, error);
             }
-        }
-        
-        console.log(`\n🎉 Migration Complete!`);
-        console.log(`✅ Successfully migrated: ${successCount}`);
-        if (errorCount > 0) {
-            console.log(`❌ Failed: ${errorCount}`);
         }
         
         // Ask if user wants to clear localStorage
@@ -85,36 +72,17 @@ async function migrateIPApplicationsToFirestore() {
             
             if (clearLocal) {
                 localStorage.removeItem(STORAGE_KEY);
-                console.log('🗑️ localStorage data cleared');
                 alert('Migration complete! The page will reload to show Firestore data.');
                 window.location.reload();
             } else {
-                console.log('ℹ️ localStorage data kept (you can delete it manually later)');
                 alert('Migration complete! Refresh the page to see Firestore data.');
             }
         }
         
     } catch (error) {
-        console.error('❌ Migration failed:', error);
         alert('Migration failed. Check console for details.');
     }
 }
 
-// Instructions
-console.log(`
-╔════════════════════════════════════════════════════════════╗
-║     IP Applications Migration to Firestore                 ║
-╚════════════════════════════════════════════════════════════╝
-
-To migrate your IP Applications data from localStorage to Firestore:
-
-1. Make sure you're on the IP Applications admin page
-2. Run this command in the console:
-
-   migrateIPApplicationsToFirestore()
-
-3. Follow the prompts
-
-Note: This only needs to be run ONCE to migrate existing data.
-After migration, all new IP applications will automatically save to Firestore.
-`);
+// Migration function is available globally
+// Run migrateIPApplicationsToFirestore() in console when needed

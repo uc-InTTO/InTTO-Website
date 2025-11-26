@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Firestore Functions ---
     const loadNewsEventsFromFirestore = async () => {
         try {
+            if (!db) {
+                throw new Error('Database not initialized');
+            }
+            
             const snapshot = await db.collection(NEWS_EVENTS_COLLECTION).get();
             
             newsEventsData = [];
@@ -36,8 +40,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             return newsEventsData;
         } catch (error) {
-            console.error('❌ Error loading news & events:', error);
-            alert('Error loading news & events from database');
+            newsEventList.innerHTML = `<div style="text-align: center; padding: 40px; color: #e74c3c;">
+                <i class="fa-solid fa-exclamation-triangle" style="font-size: 32px;"></i>
+                <p style="margin-top: 16px; font-weight: 500;">Error loading news & events</p>
+                <p style="margin-top: 8px; font-size: 14px; color: var(--text-light);">${error.message}</p>
+                <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 16px;">
+                    <i class="fa-solid fa-refresh"></i> Retry
+                </button>
+            </div>`;
             return [];
         }
     };
@@ -51,7 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const docRef = await db.collection(NEWS_EVENTS_COLLECTION).add(newsEventData);
             return docRef.id;
         } catch (error) {
-            console.error('❌ Error saving news/event:', error);
             throw error;
         }
     };
@@ -71,13 +80,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await db.collection(NEWS_EVENTS_COLLECTION).doc(firestoreId).delete();
         } catch (error) {
-            console.error('❌ Error deleting news/event:', error);
             throw error;
         }
     };
 
     // --- Render List ---
-    const renderNewsEvents = async () => {
+    const renderNewsEvents = async (isLoading = false) => {
+        if (isLoading) {
+            newsEventList.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light);"><i class="fa-solid fa-spinner fa-spin" style="font-size: 32px;"></i><p style="margin-top: 16px;">Loading news & events...</p></div>';
+            return;
+        }
+        
         const searchTerm = searchInput.value.toLowerCase();
         const activeBtn = document.querySelector('.type-filters .filter-btn.active');
         const activeTypeFilter = activeBtn ? activeBtn.dataset.filter : 'all';
@@ -387,8 +400,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         addNewsEventBtn.addEventListener('click', () => {
             openAddModal();
         });
-    } else {
-        console.error('❌ Add News/Event button not found!');
     }
     // Modal event listeners removed - using new tab navigation instead
     if (searchInput) searchInput.addEventListener('input', renderNewsEvents);
@@ -406,11 +417,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Auto-refresh when tab comes back into focus
     // This ensures updates made in the form tab appear here immediately
-    window.addEventListener('focus', () => {
-        loadNewsEventsFromFirestore().then(() => renderNewsEvents());
+    window.addEventListener('focus', async () => {
+        renderNewsEvents(true); // Show loading
+        await loadNewsEventsFromFirestore();
+        await renderNewsEvents();
     });
 
     // --- Initialize Everything ---
+    renderNewsEvents(true); // Show loading spinner
     await loadNewsEventsFromFirestore();
     await renderNewsEvents();
     

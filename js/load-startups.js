@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sdgCheckboxes = document.querySelectorAll('.item input[type="checkbox"]');
 
     if (!window.db) {
-        console.error('Firebase not initialized!');
         if(cardsGrid) cardsGrid.innerHTML = '<p>Error: Database not connected.</p>';
         return;
     }
@@ -97,7 +96,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             applyFilters(); // Initial Render
 
         } catch (error) {
-            console.error("Error fetching startups:", error);
             cardsGrid.innerHTML = '<p style="text-align:center;">Error loading data.</p>';
         }
     }

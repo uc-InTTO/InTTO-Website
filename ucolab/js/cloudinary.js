@@ -50,15 +50,6 @@ const CloudinaryUploader = (function() {
         // Don't send folder or public_id - let the preset handle everything
 
         try {
-            console.log(`🔄 [Cloudinary] Uploading image ${index + 1}...`);
-            console.log('📤 [Cloudinary] Upload details:', {
-                cloudName: CONFIG.CLOUD_NAME,
-                preset: CONFIG.UPLOAD_PRESET,
-                fileName: file.name,
-                fileSize: `${(file.size / 1024).toFixed(2)} KB`,
-                fileType: file.type
-            });
-            
             const response = await fetch(CONFIG.UPLOAD_URL, {
                 method: 'POST',
                 body: formData
@@ -66,7 +57,6 @@ const CloudinaryUploader = (function() {
 
             // Get response text first for debugging
             const responseText = await response.text();
-            console.log('📥 [Cloudinary] Response status:', response.status, response.statusText);
             
             if (!response.ok) {
                 let errorData;
@@ -107,13 +97,6 @@ const CloudinaryUploader = (function() {
             }
 
             const data = JSON.parse(responseText);
-            console.log(`✅ [Cloudinary] Image ${index + 1} uploaded successfully!`, {
-                url: data.secure_url,
-                publicId: data.public_id,
-                format: data.format,
-                dimensions: `${data.width}x${data.height}`,
-                bytes: data.bytes
-            });
             
             return data.secure_url;
             
@@ -195,13 +178,7 @@ const CloudinaryUploader = (function() {
         let fileToUpload = file;
         if (typeof ImageCompressor !== 'undefined') {
             try {
-                const originalSize = (file.size / 1024).toFixed(2);
                 fileToUpload = await ImageCompressor.compressImage(file);
-                const compressedSize = (fileToUpload.size / 1024).toFixed(2);
-                
-                if (fileToUpload.size < file.size) {
-                    const saved = ((file.size - fileToUpload.size) / 1024).toFixed(2);
-                }
             } catch (compressionError) {
                 // If compression fails, continue with original file
                 fileToUpload = file;
@@ -278,8 +255,6 @@ const CloudinaryUploader = (function() {
         if (options.transformation) formData.append('transformation', JSON.stringify(options.transformation));
 
         try {
-            console.log('🔐 [Cloudinary] Uploading with signed request...');
-            
             const response = await fetch(CONFIG.UPLOAD_URL, {
                 method: 'POST',
                 body: formData
@@ -291,11 +266,6 @@ const CloudinaryUploader = (function() {
             }
 
             const data = await response.json();
-            console.log('✅ [Cloudinary] Signed upload successful!', {
-                url: data.secure_url,
-                publicId: data.public_id,
-                format: data.format
-            });
             
             return data;
         } catch (error) {

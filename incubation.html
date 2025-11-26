@@ -12,6 +12,17 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
+    <div id="custom-alert-modal" class="custom-modal-overlay hidden">
+    <div class="custom-modal-box">
+        <div class="modal-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>Application Submitted!</h3>
+        <p>Your data has been successfully logged.</p>
+        <p>(Please wait for your Reference Number)</p>
+        <button id="modal-ok-btn" class="modal-btn">OK</button>
+    </div>
+</div>
     <script type="module" src="./index-incubation-back/script.js"></script>
     <script type="module" src="./index-incubation-back/info.js"></script>
     <script type="module" src="./index-incubation-back/saveInfo.js"></script>
@@ -180,8 +191,8 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="phone">Phone Number (+639 or 09)</label>
-                            <input type="tel" id="phone" placeholder="+63 912 345 6789" required minlength="11" maxlength="12" pattern="^(09|639)[0-9]{9}$">
+                            <label for="phone">Phone Number (639 or 09)</label>
+                            <input type="tel" id="phone" placeholder="63 912 345 6789" required minlength="11" maxlength="13" pattern="^(09|639)[0-9]{9}$">
                         </div>
                         <div class="form-group">
                             <label for="studentId">Student ID (if applicable)</label>
@@ -315,7 +326,7 @@
                         </div>
                         <div class="form-group">
                             <label for="coFounders">Co-Founders</label>
-                            <input type="number" id="coFounders" placeholder="Number of co-founders" min="1" max ="50" required>
+                            <input type="number" id="coFounders" placeholder="Number of co-founders" min="0" max ="50" required>
                         </div>
                     </div>
 
@@ -548,7 +559,6 @@
             </div>
 
             <div class="success-navigation">
-                <button type="button" class="btn-print">Print Confirmation</button>
                 <button type="button" class="btn-submit-another">Submit Another Application <i class="fas fa-arrow-right"></i></button>
             </div>
 
@@ -685,11 +695,44 @@
             }
         });
     });
-
+    // --- Modal Logic ---
     const submitButton = document.querySelector('.btn-submit');
+    const modal = document.getElementById('custom-alert-modal');
+    const modalOkBtn = document.getElementById('modal-ok-btn');
+
+    // 1. Open Modal on Submit
     if (submitButton) {
-        submitButton.addEventListener('click', () => {
-            alert('Application Submitted! (Data is logged to console)');
+        submitButton.addEventListener('click', (e) => {
+            e.preventDefault(); // Stop page reload
+            
+            // Show the modal
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+            
+            console.log("Application Data Logged:", collectedData);
+        });
+    }
+
+    // 2. Close Modal & Go to Success Step on "OK"
+    if (modalOkBtn) {
+        modalOkBtn.addEventListener('click', () => {
+            // Hide Modal
+            if (modal) modal.classList.add('hidden');
+
+            // Transition to the Success Step (Step 5)
+            // Hide all previous steps/trackers
+            document.getElementById('progress-tracker-inner').style.display = 'none'; 
+            document.getElementById('review-step').classList.add('hidden');
+            
+            // Show Success Screen
+            const successStep = document.getElementById('success-step');
+            if (successStep) {
+                successStep.classList.remove('hidden');
+            }
+            
+            // Optional: Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 

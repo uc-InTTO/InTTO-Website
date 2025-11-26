@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const teamCardsContainer = document.querySelector('.team-cards');
     
     if (!teamCardsContainer) {
-        console.error('Team cards container not found');
         return;
     }
 
@@ -43,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .catch((error) => {
-            console.error('Error loading team members:', error);
             teamCardsContainer.innerHTML = '<p style="text-align: center; width: 100%; padding: 40px; color: #e74c3c;">Error loading team members. Please refresh the page.</p>';
         });
 });

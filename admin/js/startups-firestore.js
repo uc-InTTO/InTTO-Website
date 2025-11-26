@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             return startupsData;
         } catch (error) {
-            console.error('❌ Error loading startups:', error);
             return [];
         }
     };
@@ -34,7 +33,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             updatedData.updatedAt = firebase.firestore.Timestamp.now();
             await db.collection(STARTUPS_COLLECTION).doc(firestoreId).update(updatedData);
         } catch (error) {
-            console.error('❌ Error updating startup:', error);
             throw error;
         }
     };
@@ -43,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             await db.collection(STARTUPS_COLLECTION).doc(firestoreId).delete();
         } catch (error) {
-            console.error('❌ Error deleting startup:', error);
             throw error;
         }
     };

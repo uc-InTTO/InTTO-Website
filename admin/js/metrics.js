@@ -72,7 +72,6 @@ async function loadTabData(tab) {
         countBadge.textContent = rowCount > 0 ? rowCount : '0';
         
     } catch (error) {
-        console.error(`❌ Error loading ${tab.sheetName}:`, error);
         let errorMessage = error.message;
         
         // Provide helpful error messages

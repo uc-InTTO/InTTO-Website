@@ -3,12 +3,10 @@ import { saveApplication } from "./saveInfo.js";
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('personal-info-form');
     if (!form) {
-        console.warn("Form with id 'personal-info-form' not found.");
         return;
     }
 
     if (typeof saveApplication !== 'function') {
-        console.error("saveApplication is not available. Ensure saveInfo.js exports it.");
         return;
     }
 

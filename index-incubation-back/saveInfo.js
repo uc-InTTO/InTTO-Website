@@ -20,7 +20,6 @@ export async function saveApplication(data) {
         
         return docRef.id;
     } catch (e) {
-        console.error("❌ Error adding document:", e);
         throw e;
     }
 }
@@ -31,7 +30,6 @@ export async function saveApplication(data) {
 async function sendEmailNotification(data, applicationId) {
     // Check if EmailJS is loaded
     if (typeof emailjs === 'undefined') {
-        console.warn('⚠️ EmailJS library not loaded. Skipping email notification.');
         return;
     }
     
@@ -66,7 +64,6 @@ async function sendEmailNotification(data, applicationId) {
             templateParams
         );
     } catch (error) {
-        console.error('❌ Failed to send email:', error);
         // Don't throw error - we still want the application to be saved even if email fails
     }
 }

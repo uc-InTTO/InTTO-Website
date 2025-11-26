@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             return startups;
         } catch (error) {
-            console.error('❌ Error loading startups:', error);
             return [];
         }
     };
@@ -60,14 +59,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             return newsEvents;
         } catch (error) {
-            console.error('❌ Error loading news & events:', error);
             return [];
         }
     };
 
     // --- Main Function to Update Dashboard ---
     const updateDashboard = async (filter) => {
-        console.log('🔄 Updating dashboard with filter:', filter);
         
         // UI Loading State
         totalUsageEl.textContent = '...';
@@ -151,7 +148,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!chartCanvas) return;
 
         if (typeof Chart === 'undefined') {
-            console.error('❌ Chart.js not loaded');
             return;
         }
 

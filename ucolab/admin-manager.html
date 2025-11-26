@@ -240,7 +240,6 @@
         // Load all users from Firestore
         async function loadUsers() {
             try {
-                console.log("Loading users from Firestore...");
                 const snapshot = await db.collection('Registered Accounts').get();
                 
                 allUsers = [];
@@ -250,8 +249,6 @@
                         ...doc.data()
                     });
                 });
-
-                console.log(`Loaded ${allUsers.length} users`);
                 displayUsers(allUsers);
                 updateStats();
             } catch (error) {

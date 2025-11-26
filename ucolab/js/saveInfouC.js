@@ -6,7 +6,6 @@ let db;
 try {
     const app = getApp(); // Get the default app
     db = getFirestore(app);
-    console.log("Using existing Firebase app for saveInfouC.js");
 } catch (error) {
     console.error("Firebase app not initialized. Make sure authuC.js loads first:", error);
     throw error;
@@ -14,13 +13,11 @@ try {
 
 export async function saveApplication(data) {
     try {
-        console.log("Attempting to save to Firestore:", data);
         const collectionRef = collection(db, "Registered Accounts");
         const docRef = await addDoc(collectionRef, {
             ...data,
             submittedAt: serverTimestamp()
         });
-        console.log("✅ Document successfully written to Firestore with ID:", docRef.id);
         return docRef.id;
     } catch (e) {
         console.error("❌ Error adding document to Firestore:", e);

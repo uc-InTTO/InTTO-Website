@@ -38,7 +38,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Firestore Functions ---
     const loadIPsFromFirestore = async () => {
         try {
-            console.log('📥 Loading IP applications from Firestore...');
             const snapshot = await db.collection(IP_COLLECTION).get();
             
             ipData = [];
@@ -49,11 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             });
             
-            console.log(`✅ Loaded ${ipData.length} IP applications from Firestore`);
             return ipData;
         } catch (error) {
-            console.error('❌ Error loading IP applications:', error);
-            alert('Error loading IP applications from database');
             return [];
         }
     };
@@ -64,11 +60,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ipData.updatedAt = firebase.firestore.Timestamp.now();
             
             const docRef = await db.collection(IP_COLLECTION).add(ipData);
-            console.log('✅ IP application saved to Firestore:', docRef.id);
             return docRef.id;
         } catch (error) {
-            console.error('❌ Error saving IP application:', error);
-            throw error;
         }
     };
 
@@ -76,20 +69,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             updatedData.updatedAt = firebase.firestore.Timestamp.now();
             await db.collection(IP_COLLECTION).doc(firestoreId).update(updatedData);
-            console.log('✅ IP application updated in Firestore:', firestoreId);
         } catch (error) {
-            console.error('❌ Error updating IP application:', error);
-            throw error;
         }
     };
 
     const deleteIPFromFirestore = async (firestoreId) => {
         try {
             await db.collection(IP_COLLECTION).doc(firestoreId).delete();
-            console.log('✅ IP application deleted from Firestore:', firestoreId);
         } catch (error) {
-            console.error('❌ Error deleting IP application:', error);
-            throw error;
         }
     };
 

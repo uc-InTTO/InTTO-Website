@@ -10,7 +10,6 @@ export async function saveApplication(data) {
         });
         return docRef.id;
     } catch (e) {
-        console.error("Error adding document:", e);
         throw e;
     }
 }

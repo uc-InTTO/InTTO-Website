@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("✅ DEBUG Project Detail script loaded.");
 
     const lightboxOverlay = document.getElementById('lightbox-overlay');
     const lightboxImage = document.getElementById('lightbox-image');
@@ -59,8 +58,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!doc.exists) return setText('detail-title', "Project Not Found");
 
             const project = doc.data();
-            console.log("🔎 FULL DATABASE RECORD:", project); // Look at this in Console!
-
             // Basic Info
             document.title = `${project.name} - UCoLab`;
             setText('detail-title', project.name || project.title);
@@ -77,9 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // --- DEBUG FEATURES ---
             const featuresGrid = document.getElementById('detail-features-grid');
-            console.log("🔎 Looking for features grid HTML element:", featuresGrid);
-            console.log("🔎 Features data from DB:", project.features);
-
             if (featuresGrid) {
                 featuresGrid.innerHTML = ''; 
                 let hasFeatures = false;
@@ -102,7 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.warn("⚠️ No valid features found to display.");
                     featuresGrid.innerHTML = '<p style="color:#777; font-style:italic;">No specific features listed.</p>';
                 } else {
-                    console.log("✅ Features added to HTML successfully.");
                 }
             } else {
                 console.error("❌ CRITICAL: HTML Element id='detail-features-grid' NOT FOUND.");
@@ -111,26 +104,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // --- DEBUG PHONE NUMBER ---
             const phoneLink = document.getElementById('detail-founder-phone-link');
             const phoneText = document.getElementById('detail-founder-phone');
-            
-            console.log("🔎 Phone Link Element:", phoneLink);
-            console.log("🔎 Phone Text Element:", phoneText);
-
             // Check both possible field names
             let phoneVal = project.founderPhone;
             if (!phoneVal) phoneVal = project.phone; // Try fallback
-
-            console.log("🔎 Phone Value found in DB:", phoneVal);
-
             if (phoneLink && phoneText) {
-                // Check if value is valid
                 if (phoneVal && String(phoneVal).trim() !== "" && String(phoneVal) !== "undefined") {
                     phoneText.textContent = phoneVal;
                     phoneLink.href = `tel:${phoneVal}`;
-                    
-                    // FORCE VISIBILITY
                     phoneLink.style.display = 'flex'; 
                     phoneLink.style.setProperty('display', 'flex', 'important'); // Extreme force
-                    console.log("✅ Phone found. Setting display to FLEX.");
                 } else {
                     phoneLink.style.display = 'none';
                     console.warn("⚠️ Phone value is empty or undefined. Hiding element.");

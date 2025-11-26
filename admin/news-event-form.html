@@ -268,7 +268,6 @@
                     const imageUrl = await CloudinaryUploader.uploadImage(file, index);
                     uploadedImageUrls[index] = imageUrl;
                 } catch (error) {
-                    console.error(`❌ Error uploading image ${index + 1}:`, error);
                     alert(`Error uploading image ${index + 1}: ${error.message}`);
                 } finally {
                     uploadingImages[index] = false;
@@ -353,7 +352,6 @@
                         updateDropdownText();
                     })
                     .catch(error => {
-                        console.error('❌ Error loading data:', error);
                     });
             }
 
@@ -402,7 +400,6 @@
                         alert('Saved successfully!');
                         window.close();
                     } catch (error) {
-                        console.error('Error:', error);
                         alert('Error saving: ' + error.message);
                         submitBtn.textContent = 'Save News/Event';
                         submitBtn.disabled = false;

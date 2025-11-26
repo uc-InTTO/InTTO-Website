@@ -5,8 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UCoLab - Discover Innovation</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            width: 100%;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 992px) {
+            .project-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 40px;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+        
+        .page-btn {
+           height: 56px;
+           width: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            color: #1C7F56;
+            border: 1px solid rgba(28, 127, 86, 0.2);
+            transition: all 0.2s ease-in-out;
+            flex-shrink: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .page-btn.active {
+            background: #1C7F56;
+            color: white;
+            border-color: #1C7F56;
+            font-weight: 600;
+        }
+
+        .page-btn:hover:not(.disabled):not(.active) {
+            background: rgba(28, 127, 86, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .page-btn.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #f5f5f5;
+            color: #999;
+            border-color: #ddd;
+        }
+
+        .project-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #eee;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .card-image {
+            height: 180px;
+            width: 100%;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+
+        .card-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .card-tag {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #e8f5e9;
+            color: #1C7F56;
+            font-weight: 500;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex-grow: 1;
+        }
+
+        .card-footer {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .view-btn {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1C7F56;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .view-btn:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     
@@ -95,41 +256,68 @@
                 </div>
                 <div class="filter-dropdowns">
                     
-                    <div class="custom-dropdown" id="filter-startup-category">
+                    <div class="custom-dropdown" id="filter-startup-category" data-filter="category">
                         <button class="dropdown-toggle"> <span>All Categories</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg> </button>
                         <ul class="dropdown-menu">
-                            <li>All Categories</li>
-                            <li>AI and Data Science</li>
-                            <li>SaaS and Enterprise Solutions</li>
-                            <li>Fintech</li>
-                            <li>E-commerce</li>
-                            <li>Health</li>
-                            <li>Agriculture and Food</li>
-                            <li>Education Technologies</li>
-                            <li>Creative Industries</li>
-                            <li>Criminology, Forensics, and Public Safety</li>
-                            <li>Sustainability and Cleantech</li>
-                            <li>Smart Cities and Mobility</li>
+                            <li data-value="all">All Categories</li>
+                            <li data-value="ai and data science">AI and Data Science</li>
+                            <li data-value="saas and enterprise solutions">SaaS and Enterprise Solutions</li>
+                            <li data-value="fintech">Fintech</li>
+                            <li data-value="e-commerce">E-commerce</li>
+                            <li data-value="health">Health</li>
+                            <li data-value="agriculture and food">Agriculture and Food</li>
+                            <li data-value="education technologies">Education Technologies</li>
+                            <li data-value="creative industries">Creative Industries</li>
+                            <li data-value="criminology, forensics, and public safety">Criminology, Forensics, and Public Safety</li>
+                            <li data-value="sustainability and cleantech">Sustainability and Cleantech</li>
+                            <li data-value="smart cities and mobility">Smart Cities and Mobility</li>
                         </ul>
                     </div>
 
-                    <div class="custom-dropdown" id="filter-college">
+                    <div class="custom-dropdown" id="filter-college" data-filter="college">
                         <button class="dropdown-toggle"> <span>All Colleges</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg> </button>
-                        <ul class="dropdown-menu"> <li>All Colleges</li> <li>College of Business</li> <li>College of Computer Studies</li> <li>College of Nursing</li> <li>College of Architecture</li> <li>College of Arts & Sciences</li> <li>College of Engineering</li> <li>College of Teacher Education</li> </ul>
+                        <ul class="dropdown-menu"> 
+                            <li data-value="all">All Colleges</li> 
+                            <li data-value="college of business">College of Business</li> 
+                            <li data-value="college of computer studies">College of Computer Studies</li> 
+                            <li data-value="college of nursing">College of Nursing</li> 
+                            <li data-value="college of architecture">College of Architecture</li> 
+                            <li data-value="college of arts & sciences">College of Arts & Sciences</li> 
+                            <li data-value="college of engineering">College of Engineering</li> 
+                            <li data-value="college of teacher education">College of Teacher Education</li> 
+                        </ul>
                     </div>
-                    <div class="custom-dropdown" id="filter-trl">
+                    <div class="custom-dropdown" id="filter-trl" data-filter="trl">
                         <button class="dropdown-toggle"> <span>All TRL Levels</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg> </button>
-                        <ul class="dropdown-menu"> <li>All TRL Levels</li> <li>TRL 3</li> <li>TRL 4</li> <li>TRL 5</li> <li>TRL 6</li> <li>TRL 7</li><li>TRL 8</li><li>TRL 9</li> </ul>
+                        <ul class="dropdown-menu"> 
+                            <li data-value="all">All TRL Levels</li> 
+                            <li data-value="trl 3">TRL 3</li> 
+                            <li data-value="trl 4">TRL 4</li> 
+                            <li data-value="trl 5">TRL 5</li> 
+                            <li data-value="trl 6">TRL 6</li> 
+                            <li data-value="trl 7">TRL 7</li>
+                            <li data-value="trl 8">TRL 8</li>
+                            <li data-value="trl 9">TRL 9</li> 
+                        </ul>
                     </div>
-                    <div class="custom-dropdown" id="filter-type"> 
+                    <div class="custom-dropdown" id="filter-type" data-filter="type"> 
                         <button class="dropdown-toggle"> <span>All Types</span> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg> </button>
-                        <ul class="dropdown-menu"> <li>All Types</li> <li>Thesis</li> <li>Capstone</li> <li>Research</li> <li>Startup</li> </ul>
+                        <ul class="dropdown-menu"> 
+                            <li data-value="all">All Types</li> 
+                            <li data-value="thesis">Thesis</li> 
+                            <li data-value="capstone">Capstone</li> 
+                            <li data-value="research">Research</li> 
+                            <li data-value="startup">Startup</li> 
+                        </ul>
                     </div>
                 </div>
                 <div class="sort-by-container">
-                    <div class="custom-dropdown" id="filter-sort">
+                    <div class="custom-dropdown" id="filter-sort" data-filter="sort">
                         <button class="dropdown-toggle" id="sort-icon-btn" aria-label="Sort projects"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> <span class="visually-hidden">Newest</span> </button>
-                        <ul class="dropdown-menu"> <li>Newest</li> <li>Most Viewed</li> <li>Most Inquiries</li> </ul>
+                        <ul class="dropdown-menu"> 
+                            <li data-value="newest">Newest</li> 
+                            <li data-value="oldest">Oldest</li> 
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -144,10 +332,15 @@
         </div>
 
         <section class="projects-section animate-on-scroll" id="projects-grid">
-            <h2 id="projects-count"> Projects Found</h2>
+            <h2 id="projects-count">Loading Projects...</h2>
             <p class="section-subtitle">Browse through innovative projects from across the university</p>
+            
             <div class="project-grid" id="project-list">
-                </div>
+            </div>
+
+            <div class="pagination-container" id="pagination-controls">
+            </div>
+
         </section>
     </main>
 
@@ -195,7 +388,7 @@
         <div class="footer-column">
           <h4>Visit Us</h4>
           <div class="map-container">
-            <iframe src="http://googleusercontent.com/maps/google.com/0" width="388" height="224" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d537.8547548220233!2d120.59130577428844!3d16.4101724118376!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3391a10062bd2aaf%3A0x4a6a895d930a3b3b!2sUniversity%20of%20the%20Cordilleras%20Innovation%20and%20Technology%20Transfer%20Office!5e1!3m2!1sen!2sph!4v1760499396401!5m2!1sen!2sph" width="388" height="224" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </div>
       </div>

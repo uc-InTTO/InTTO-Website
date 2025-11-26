@@ -265,6 +265,77 @@ document.addEventListener('DOMContentLoaded', async () => {
             applyFiltersAndSearch();
         });
     }
+    // --- START OF NEW UPCOMING EVENTS LOGIC ---
+    async function loadUpcomingEvents() {
+        const upcomingSection = document.querySelector('.upcoming-events-section');
+        const container = document.querySelector('.events-horizontal-list');
+
+        // Safety check
+        if (!upcomingSection || !container) return;
+
+        try {
+            // 1. Fetch only 'draft' events
+            const snapshot = await db.collection('newsEvents')
+                .where('status', '==', 'draft')
+                .where('type', '==', 'event')
+                .get();
+
+            // 2. Hide the entire section if no drafts exist
+            if (snapshot.empty) {
+                upcomingSection.style.display = 'none';
+                return;
+            }
+
+            // 3. Show section and clear placeholder content
+            upcomingSection.style.display = 'block';
+            container.innerHTML = '';
+
+            const events = [];
+            snapshot.forEach(doc => {
+                events.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Sort by date (ascending: nearest date first)
+            events.sort((a, b) => {
+                const dateA = a.date ? (typeof a.date === 'string' ? new Date(a.date) : a.date.toDate()) : new Date(0);
+                const dateB = b.date ? (typeof b.date === 'string' ? new Date(b.date) : b.date.toDate()) : new Date(0);
+                return dateA - dateB;
+            });
+
+            // 4. Create cards for upcoming events
+            events.forEach(event => {
+                const dateObj = event.date ? (typeof event.date === 'string' ? new Date(event.date) : event.date.toDate()) : new Date();
+                const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                
+                // Use uploaded image or default
+                const imageUrl = (event.images && event.images[0]) ? event.images[0] : 'graphics/students.png';
+
+                const eventHTML = `
+                    <div class="event-item">
+                        <div class="event-image-container">
+                            <img src="${imageUrl}" alt="${event.title}" class="event-image" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="event-details">
+                            <p class="event-title">${event.title}</p>
+                            <p class="event-date-time">
+                                <span>${dateStr}</span>
+                            </p>
+                            <a href="#" class="learn-more">Learn More →</a>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += eventHTML;
+            });
+
+        } catch (error) {
+            console.error("Error loading upcoming events:", error);
+            upcomingSection.style.display = 'none';
+        }
+    }
+
+    // Call the function immediately
+    loadUpcomingEvents();
+    // --- END OF NEW UPCOMING EVENTS LOGIC ---
     
     await loadAllNewsEvents();
     applyFiltersAndSearch();

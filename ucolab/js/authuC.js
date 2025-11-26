@@ -18,8 +18,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
-console.log("🔥 Firebase initialized successfully in authuC.js");
-
 // --- 1. INJECT CUSTOM POPUP (MATCHING YOUR IMAGE) ---
 const adminModalHTML = `
 <div id="admin-redirect-modal" style="
@@ -132,10 +130,8 @@ document.body.insertAdjacentHTML('beforeend', adminModalHTML);
  * Redirects user based on admin status
  */
 function redirectUser(isAdmin) {
-    console.log('🔀 redirectUser() called with isAdmin:', isAdmin);
     
     if (isAdmin === true) {
-        console.log('👑 ADMIN DETECTED');
         
         // 1. Hide the login form
         const authModal = document.getElementById('auth-modal-overlay');
@@ -152,12 +148,10 @@ function redirectUser(isAdmin) {
 
         // 3. Redirect after delay
         setTimeout(() => {
-            console.log('🚀 Redirecting to dashboard...');
             window.location.href = '../admin/dashboard.html';
         }, 2500);
 
     } else {
-        console.log('👤 Regular user - Redirecting to: index.html');
         window.location.href = 'index.html';
     }
 }
@@ -185,7 +179,6 @@ if (signInForm) {
         const password = document.getElementById('signin-password-input')?.value || document.getElementById('password')?.value;
 
         try {
-            console.log('🔵 Starting sign in...');
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
@@ -202,7 +195,6 @@ if (signInForm) {
                 redirectUser(isAdmin);
             }
         } catch (error) {
-            console.error('Sign in error:', error);
             let msg = 'Sign in failed.';
             if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-login-credentials') msg = 'Incorrect email or password.';
             else if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';
@@ -246,7 +238,6 @@ if (googleSignInBtn) {
                 redirectUser(isAdmin);
             }
         } catch (error) {
-            console.error('Google sign in error:', error);
             alert('Google sign in failed: ' + error.message);
         }
     });
@@ -289,7 +280,6 @@ if (signUpForm) {
             alert('Registration successful! Welcome to UCoLab.');
             window.location.href = 'index.html';
         } catch (error) {
-            console.error('Sign up error:', error);
             alert('Registration failed: ' + error.message);
         }
     });

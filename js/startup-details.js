@@ -201,7 +201,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
     } catch (error) {
-        console.error("Error loading project:", error);
         document.getElementById('detail-title').textContent = "Error Loading Data";
     }
 

@@ -1,17 +1,19 @@
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Get Firebase instances from global scope
+
     const auth = window.auth || firebase.auth();
     const db = window.db || firebase.firestore();
-    
-    // --- 2. GLOBAL VARIABLES ---
-    let allProjectsData = [];
 
-    // --- 3. DOM ELEMENT REFERENCES ---
+    let allProjectsData = [];
+    let currentFilteredProjects = [];
+    let currentPage = 1;
+    const ITEMS_PER_PAGE = 6;
+    const MAX_VISIBLE_PAGINATION = 10;
+
     const projectGrid = document.getElementById('project-list');
     const projectsCountHeader = document.getElementById('projects-count');
     const searchInput = document.getElementById('search-input');
-    
+    const paginationContainer = document.getElementById('pagination-controls');
+
     const industryFilter = document.getElementById('filter-startup-category'); 
     const collegeFilter = document.getElementById('filter-college');
     const trlFilter = document.getElementById('filter-trl');
@@ -19,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const sortFilter = document.getElementById('filter-sort');
     const allDropdowns = document.querySelectorAll('.custom-dropdown');
     
-    // --- Auth & Modal Elements ---
     const authModalOverlay = document.getElementById('auth-modal-overlay');
     const signinPanel = document.getElementById('signin-panel');
     const signupPanel = document.getElementById('signup-panel');
@@ -32,20 +33,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const userDisplayMain = document.getElementById('user-display-main');
     const submitProjectBtn = document.getElementById('submit-project-btn');
 
-    // Alert Modal
     const alertModalOverlay = document.getElementById('alert-modal-overlay');
     const alertModalOkBtn = document.getElementById('alert-modal-ok-btn');
     const alertModalMessage = document.getElementById('alert-modal-message');
     const alertModalTitle = document.getElementById('alert-modal-title');
 
-    // Profile Modal
     const profileModalOverlay = document.getElementById('profile-modal-overlay');
     const profileForm = document.getElementById('profile-form');
     const profileNameInput = document.getElementById('profile-name-input');
     const closeProfileModalBtn = document.getElementById('close-profile-modal-btn');
     const cancelProfileBtn = document.getElementById('cancel-profile-btn');
 
-    // Forms
     const signinForm = document.getElementById('signin-form');
     const signinEmailInput = document.getElementById('signin-email-input');
     const signinPasswordInput = document.getElementById('signin-password-input');
@@ -59,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const googleSigninBtn = document.getElementById('google-signin-btn');
     const googleSignupBtn = document.getElementById('google-signup-btn');
     
-    // Forgot Password
     const forgotPasswordModalOverlay = document.getElementById('forgot-password-modal-overlay');
     const forgotPasswordLink = document.getElementById('forgot-password-link');
     const closeForgotPasswordModalBtn = document.getElementById('close-forgot-password-modal-btn');
@@ -67,10 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const forgotPasswordForm = document.getElementById('forgot-password-form');
     const forgotPasswordEmailInput = document.getElementById('forgot-password-email-input');
 
-    // --- 4. FIREBASE PROVIDER ---
     const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-    // --- HELPER UI FUNCTIONS ---
 
     function openAuthModal(panelId = 'signin-panel') {
         if (!authModalOverlay || !signinPanel || !signupPanel) return;
@@ -110,7 +104,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (profileModalOverlay) profileModalOverlay.classList.add('modal-hidden');
     }
     
-    // --- Forgot Password Modal Functions ---
     function openForgotPasswordModal() {
         if (authModalOverlay) authModalOverlay.classList.add('modal-hidden');
         if (forgotPasswordModalOverlay) {
@@ -150,7 +143,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.form-error-message').forEach(el => el.remove());
     }
 
-    // --- 6. PROJECT AUTH ALERT ---
     function handleSubmitProjectClick(e) {
         e.preventDefault();
         const currentUser = auth.currentUser;
@@ -161,10 +153,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- 7. MAIN UI UPDATE FUNCTION ---
     function updateUI(user) {
         if (user) {
-            // --- User is SIGNED IN ---
             if (openSigninBtn) openSigninBtn.classList.add('hidden');
             if (userInfoContainer) userInfoContainer.classList.remove('hidden');
             if (userDisplayMain) {
@@ -176,15 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 userDisplayMain.onclick = () => { openProfileModal(); };
             }
         } else {
-            // --- User is SIGNED OUT ---
             if (openSigninBtn) openSigninBtn.classList.remove('hidden');
             if (userInfoContainer) userInfoContainer.classList.add('hidden');
             if (userDisplayMain) { userDisplayMain.onclick = null; }
         }
         loadProjects(); 
     }
-
-    // --- 8. FIREBASE AUTH FUNCTIONS ---
 
     async function handleSignUp(email, password, firstName, lastName) {
         try {
@@ -319,26 +306,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // --- 9. PROJECT RENDERING FUNCTIONS ---
-
     function createProjectCardHTML(project) {
         if (!project || typeof project !== 'object') return '';
         
-        // --- UPDATED TRL COLOR LOGIC (1-9) ---
-        // Extract number safely
         const trlNumMatch = (project.trl && typeof project.trl === 'string') ? project.trl.match(/(\d+)/) : null; 
         const trlNum = trlNumMatch ? parseInt(trlNumMatch[1], 10) : (parseInt(project.trl) || 0); 
         
         let trlClass = 'grey'; 
         let trlText = typeof project.trl === 'string' && project.trl.includes('TRL') ? project.trl : `TRL ${trlNum}`;
         
-        // Color coding for TRL 1-9
-        if (trlNum <= 3) { trlClass = 'blue'; }         // TRL 1-3
-        else if (trlNum <= 6) { trlClass = 'orange'; }  // TRL 4-6
-        else if (trlNum <= 9) { trlClass = 'green'; }   // TRL 7-9
+        if (trlNum <= 3) { trlClass = 'blue'; } 
+        else if (trlNum <= 6) { trlClass = 'orange'; } 
+        else if (trlNum <= 9) { trlClass = 'green'; } 
         else { trlClass = 'grey'; }
 
-        // Handle Type Tag
         let typeClass = 'grey'; 
         if (project.type?.toLowerCase() === 'thesis') typeClass = 'blue'; 
         else if (project.type?.toLowerCase() === 'capstone') typeClass = 'green'; 
@@ -368,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return `
             <article class="project-card animate-on-scroll" data-id="${project.id}">
                 <div class="card-image-container">
-                    <img src="${imageUrl}" alt="${project.title} cover image">
+                    <img src="${imageUrl}" alt="${project.title} cover image" onerror="this.src='Logo/No image.png'">
                 </div>
                 <div class="card-content-wrapper">
                     <h3>${project.title}</h3>
@@ -390,7 +371,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadProjects() {
         try {
-            // Fetch ALL active projects from Firestore
             const snapshot = await db.collection('startups')
                                      .where('status', '==', 'active')
                                      .get();
@@ -400,7 +380,6 @@ document.addEventListener('DOMContentLoaded', function() {
             snapshot.forEach(doc => {
                 const data = doc.data();
                 
-                // === FILTER: Skip if Incubated ===
                 if (data.incubationStatus === 'incubated') {
                     return; 
                 }
@@ -422,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-            renderProjects();
+            filterProjects();
             
         } catch (error) {
             console.error("Error loading projects from Firestore:", error);
@@ -430,14 +409,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function renderProjects() {
-        if (!projectGrid || !projectsCountHeader) return;
-
-        if (!Array.isArray(allProjectsData)) {
-            projectGrid.innerHTML = '<p class="no-projects-message">No projects found.</p>';
-            projectsCountHeader.textContent = `0 Projects Found`;
-            return;
-        }
+    function filterProjects() {
+        if (!Array.isArray(allProjectsData)) return;
 
         const filters = {
             search: searchInput ? searchInput.value.toLowerCase() : '',
@@ -450,10 +423,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const sortByElement = sortFilter?.querySelector('span:not(.visually-hidden)');
         const sortBy = sortByElement ? sortByElement.textContent : 'Newest';
 
-        const filteredData = allProjectsData.filter(project => {
+        currentFilteredProjects = allProjectsData.filter(project => {
             if (!project) return false;
             
-            // Standard Filters
             const collegeText = (Array.isArray(project.college) ? project.college.join(', ') : (project.college || ''));
             const collegeMatch = (filters.college === 'All Colleges') || (collegeText.includes(filters.college));
             
@@ -465,14 +437,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const typeMatch = (filters.type === 'All Types') || (project.type === filters.type);
 
-            // === UPDATED TRL FILTERING LOGIC ===
             let trlMatch = true;
             if (filters.trl !== 'All TRL Levels') {
-                // 1. Extract the specific number from the filter string (e.g. "TRL 1" -> 1)
                 const filterMatch = filters.trl.match(/TRL\s?(\d+)/i);
                 const filterTrlNum = filterMatch ? parseInt(filterMatch[1], 10) : null;
 
-                // 2. Extract the number from the project data
                 let projectTrlNum = 0;
                 if (typeof project.trl === 'number') {
                     projectTrlNum = project.trl;
@@ -481,17 +450,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (pMatch) projectTrlNum = parseInt(pMatch[1], 10);
                 }
 
-                // 3. Strict Comparison
                 if (filterTrlNum !== null) {
                     trlMatch = (projectTrlNum === filterTrlNum);
                 }
             }
-            // ===================================
             
             return searchMatch && industryMatch && collegeMatch && trlMatch && typeMatch;
         });
 
-        filteredData.sort((a, b) => {
+        currentFilteredProjects.sort((a, b) => {
             switch (sortBy) {
                 case 'Most Viewed': return (b.views || 0) - (a.views || 0);
                 case 'Most Inquiries': return (b.inquiries || 0) - (a.inquiries || 0);
@@ -499,19 +466,101 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        projectGrid.innerHTML = '';
-        if (filteredData.length === 0) {
+        currentPage = 1;
+        renderPage();
+    }
+
+    function renderPage() {
+        if (!projectGrid || !projectsCountHeader) return;
+
+        const count = currentFilteredProjects.length;
+        projectsCountHeader.textContent = `${count} Project${count === 1 ? '' : 's'} Found`;
+
+        if (count === 0) {
             projectGrid.innerHTML = '<p class="no-projects-message">No projects match the current filters.</p>';
-        } else {
-            filteredData.forEach(project => {
-                projectGrid.innerHTML += createProjectCardHTML(project);
-            });
+            if(paginationContainer) paginationContainer.innerHTML = '';
+            return;
         }
 
-        const count = filteredData.length;
-        projectsCountHeader.textContent = `${count} Project${count === 1 ? '' : 's'} Found`;
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const projectsToShow = currentFilteredProjects.slice(startIndex, endIndex);
+
+        projectGrid.innerHTML = '';
+        projectsToShow.forEach(project => {
+            projectGrid.innerHTML += createProjectCardHTML(project);
+        });
+
+        renderPaginationControls();
         addEditDeleteListeners();
         setupScrollAnimations();
+    }
+
+    function renderPaginationControls() {
+        if (!paginationContainer) return;
+        paginationContainer.innerHTML = '';
+
+        const totalPages = Math.ceil(currentFilteredProjects.length / ITEMS_PER_PAGE);
+        if (totalPages <= 1) return;
+
+        let startPage, endPage;
+        if (totalPages <= MAX_VISIBLE_PAGINATION) {
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            const maxPagesBeforeCurrent = Math.floor(MAX_VISIBLE_PAGINATION / 2);
+            const maxPagesAfterCurrent = Math.ceil(MAX_VISIBLE_PAGINATION / 2) - 1;
+
+            if (currentPage <= maxPagesBeforeCurrent) {
+                startPage = 1;
+                endPage = MAX_VISIBLE_PAGINATION;
+            } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+                startPage = totalPages - MAX_VISIBLE_PAGINATION + 1;
+                endPage = totalPages;
+            } else {
+                startPage = currentPage - maxPagesBeforeCurrent;
+                endPage = currentPage + maxPagesAfterCurrent;
+            }
+        }
+
+        const prevBtn = document.createElement('a');
+        prevBtn.className = `page-btn ${currentPage === 1 ? 'disabled' : ''}`;
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage();
+                document.getElementById('projects-grid').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+        paginationContainer.appendChild(prevBtn);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('a');
+            btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            btn.textContent = i;
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                currentPage = i;
+                renderPage();
+                document.getElementById('projects-grid').scrollIntoView({ behavior: 'smooth' });
+            });
+            paginationContainer.appendChild(btn);
+        }
+
+        const nextBtn = document.createElement('a');
+        nextBtn.className = `page-btn ${currentPage === totalPages ? 'disabled' : ''}`;
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage();
+                document.getElementById('projects-grid').scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+        paginationContainer.appendChild(nextBtn);
     }
 
     function addEditDeleteListeners() {
@@ -580,8 +629,6 @@ document.addEventListener('DOMContentLoaded', function() {
             animatedElements.forEach(el => el.classList.add('is-visible'));
         }
     }
-
-    // --- INITIALIZATION & EVENT LISTENERS ---
     
     allDropdowns.forEach(dropdown => {
         const toggle = dropdown.querySelector('.dropdown-toggle');
@@ -596,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const spanToUpdate = toggle.querySelector('span:not(.visually-hidden)');
                     if (spanToUpdate) spanToUpdate.textContent = item.textContent;
                     menu.classList.remove('show');
-                    renderProjects();
+                    filterProjects();
                 });
             });
         }
@@ -605,7 +652,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!e.target.closest('.custom-dropdown')) closeOtherDropdowns(null);
     });
     
-    if (searchInput) searchInput.addEventListener('input', renderProjects);
+    if (searchInput) searchInput.addEventListener('input', filterProjects);
 
     if (openSigninBtn) openSigninBtn.addEventListener('click', (e) => { e.preventDefault(); openAuthModal('signin-panel'); });
     if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeAuthModal);
@@ -659,7 +706,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     createRandomCircles();
-    // Initial load
     loadProjects();
 
     window.addEventListener('focus', () => { loadProjects(); });

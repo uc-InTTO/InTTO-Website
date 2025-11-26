@@ -289,8 +289,6 @@
                 // Verify the update
                 const doc = await userDoc.ref.get();
                 const data = doc.data();
-                console.log('Verification - isAdmin value:', data.isAdmin);
-                console.log('Verification - isAdmin type:', typeof data.isAdmin);
 
             } catch (error) {
                 console.error('Error setting admin:', error);

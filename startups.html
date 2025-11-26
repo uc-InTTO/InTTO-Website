@@ -9,54 +9,77 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
+      body {
+          font-family: 'Poppins', sans-serif;
+      }
+
+      .cards-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 24px;
+          width: 100%;
+      }
+
+      @media (max-width: 992px) {
+          .cards-grid {
+              grid-template-columns: repeat(2, 1fr);
+          }
+      }
+
+      @media (max-width: 600px) {
+          .cards-grid {
+              grid-template-columns: 1fr;
+          }
+      }
+
       .pagination-container {
           display: flex;
           justify-content: center;
           align-items: center;
-          gap: 12px;
+          gap: 8px;
           margin-top: 40px;
           margin-bottom: 60px;
           flex-wrap: wrap;
       }
       
       .page-btn {
-          width: 56px;
           height: 56px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 16px;
-          font-weight: 600;
-          text-decoration: none;
-          color: #1C7F56;
-          border: 1px solid rgba(28, 127, 86, 0.2);
-          transition: all 0.2s ease-in-out;
-          flex-shrink: 0;
-          font-family: 'Poppins', sans-serif;
-          background: white;
-          cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #1C7F56;
+    border: 1px solid rgba(28, 127, 86, 0.2);
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;
+    font-family: 'Poppins', sans-serif;
       }
 
       .page-btn i {
-          font-size: 16px;
+          font-size: 14px;
       }
 
       .page-btn.active {
           background: #1C7F56;
           color: white;
           border-color: #1C7F56;
+          font-weight: 600;
       }
 
-      .page-btn:hover:not(.disabled) {
+      .page-btn:hover:not(.disabled):not(.active) {
           background: rgba(28, 127, 86, 0.1);
+          transform: translateY(-2px);
       }
 
-      .page-btn.disabled,
-      .page-btn:disabled {
-          opacity: 0.3;
-          pointer-events: none;
+      .page-btn.disabled {
+          opacity: 0.4;
           cursor: not-allowed;
+          background: #f5f5f5;
+          color: #999;
+          border-color: #ddd;
       }
   </style>
 </head>
@@ -105,22 +128,28 @@
                 <input type="text" id="search-input" placeholder="Search Name...">
             </div>
 
-            <div class="filter-item dropdown-wrapper">
-                <select id="filter-category">
-                    <option value="all">All Categories</option>
-                    <option value="ai and data science">AI and Data Science</option>
-                    <option value="saas and enterprise solutions">SaaS and Enterprise Solutions</option>
-                    <option value="fintech">Fintech</option>
-                    <option value="e-commerce">E-Commerce</option>
-                    <option value="health">Health</option>
-                    <option value="agriculture and food">Agriculture and Food</option>
-                    <option value="education technologies">Education Technologies</option>
-                    <option value="creative industries">Creative Industries</option>
-                    <option value="sustainability and cleantech">Sustainability and Cleantech</option>
-                    <option value="smart cities and mobility">Smart Cities and Mobility</option>
-                    <option value="Criminology, Forensics, and Public Safety">Criminology, Forensics, and Public Safety</option>
-                </select>
-                <i class="fa fa-chevron-down arrow-icon"></i>
+            <div class="filter-item dropdown-wrapper" id="custom-dropdown-container">
+                <input type="hidden" id="filter-category" value="all">
+                
+                <div class="dropdown-trigger">
+                    <span class="selected-text">All Categories</span>
+                    <i class="fa fa-chevron-down arrow-icon"></i>
+                </div>
+
+                <ul class="dropdown-menu-list">
+                    <li data-value="all" class="dropdown-item selected">All Categories</li>
+                    <li data-value="ai and data science" class="dropdown-item">AI and Data Science</li>
+                    <li data-value="saas and enterprise solutions" class="dropdown-item">SaaS and Enterprise Solutions</li>
+                    <li data-value="fintech" class="dropdown-item">Fintech</li>
+                    <li data-value="e-commerce" class="dropdown-item">E-Commerce</li>
+                    <li data-value="health" class="dropdown-item">Health</li>
+                    <li data-value="agriculture and food" class="dropdown-item">Agriculture and Food</li>
+                    <li data-value="education technologies" class="dropdown-item">Education Technologies</li>
+                    <li data-value="creative industries" class="dropdown-item">Creative Industries</li>
+                    <li data-value="sustainability and cleantech" class="dropdown-item">Sustainability and Cleantech</li>
+                    <li data-value="smart cities and mobility" class="dropdown-item">Smart Cities and Mobility</li>
+                    <li data-value="Criminology, Forensics, and Public Safety" class="dropdown-item">Criminology, Forensics, and Public Safety</li>
+                </ul>
             </div>
         </div>
 
@@ -133,7 +162,7 @@
         </div> 
 
         <div class="pagination-container" id="pagination-controls">
-            </div>
+        </div>
 
     </section>
 
@@ -242,13 +271,11 @@
         let allStartups = [];
         let currentFilteredList = [];
         
-        // --- PAGINATION SETTINGS ---
-        const ITEMS_PER_PAGE = 9; // 9 startups per page
-        const MAX_PAGES = 10; // Maximum 10 pages
+        const ITEMS_PER_PAGE = 6;
+        const MAX_VISIBLE_BUTTONS = 10;
         let currentPage = 1;
 
         try {
-            // 1. Fetch ALL Startups (no filters)
             const snapshot = await db.collection('startups').get();
 
             if (snapshot.empty) {
@@ -257,13 +284,11 @@
                 return;
             }
 
-            // 2. Collect all startups
             snapshot.forEach(doc => {
                 const data = doc.data();
                 allStartups.push({ id: doc.id, ...data });
             });
 
-            // 3. Initial Filter & Render
             filterStartups();
 
         } catch (error) {
@@ -271,12 +296,10 @@
             cardsGrid.innerHTML = '<p>Error loading content.</p>';
         }
 
-        // --- Main Filter Logic ---
         function filterStartups() {
             const searchTerm = searchInput.value.toLowerCase();
             const catFilter = categorySelect.value.toLowerCase();
 
-            // Apply Search & Category filters
             currentFilteredList = allStartups.filter(startup => {
                 const nameMatch = (startup.name || '').toLowerCase().includes(searchTerm);
                 const descMatch = (startup.shortDescription || '').toLowerCase().includes(searchTerm);
@@ -286,31 +309,26 @@
                 return (nameMatch || descMatch) && catMatch;
             });
 
-            // Reset to page 1 when filtering
             currentPage = 1;
-            
             renderPage();
         }
 
-        // --- Render Specific Page ---
         function renderPage() {
             if (currentFilteredList.length === 0) {
                 cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">No startups found matching criteria.</p>';
                 countLabel.textContent = "0 Startups";
-                paginationControls.innerHTML = ''; // Clear buttons
+                paginationControls.innerHTML = '';
                 return;
             }
 
             countLabel.textContent = `${currentFilteredList.length} Startups`;
 
-            // Calculate Start & End indices
             const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
             const endIndex = startIndex + ITEMS_PER_PAGE;
             const startupsToShow = currentFilteredList.slice(startIndex, endIndex);
 
             let html = '';
             startupsToShow.forEach(startup => {
-                // Validate and get image URL
                 let imgUrl = 'ucolab/Logo/No image.png';
                 if (startup.imageUrls && Array.isArray(startup.imageUrls) && startup.imageUrls.length > 0) {
                     const firstImg = startup.imageUrls[0];
@@ -322,7 +340,6 @@
                 const category = startup.category || 'Innovation';
                 const trl = startup.trl || 'TRL ?';
 
-                // Only show badge if actually incubated
                 const badgeHTML = (startup.incubationStatus === 'incubated') 
                     ? `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`
                     : '';
@@ -351,26 +368,37 @@
             });
 
             cardsGrid.innerHTML = html;
-            
-            // Render Pagination Buttons
             renderPaginationControls();
         }
 
-        // --- Render Pagination Buttons ---
         function renderPaginationControls() {
             paginationControls.innerHTML = '';
             
-            let totalPages = Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE);
+            const totalPages = Math.ceil(currentFilteredList.length / ITEMS_PER_PAGE);
             
-            // Limit to maximum 6 pages
-            if (totalPages > MAX_PAGES) {
-                totalPages = MAX_PAGES;
-            }
-            
-            // Only show controls if more than 1 page
             if (totalPages <= 1) return;
 
-            // Previous Button
+            let startPage, endPage;
+
+            if (totalPages <= MAX_VISIBLE_BUTTONS) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                const maxPagesBeforeCurrent = Math.floor(MAX_VISIBLE_BUTTONS / 2);
+                const maxPagesAfterCurrent = Math.ceil(MAX_VISIBLE_BUTTONS / 2) - 1;
+
+                if (currentPage <= maxPagesBeforeCurrent) {
+                    startPage = 1;
+                    endPage = MAX_VISIBLE_BUTTONS;
+                } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+                    startPage = totalPages - MAX_VISIBLE_BUTTONS + 1;
+                    endPage = totalPages;
+                } else {
+                    startPage = currentPage - maxPagesBeforeCurrent;
+                    endPage = currentPage + maxPagesAfterCurrent;
+                }
+            }
+
             const prevBtn = document.createElement('a');
             prevBtn.href = '#';
             prevBtn.className = `page-btn arrow ${currentPage === 1 ? 'disabled' : ''}`;
@@ -385,8 +413,7 @@
             });
             paginationControls.appendChild(prevBtn);
 
-            // Number Buttons
-            for (let i = 1; i <= totalPages; i++) {
+            for (let i = startPage; i <= endPage; i++) {
                 const btn = document.createElement('a');
                 btn.href = '#';
                 btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
@@ -400,7 +427,6 @@
                 paginationControls.appendChild(btn);
             }
 
-            // Next Button
             const nextBtn = document.createElement('a');
             nextBtn.href = '#';
             nextBtn.className = `page-btn arrow ${currentPage === totalPages ? 'disabled' : ''}`;
@@ -416,10 +442,51 @@
             paginationControls.appendChild(nextBtn);
         }
 
-        // Listeners
         if(searchInput) searchInput.addEventListener('input', filterStartups);
         if(categorySelect) categorySelect.addEventListener('change', filterStartups);
     });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('custom-dropdown-container');
+            const trigger = container.querySelector('.dropdown-trigger');
+            const menu = container.querySelector('.dropdown-menu-list');
+            const items = container.querySelectorAll('.dropdown-item');
+            const hiddenInput = document.getElementById('filter-category');
+            const selectedText = container.querySelector('.selected-text');
+
+            trigger.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menu.classList.toggle('show');
+                trigger.classList.toggle('active');
+            });
+
+            items.forEach(item => {
+                item.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    const text = this.textContent;
+
+                    selectedText.textContent = text;
+                    hiddenInput.value = value;
+
+                    items.forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+
+                    menu.classList.remove('show');
+                    trigger.classList.remove('active');
+
+                    const event = new Event('change');
+                    hiddenInput.dispatchEvent(event);
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!container.contains(e.target)) {
+                    menu.classList.remove('show');
+                    trigger.classList.remove('active');
+                }
+            });
+        });
     </script>
 
 </body>

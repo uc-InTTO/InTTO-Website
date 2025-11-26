@@ -13,6 +13,27 @@
           font-family: 'Poppins', sans-serif;
       }
 
+      .startup-card {
+          position: relative;
+      }
+
+      .incubated-badge {
+          position: absolute;
+          top: 15x;
+          right: 15px;
+          background: #166647;
+          color: white;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+          z-index: 2;
+      }
+
       .cards-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
@@ -286,7 +307,9 @@
 
             snapshot.forEach(doc => {
                 const data = doc.data();
-                allStartups.push({ id: doc.id, ...data });
+                if (data.incubationStatus === 'incubated') {
+                    allStartups.push({ id: doc.id, ...data });
+                }
             });
 
             filterStartups();
@@ -315,7 +338,7 @@
 
         function renderPage() {
             if (currentFilteredList.length === 0) {
-                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666; font-family: \'Poppins\', sans-serif;">No startups found matching criteria.</p>';
+                cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666; font-family: \'Poppins\', sans-serif;">No incubated startups found matching criteria.</p>';
                 countLabel.textContent = "0 Startups";
                 paginationControls.innerHTML = '';
                 return;

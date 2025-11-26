@@ -9,6 +9,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://www.google.com/recaptcha/api.js?render=6LcfuRMsAAAAAGP--lIdDS3_olzVmXNiEJ6Wh3Fw"></script>
+  <style>
+      body {
+          font-family: 'Poppins', sans-serif;
+      }
+  </style>
 </head>
 <body>
     <script type="module" src="./Contact-Us-DB/auth-check-contact.js"></script>
@@ -350,7 +355,6 @@
         if (!cardsGrid) return;
 
         try {
-            // 1. Fetch ALL Startups (no status filter - show everything)
             const snapshot = await db.collection('startups').get();
 
             if (snapshot.empty) {
@@ -358,35 +362,31 @@
                 return;
             }
 
-            // 2. Collect all startups
             let incubatedStartups = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                // Include all startups, but prioritize those with incubationStatus
-                incubatedStartups.push({ id: doc.id, ...data });
+                if (data.incubationStatus === 'incubated') {
+                    incubatedStartups.push({ id: doc.id, ...data });
+                }
             });
 
-            // 3. Render Function (With LIMIT 6)
             function renderStartups(filterCategory = 'all') {
                 cardsGrid.innerHTML = '';
                 
-                // Filter by Category
                 let filtered = incubatedStartups.filter(data => {
                     return filterCategory === 'all' || 
                            (data.category || '').toLowerCase() === filterCategory.toLowerCase();
                 });
 
-                // Limit to 6
                 const displayList = filtered.slice(0, 6);
 
                 if (displayList.length === 0) {
-                    cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No startups match this category.</p>';
+                    cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No incubated startups match this category.</p>';
                     return;
                 }
 
                 let html = '';
                 displayList.forEach(data => {
-                    // Show badge only if actually incubated
                     const badgeHTML = (data.incubationStatus === 'incubated') 
                         ? `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`
                         : '';
@@ -423,10 +423,8 @@
                 cardsGrid.innerHTML = html;
             }
 
-            // Initial Render
             renderStartups();
 
-            // Dropdown Listener
             if (categorySelect) {
                 categorySelect.addEventListener('change', (e) => {
                     renderStartups(e.target.value);

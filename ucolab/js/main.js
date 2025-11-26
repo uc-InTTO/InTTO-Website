@@ -363,7 +363,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="card-footer">
                         <a href="${detailPageLink}" class="card-link">View Details →</a>
-                        ${showActions ? `<div class="card-actions"><button class="btn-edit" data-id="${project.id}">Edit</button><button class="btn-delete" data-id="${project.id}">Delete</button></div>` : ''}
                     </div>
                 </div>
             </article>`;

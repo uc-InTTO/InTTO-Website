@@ -1,0 +1,345 @@
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE",
+  authDomain: "uc-intto.firebaseapp.com",
+  projectId: "uc-intto",
+  storageBucket: "uc-intto.firebasestorage.app",
+  messagingSenderId: "156771180433",
+  appId: "1:156771180433:web:9aaaa56c9488bffeef0430",
+  measurementId: "G-JG29QNQGCG"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Calendar and booking state
+let currentDate = new Date();
+let selectedDate = null;
+let selectedTimeSlot = null;
+let bookingsData = {};
+
+// Time slots available (8AM to 5PM in 1-hour intervals)
+const timeSlots = [
+  { start: '8AM', end: '9AM', value: '08:00' },
+  { start: '9AM', end: '10AM', value: '09:00' },
+  { start: '10AM', end: '11AM', value: '10:00' },
+  { start: '11AM', end: '12NN', value: '11:00' },
+  { start: '1PM', end: '2PM', value: '13:00' },
+  { start: '2PM', end: '3PM', value: '14:00' },
+  { start: '3PM', end: '4PM', value: '15:00' },
+  { start: '4PM', end: '5PM', value: '16:00' }
+];
+
+// Initialize the calendar
+function initCalendar() {
+  renderCalendar();
+  setupEventListeners();
+  loadBookings();
+}
+
+// Render calendar days
+function renderCalendar() {
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  
+  // Update month display
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+  
+  // Get first day of month and number of days
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  
+  // Get calendar container
+  const calendarDays = document.getElementById('calendarDays');
+  calendarDays.innerHTML = '';
+  
+  // Add empty cells for days before month starts
+  for (let i = 0; i < firstDay; i++) {
+    const emptyDay = document.createElement('div');
+    emptyDay.classList.add('calendar-day', 'empty');
+    calendarDays.appendChild(emptyDay);
+  }
+  
+  // Add days of the month
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayDate = new Date(year, month, day);
+    const dayOfWeek = dayDate.getDay();
+    const dateString = formatDate(dayDate);
+    
+    const dayElement = document.createElement('div');
+    dayElement.classList.add('calendar-day');
+    dayElement.textContent = day;
+    dayElement.dataset.date = dateString;
+    
+    // Check if day is in the past
+    if (dayDate < today) {
+      dayElement.classList.add('disabled');
+    }
+    // Check if day is Sunday (0) - disabled
+    else if (dayOfWeek === 0) {
+      dayElement.classList.add('disabled');
+    }
+    // Available days (Monday to Saturday)
+    else {
+      dayElement.classList.add('available');
+      dayElement.addEventListener('click', () => selectDate(dayDate, dayElement));
+      
+      // Check if this date has bookings
+      if (bookingsData[dateString] && bookingsData[dateString].length > 0) {
+        dayElement.classList.add('has-bookings');
+      }
+    }
+    
+    calendarDays.appendChild(dayElement);
+  }
+}
+
+// Format date as YYYY-MM-DD
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Format date for display
+function formatDisplayDate(date) {
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+// Select a date
+function selectDate(date, element) {
+  selectedDate = date;
+  
+  // Remove selected class from all days
+  document.querySelectorAll('.calendar-day').forEach(day => {
+    day.classList.remove('selected');
+  });
+  
+  // Add selected class to clicked day
+  element.classList.add('selected');
+  
+  // Show time slots
+  showTimeSlots(date);
+}
+
+// Show available time slots for selected date
+function showTimeSlots(date) {
+  const dateString = formatDate(date);
+  const container = document.getElementById('timeSlotsContainer');
+  const grid = document.getElementById('timeSlotsGrid');
+  const dateDisplay = document.getElementById('selectedDateDisplay');
+  
+  // Update date display
+  dateDisplay.textContent = formatDisplayDate(date);
+  
+  // Clear previous time slots
+  grid.innerHTML = '';
+  
+  // Get bookings for this date
+  const bookedSlots = bookingsData[dateString] || [];
+  
+  // Create time slot elements
+  timeSlots.forEach(slot => {
+    const slotElement = document.createElement('div');
+    slotElement.classList.add('time-slot');
+    slotElement.textContent = `${slot.start}-${slot.end}`;
+    slotElement.dataset.time = slot.value;
+    
+    // Check if slot is already booked
+    const isBooked = bookedSlots.some(booking => booking.timeSlot === slot.value);
+    
+    if (isBooked) {
+      slotElement.classList.add('booked');
+    } else {
+      slotElement.addEventListener('click', () => selectTimeSlot(slot, slotElement));
+    }
+    
+    grid.appendChild(slotElement);
+  });
+  
+  // Show container
+  container.style.display = 'block';
+  
+  // Scroll to time slots
+  container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Select a time slot
+function selectTimeSlot(slot, element) {
+  selectedTimeSlot = slot;
+  
+  // Remove selected class from all time slots
+  document.querySelectorAll('.time-slot').forEach(ts => {
+    ts.classList.remove('selected');
+  });
+  
+  // Add selected class to clicked slot
+  element.classList.add('selected');
+  
+  // Show booking modal
+  showBookingModal();
+}
+
+// Show booking modal
+function showBookingModal() {
+  const modal = document.getElementById('bookingModal');
+  const modalDate = document.getElementById('modalDate');
+  const modalTime = document.getElementById('modalTime');
+  
+  // Set modal content
+  modalDate.textContent = formatDisplayDate(selectedDate);
+  modalTime.textContent = `${selectedTimeSlot.start}-${selectedTimeSlot.end}`;
+  
+  // Show modal
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// Hide booking modal
+function hideBookingModal() {
+  const modal = document.getElementById('bookingModal');
+  modal.classList.remove('active');
+  document.body.style.overflow = 'auto';
+  
+  // Reset form
+  document.getElementById('bookingForm').reset();
+}
+
+// Setup event listeners
+function setupEventListeners() {
+  // Month navigation
+  document.getElementById('prevMonth').addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+  });
+  
+  document.getElementById('nextMonth').addEventListener('click', () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+  });
+  
+  // Modal close
+  document.getElementById('modalClose').addEventListener('click', hideBookingModal);
+  
+  // Close modal on outside click
+  document.getElementById('bookingModal').addEventListener('click', (e) => {
+    if (e.target.id === 'bookingModal') {
+      hideBookingModal();
+    }
+  });
+  
+  // Form submission
+  document.getElementById('bookingForm').addEventListener('submit', handleBookingSubmit);
+}
+
+// Load bookings from Firebase
+async function loadBookings() {
+  try {
+    const bookingsRef = collection(db, 'tbiBookings');
+    const snapshot = await getDocs(bookingsRef);
+    
+    bookingsData = {};
+    
+    snapshot.forEach(doc => {
+      const booking = doc.data();
+      const dateString = booking.date;
+      
+      if (!bookingsData[dateString]) {
+        bookingsData[dateString] = [];
+      }
+      
+      bookingsData[dateString].push({
+        timeSlot: booking.timeSlot,
+        ...booking
+      });
+    });
+    
+    // Re-render calendar to show bookings
+    renderCalendar();
+  } catch (error) {
+    console.error('Error loading bookings:', error);
+  }
+}
+
+// Handle booking form submission
+async function handleBookingSubmit(e) {
+  e.preventDefault();
+  
+  const submitBtn = e.target.querySelector('.submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Booking...';
+  
+  try {
+    // Get form data
+    const formData = {
+      fullName: document.getElementById('fullName').value,
+      email: document.getElementById('email').value,
+      projectName: document.getElementById('projectName').value,
+      teamMembers: document.getElementById('teamMembers').value,
+      projectDescription: document.getElementById('projectDescription').value,
+      date: formatDate(selectedDate),
+      timeSlot: selectedTimeSlot.value,
+      timeSlotDisplay: `${selectedTimeSlot.start}-${selectedTimeSlot.end}`,
+      createdAt: Timestamp.now(),
+      status: 'pending'
+    };
+    
+    // Check if slot is still available
+    const dateString = formatDate(selectedDate);
+    const bookingsRef = collection(db, 'tbiBookings');
+    const q = query(
+      bookingsRef,
+      where('date', '==', dateString),
+      where('timeSlot', '==', selectedTimeSlot.value)
+    );
+    
+    const existingBookings = await getDocs(q);
+    
+    if (!existingBookings.empty) {
+      alert('Sorry, this time slot has just been booked. Please select another time.');
+      hideBookingModal();
+      loadBookings();
+      return;
+    }
+    
+    // Save to Firebase
+    await addDoc(bookingsRef, formData);
+    
+    // Show success message
+    alert('Booking successful! You will receive a confirmation email shortly.');
+    
+    // Close modal and reload bookings
+    hideBookingModal();
+    loadBookings();
+    
+    // Reset selections
+    selectedDate = null;
+    selectedTimeSlot = null;
+    document.getElementById('timeSlotsContainer').style.display = 'none';
+    document.querySelectorAll('.calendar-day').forEach(day => {
+      day.classList.remove('selected');
+    });
+    
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    alert('There was an error creating your booking. Please try again.');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Book Assessment';
+  }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initCalendar);

@@ -25,13 +25,12 @@
                     <li><a href="metrics.html"><i class="fa-solid fa-chart-line"></i> Metrics</a></li>
                     <li><a href="news-events.html"><i class="fa-solid fa-newspaper"></i> News & Events</a></li>
                     <li><a href="team.html"><i class="fa-solid fa-users"></i> Team</a></li>
-                    <li><a href="innovation.html" class="active"><i class="fa-solid fa-person"></i> Innovation</a></li> </ul>
-                    <li><a href="sdg.html"><i class="fa-solid fa-bullseye"></i> SDG</a></li> </ul>
+                    <li><a href="innovation.html" class="active"><i class="fa-solid fa-person"></i> Innovation</a></li> 
+                    <li><a href="sdg.html"><i class="fa-solid fa-bullseye"></i> SDG</a></li>
                 </ul>
             </nav>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
                 <div class="header-left">
@@ -233,18 +232,21 @@
             </div>
             
             <div class="modal-footer">
-                <div class="action-buttons">
-                    <button class="btn btn-success" id="approve-btn">
-                        <i class="fas fa-check"></i> Approve
+                <div class="action-group-left">
+                    <button class="btn btn-delete" id="delete-btn">
+                        <i class="fas fa-trash-alt"></i> Delete
                     </button>
+                </div>
+
+                <div class="action-group-right">
                     <button class="btn btn-warning" id="pending-btn">
-                        <i class="fas fa-clock"></i> Set Pending
+                        <i class="fas fa-clock"></i> Pending
                     </button>
                     <button class="btn btn-danger" id="reject-btn">
                         <i class="fas fa-times"></i> Reject
                     </button>
-                    <button class="btn btn-delete" id="delete-btn">
-                        <i class="fas fa-trash"></i> Delete
+                    <button class="btn btn-success" id="approve-btn">
+                        <i class="fas fa-check"></i> Approve
                     </button>
                 </div>
             </div>

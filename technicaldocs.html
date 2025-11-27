@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InTTO Website - Technical Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .navbar {
+            background: #3d7a52;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 1rem 1.5rem;
+            display: inline-block;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #2d5a3d;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .content-section {
+            background: white;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #1a472a;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #3d7a52;
+        }
+
+        h3 {
+            color: #2d5a3d;
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem;
+        }
+
+        h4 {
+            color: #3d7a52;
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #555;
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .usage-card {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #3d7a52;
+        }
+
+        .usage-card h3 {
+            margin-top: 0;
+            color: #2d5a3d;
+            font-size: 1.3rem;
+        }
+
+        .usage-card ul {
+            margin-left: 1.5rem;
+            color: #555;
+        }
+
+        .usage-card li {
+            margin-bottom: 0.75rem;
+            line-height: 1.8;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #c7254e;
+            font-size: 0.9em;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-block .comment {
+            color: #68d391;
+        }
+
+        .code-block .string {
+            color: #fbd38d;
+        }
+
+        .code-block .keyword {
+            color: #90cdf4;
+        }
+
+        .endpoint-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .endpoint-table th {
+            background: #3d7a52;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .endpoint-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .endpoint-table tr:hover {
+            background: #f7fafc;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .method-get {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .method-post {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .method-put {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .method-delete {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .architecture-diagram {
+            background: #f7fafc;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1.5rem 0;
+            border: 2px solid #e2e8f0;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .tech-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tech-item h4 {
+            color: white;
+            margin: 0 0 0.5rem;
+        }
+
+        .tech-item p {
+            color: #e2e8f0;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-item {
+            background: #edf2f7;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 3px solid #3d7a52;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        footer {
+            background: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .usage-grid,
+            .tech-stack {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-container {
+                flex-direction: column;
+            }
+
+            .nav-link {
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>InTTO Website - Technical Documentation</h1>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#introduction" class="nav-link active">Introduction</a>
+            <a href="#api-reference" class="nav-link">API Reference</a>
+            <a href="#architecture" class="nav-link">Architecture</a>
+            <a href="#usage" class="nav-link">Usage</a>
+            <a href="#faq" class="nav-link">FAQ</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- INTRODUCTION SECTION -->
+        <section id="introduction" class="content-section">
+            <h2>Introduction</h2>
+            
+            <p>The <strong>InTTO Website</strong> is a comprehensive web-based platform designed to manage and showcase the innovation ecosystem of the University of the Cordilleras Innovation & Technology Transfer Office. This documentation details the system architecture, installation procedures, usage workflows, and API endpoints. It is intended for administrators, developers, and end-users seeking to understand or integrate with the platform.</p>
+
+            <h3>System Overview</h3>
+            <p>The platform consists of three main modules:</p>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <h4>Public Website</h4>
+                    <p>Showcases university startups, news/events, programs, and services to the general public</p>
+                </div>
+                <div class="feature-item">
+                    <h4>Admin Panel</h4>
+                    <p>Content management system for authenticated administrators to manage all platform content</p>
+                </div>
+                <div class="feature-item">
+                    <h4>uColab Platform</h4>
+                    <p>Project submission and management portal for innovators and researchers</p>
+                </div>
+            </div>
+
+            <h3>Key Features</h3>
+            <ul>
+                <li><strong>Startup Management:</strong> Comprehensive startup profiles with SDG alignment, TRL tracking, and multimedia support</li>
+                <li><strong>News & Events:</strong> Dynamic content management with categorization and tagging</li>
+                <li><strong>IP Application Tracking:</strong> Monitor patents, utility models, and other intellectual property</li>
+                <li><strong>Team Directory:</strong> Showcase InTTO team members with social media integration</li>
+                <li><strong>Project Collaboration:</strong> uColab platform for project submissions and peer review</li>
+                <li><strong>Real-time Updates:</strong> Firebase Firestore for instant data synchronization</li>
+                <li><strong>Image Management:</strong> Cloudinary integration for optimized media delivery</li>
+                <li><strong>Responsive Design:</strong> Mobile-first approach for all devices</li>
+            </ul>
+        </section>
+
+        <!-- API REFERENCE SECTION -->
+        <section id="api-reference" class="content-section">
+            <h2>API Reference</h2>
+
+            <h3>Firebase Configuration</h3>
+            <p>The system uses Firebase for backend services including authentication, database, storage, and analytics.</p>
+
+            <div class="code-block">
+<span class="keyword">const</span> firebaseConfig = {
+    apiKey: <span class="string">"AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE"</span>,
+    authDomain: <span class="string">"uc-intto.firebaseapp.com"</span>,
+    projectId: <span class="string">"uc-intto"</span>,
+    storageBucket: <span class="string">"uc-intto.firebasestorage.app"</span>,
+    messagingSenderId: <span class="string">"156771180433"</span>,
+    appId: <span class="string">"1:156771180433:web:4f9d57eb6b0e7882ef0430"</span>,
+    measurementId: <span class="string">"G-ETY9E0F1K6"</span>
+};
+            </div>
+
+            <h3>Firestore Collections</h3>
+            <p>The database is organized into the following collections:</p>
+
+            <table class="endpoint-table">
+                <thead>
+                    <tr>
+                        <th>Collection</th>
+                        <th>Description</th>
+                        <th>Access Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>startups</code></td>
+                        <td>Incubated startup information, founders, TRL, SDGs, and media</td>
+                        <td>Public read, Admin write</td>
+                    </tr>
+                    <tr>
+                        <td><code>newsEvents</code></td>
+                        <td>News articles and event announcements with images and tags</td>
+                        <td>Public read, Admin write</td>
+                    </tr>
+                    <tr>
+                        <td><code>team</code></td>
+                        <td>InTTO team member profiles and social media links</td>
+                        <td>Public read, Admin write</td>
+                    </tr>
+                    <tr>
+                        <td><code>ipApplications</code></td>
+                        <td>Intellectual property applications (patents, utility models, etc.)</td>
+                        <td>Public read, Admin write</td>
+                    </tr>
+                    <tr>
+                        <td><code>projects</code></td>
+                        <td>uColab project submissions and collaboration data</td>
+                        <td>Authenticated users</td>
+                    </tr>
+                    <tr>
+                        <td><code>users</code></td>
+                        <td>User authentication and profile information</td>
+                        <td>Owner read/write, Admin read</td>
+                    </tr>
+                    <tr>
+                        <td><code>admins</code></td>
+                        <td>List of authorized admin email addresses</td>
+                        <td>Admin only</td>
+                    </tr>
+                    <tr>
+                        <td><code>metrics</code></td>
+                        <td>Analytics and performance metrics</td>
+                        <td>Admin only</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Data Structures</h3>
+
+            <h4>Startups Collection</h4>
+            <div class="code-block">
+{
+    <span class="string">"name"</span>: <span class="string">"Startup Name"</span>,
+    <span class="string">"title"</span>: <span class="string">"Alternative Title"</span>,
+    <span class="string">"description"</span>: <span class="string">"Full description..."</span>,
+    <span class="string">"industry"</span>: <span class="string">"Technology"</span>,
+    <span class="string">"category"</span>: <span class="string">"HealthTech"</span>,
+    <span class="string">"status"</span>: <span class="string">"active"</span>, <span class="comment">// active | inactive | graduated</span>
+    <span class="string">"incubationStatus"</span>: <span class="string">"incubated"</span>, <span class="comment">// incubated | pre-incubation | graduated</span>
+    <span class="string">"trl"</span>: <span class="string">"TRL 7"</span>,
+    <span class="string">"founders"</span>: <span class="string">"John Doe, Jane Smith"</span>,
+    <span class="string">"website"</span>: <span class="string">"https://startup.com"</span>,
+    <span class="string">"email"</span>: <span class="string">"contact@startup.com"</span>,
+    <span class="string">"phone"</span>: <span class="string">"+639123456789"</span>,
+    <span class="string">"logo"</span>: <span class="string">"https://cloudinary.com/..."</span>,
+    <span class="string">"imageUrls"</span>: [],
+    <span class="string">"sdgs"</span>: [9, 11, 17],
+    <span class="string">"keywords"</span>: [<span class="string">"AI"</span>, <span class="string">"Healthcare"</span>],
+    <span class="string">"achievements"</span>: <span class="string">"Award winner 2024"</span>,
+    <span class="string">"socialImpact"</span>: <span class="string">"Helped 1000+ patients"</span>,
+    <span class="string">"createdAt"</span>: Timestamp,
+    <span class="string">"updatedAt"</span>: Timestamp
+}
+            </div>
+
+            <h4>News/Events Collection</h4>
+            <div class="code-block">
+{
+    <span class="string">"title"</span>: <span class="string">"UC Joins TBI Summit"</span>,
+    <span class="string">"content"</span>: <span class="string">"Full article content..."</span>,
+    <span class="string">"type"</span>: <span class="string">"event"</span>, <span class="comment">// news | event</span>
+    <span class="string">"status"</span>: <span class="string">"published"</span>, <span class="comment">// draft | published</span>
+    <span class="string">"date"</span>: <span class="string">"2025-11-20"</span>,
+    <span class="string">"imageUrls"</span>: [],
+    <span class="string">"tags"</span>: [<span class="string">"Innovation"</span>, <span class="string">"Summit"</span>],
+    <span class="string">"sdgs"</span>: [9, 17],
+    <span class="string">"author"</span>: <span class="string">"Admin Name"</span>,
+    <span class="string">"createdAt"</span>: Timestamp,
+    <span class="string">"updatedAt"</span>: Timestamp
+}
+            </div>
+
+            <h3>JavaScript API Methods</h3>
+
+            <h4>Reading Data</h4>
+            <div class="code-block">
+<span class="keyword">import</span> { getFirestore, collection, getDocs, query, where } <span class="keyword">from</span> <span class="string">"firebase/firestore"</span>;
+
+<span class="comment">// Get all startups</span>
+<span class="keyword">const</span> db = getFirestore();
+<span class="keyword">const</span> startupsRef = collection(db, <span class="string">"startups"</span>);
+<span class="keyword">const</span> snapshot = <span class="keyword">await</span> getDocs(startupsRef);
+<span class="keyword">const</span> startups = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+}));
+
+<span class="comment">// Query active startups only</span>
+<span class="keyword">const</span> q = query(startupsRef, where(<span class="string">"status"</span>, <span class="string">"=="</span>, <span class="string">"active"</span>));
+<span class="keyword">const</span> activeSnapshot = <span class="keyword">await</span> getDocs(q);
+            </div>
+
+            <h4>Writing Data (Admin Only)</h4>
+            <div class="code-block">
+<span class="keyword">import</span> { doc, setDoc, updateDoc, deleteDoc } <span class="keyword">from</span> <span class="string">"firebase/firestore"</span>;
+
+<span class="comment">// Add new startup</span>
+<span class="keyword">const</span> newStartupRef = doc(collection(db, <span class="string">"startups"</span>));
+<span class="keyword">await</span> setDoc(newStartupRef, {
+    name: <span class="string">"New Startup"</span>,
+    status: <span class="string">"active"</span>,
+    createdAt: serverTimestamp()
+});
+
+<span class="comment">// Update existing startup</span>
+<span class="keyword">const</span> startupRef = doc(db, <span class="string">"startups"</span>, startupId);
+<span class="keyword">await</span> updateDoc(startupRef, {
+    status: <span class="string">"graduated"</span>,
+    updatedAt: serverTimestamp()
+});
+
+<span class="comment">// Delete startup</span>
+<span class="keyword">await</span> deleteDoc(startupRef);
+            </div>
+
+            <h3>Authentication Methods</h3>
+            <div class="code-block">
+<span class="keyword">import</span> { getAuth, signInWithEmailAndPassword, signOut } <span class="keyword">from</span> <span class="string">"firebase/auth"</span>;
+
+<span class="keyword">const</span> auth = getAuth();
+
+<span class="comment">// Admin login</span>
+<span class="keyword">async function</span> <span class="keyword">login</span>(email, password) {
+    <span class="keyword">try</span> {
+        <span class="keyword">const</span> userCredential = <span class="keyword">await</span> signInWithEmailAndPassword(auth, email, password);
+        <span class="keyword">return</span> userCredential.user;
+    } <span class="keyword">catch</span> (error) {
+        console.error(<span class="string">"Login error:"</span>, error);
+        <span class="keyword">throw</span> error;
+    }
+}
+
+<span class="comment">// Logout</span>
+<span class="keyword">async function</span> <span class="keyword">logout</span>() {
+    <span class="keyword">await</span> signOut(auth);
+}
+            </div>
+        </section>
+
+        <!-- ARCHITECTURE SECTION -->
+        <section id="architecture" class="content-section">
+            <h2>System Architecture</h2>
+
+            <h3>High-Level Overview</h3>
+            <div class="architecture-diagram">
+                <pre style="text-align: left; font-family: monospace; font-size: 0.9rem; color: #2d3748;">
+┌─────────────────────────────────────────────────────────────┐
+│                    CLIENT SIDE (Browser)                     │
+├──────────────┬──────────────────┬──────────────────────────┤
+│ Public Site  │  Admin Panel     │  uColab Platform         │
+│ (HTML/CSS/JS)│  (Admin Portal)  │  (Project Submission)    │
+└──────┬───────┴────────┬─────────┴────────┬─────────────────┘
+       │                │                  │
+       │                │                  │
+       └────────────────┼──────────────────┘
+                        │
+                ┌───────▼────────┐
+                │  Firebase      │
+                │  ├─ Firestore  │  (Database)
+                │  ├─ Auth       │  (Authentication)
+                │  ├─ Storage    │  (File Storage)
+                │  └─ Analytics  │  (Tracking)
+                └────────────────┘
+                        │
+                ┌───────▼────────┐
+                │  Cloudinary    │  (Image CDN)
+                └────────────────┘
+                </pre>
+            </div>
+
+            <h3>Technology Stack</h3>
+            <div class="tech-stack">
+                <div class="tech-item">
+                    <h4>Frontend</h4>
+                    <p>HTML5, CSS3, Vanilla JavaScript</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Backend</h4>
+                    <p>Firebase (BaaS)</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Database</h4>
+                    <p>Cloud Firestore (NoSQL)</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Authentication</h4>
+                    <p>Firebase Authentication</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Storage</h4>
+                    <p>Firebase Storage + Cloudinary</p>
+                </div>
+                <div class="tech-item">
+                    <h4>Hosting</h4>
+                    <p>GitHub Pages / Firebase Hosting</p>
+                </div>
+            </div>
+
+            <h3>Project Structure</h3>
+            <div class="code-block">
+InTTO-Website/
+├── <span class="comment">Public Website Pages</span>
+│   ├── index.html              <span class="comment"># Homepage</span>
+│   ├── startups.html           <span class="comment"># Startups directory</span>
+│   ├── startup-details.html    <span class="comment"># Individual startup page</span>
+│   ├── events.html             <span class="comment"># Events listing</span>
+│   ├── newsEventPage.html      <span class="comment"># News/Event detail page</span>
+│   ├── services.html           <span class="comment"># Services overview</span>
+│   ├── aboutUs.html            <span class="comment"># About InTTO</span>
+│   └── ...
+│
+├── <span class="comment">Admin Panel</span>
+│   └── admin/
+│       ├── dashboard.html      <span class="comment"># Admin dashboard</span>
+│       ├── startups.html       <span class="comment"># Manage startups</span>
+│       ├── news-events.html    <span class="comment"># Manage news/events</span>
+│       ├── team.html           <span class="comment"># Manage team</span>
+│       ├── metrics.html        <span class="comment"># View analytics</span>
+│       ├── css/                <span class="comment"># Admin styles</span>
+│       └── js/                 <span class="comment"># Admin scripts</span>
+│           ├── api.js          <span class="comment"># Firebase config</span>
+│           ├── auth-check.js   <span class="comment"># Auth middleware</span>
+│           └── ...
+│
+├── <span class="comment">uColab Platform</span>
+│   └── ucolab/
+│       ├── index.html          <span class="comment"># Project gallery</span>
+│       ├── submit-project.html <span class="comment"># Project submission</span>
+│       ├── project-detail.html <span class="comment"># Project details</span>
+│       ├── admin.html          <span class="comment"># uColab admin</span>
+│       ├── css/                <span class="comment"># uColab styles</span>
+│       └── js/                 <span class="comment"># uColab scripts</span>
+│
+├── <span class="comment">Shared Assets</span>
+│   ├── css/                    <span class="comment"># Global styles</span>
+│   ├── js/                     <span class="comment"># Shared JavaScript</span>
+│   │   ├── load-news-events.js
+│   │   ├── load-startups.js
+│   │   ├── load-news-home.js
+│   │   └── team-display.js
+│   └── graphics/               <span class="comment"># Images and logos</span>
+│
+└── <span class="comment">Configuration</span>
+    ├── package.json            <span class="comment"># Dependencies</span>
+    ├── CNAME                   <span class="comment"># Custom domain</span>
+    └── README.md               <span class="comment"># Documentation</span>
+            </div>
+
+            <h3>Security Architecture</h3>
+            <div class="info-box">
+                <strong>Authentication Flow:</strong> All admin pages use <code>auth-check.js</code> middleware that redirects unauthorized users to the homepage.
+            </div>
+
+            <div class="code-block">
+<span class="comment">// Admin authentication check (auth-check.js)</span>
+<span class="keyword">import</span> { getAuth, onAuthStateChanged } <span class="keyword">from</span> <span class="string">"firebase/auth"</span>;
+<span class="keyword">import</span> { getFirestore, doc, getDoc } <span class="keyword">from</span> <span class="string">"firebase/firestore"</span>;
+
+<span class="comment">// Hide page until verification complete</span>
+document.documentElement.style.visibility = <span class="string">'hidden'</span>;
+
+<span class="keyword">async function</span> <span class="keyword">checkAdminAccess</span>() {
+    <span class="keyword">const</span> auth = getAuth();
+    <span class="keyword">const</span> db = getFirestore();
+    
+    onAuthStateChanged(auth, <span class="keyword">async</span> (user) => {
+        <span class="keyword">if</span> (!user) {
+            <span class="comment">// Not logged in - redirect to homepage</span>
+            redirectToHome();
+            <span class="keyword">return</span>;
+        }
+        
+        <span class="comment">// Check if user is in admins collection</span>
+        <span class="keyword">const</span> adminRef = doc(db, <span class="string">"admins"</span>, user.email);
+        <span class="keyword">const</span> adminDoc = <span class="keyword">await</span> getDoc(adminRef);
+        
+        <span class="keyword">if</span> (!adminDoc.exists()) {
+            <span class="comment">// Not an admin - redirect</span>
+            redirectToHome();
+            <span class="keyword">return</span>;
+        }
+        
+        <span class="comment">// Authorized - show page</span>
+        document.documentElement.style.visibility = <span class="string">'visible'</span>;
+    });
+}
+            </div>
+        </section>
+
+        <!-- USAGE SECTION -->
+        <section id="usage" class="content-section">
+            <h2>Usage</h2>
+
+            <div class="usage-grid">
+                <div class="usage-card">
+                    <h3>Admin Panel</h3>
+                    <ul>
+                        <li>Log in to the admin panel using authorized credentials</li>
+                        <li>Create, edit, or delete startup profiles with comprehensive details</li>
+                        <li>Manage news articles and event announcements</li>
+                        <li>Upload and optimize images via Cloudinary integration</li>
+                        <li>Track intellectual property applications</li>
+                        <li>View analytics and metrics dashboard</li>
+                        <li>Manage team member profiles and social links</li>
+                        <li>Monitor SDG alignment across startups</li>
+                    </ul>
+                </div>
+
+                <div class="usage-card">
+                    <h3>Public Website</h3>
+                    <ul>
+                        <li>Browse featured startups and their innovations</li>
+                        <li>View detailed startup profiles with multimedia content</li>
+                        <li>Filter startups by SDG, industry, or TRL level</li>
+                        <li>Read latest news and upcoming events</li>
+                        <li>Explore InTTO services and programs</li>
+                        <li>Learn about the InTTO team</li>
+                        <li>Access IP application information</li>
+                        <li>Contact InTTO for inquiries</li>
+                    </ul>
+                </div>
+
+                <div class="usage-card">
+                    <h3>uColab Platform</h3>
+                    <ul>
+                        <li>Register for a uColab account</li>
+                        <li>Submit innovative project proposals</li>
+                        <li>Upload project documentation and media</li>
+                        <li>Browse community projects</li>
+                        <li>Collaborate with other innovators</li>
+                        <li>Track project status and feedback</li>
+                        <li>Receive notifications on project updates</li>
+                        <li>Export project details for presentations</li>
+                    </ul>
+                </div>
+
+                <div class="usage-card">
+                    <h3>Developer Integration</h3>
+                    <ul>
+                        <li>Clone the repository from GitHub</li>
+                        <li>Configure Firebase credentials in <code>api.js</code></li>
+                        <li>Set up Cloudinary for image management</li>
+                        <li>Deploy to GitHub Pages or Firebase Hosting</li>
+                        <li>Implement custom endpoints using Firestore</li>
+                        <li>Extend admin panel with new features</li>
+                        <li>Integrate with external APIs</li>
+                        <li>Monitor performance via Firebase Analytics</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Getting Started</h3>
+            <div class="success-box">
+                <strong>Quick Start:</strong> To begin using the admin panel, request admin access from the InTTO team, then log in at <code>/admin/index.html</code> using your authorized email and password.
+            </div>
+
+            <h3>Admin Workflow Example</h3>
+            <ol>
+                <li><strong>Login:</strong> Navigate to <code>/admin/index.html</code> and enter credentials</li>
+                <li><strong>Dashboard:</strong> View system overview and recent activities</li>
+                <li><strong>Add Startup:</strong>
+                    <ul>
+                        <li>Go to Startups management page</li>
+                        <li>Click "Add New Startup"</li>
+                        <li>Fill in required fields (name, description, founders, etc.)</li>
+                        <li>Upload logo and images</li>
+                        <li>Select relevant SDGs</li>
+                        <li>Set TRL level and incubation status</li>
+                        <li>Save and publish</li>
+                    </ul>
+                </li>
+                <li><strong>Create Event:</strong>
+                    <ul>
+                        <li>Navigate to News & Events section</li>
+                        <li>Click "Add Event"</li>
+                        <li>Enter event details and date</li>
+                        <li>Upload event images</li>
+                        <li>Add tags and related SDGs</li>
+                        <li>Publish or save as draft</li>
+                    </ul>
+                </li>
+                <li><strong>Monitor Metrics:</strong> Check analytics dashboard for visitor stats and engagement</li>
+            </ol>
+
+            <h3>uColab Workflow Example</h3>
+            <ol>
+                <li><strong>Sign Up:</strong> Create account with university email</li>
+                <li><strong>Submit Project:</strong>
+                    <ul>
+                        <li>Complete project information form</li>
+                        <li>Upload supporting documents</li>
+                        <li>Add team members</li>
+                        <li>Submit for review</li>
+                    </ul>
+                </li>
+                <li><strong>Collaborate:</strong> Engage with community feedback and suggestions</li>
+                <li><strong>Track Progress:</strong> Monitor project status and updates</li>
+            </ol>
+        </section>
+
+        <!-- FAQ SECTION -->
+        <section id="faq" class="content-section">
+            <h2>FAQ</h2>
+
+            <h3>General Questions</h3>
+            
+            <h4>Q: Who can access the admin panel?</h4>
+            <p><strong>A:</strong> Only authorized users whose email addresses are registered in the Firebase <code>admins</code> collection can access the admin panel. Contact the InTTO team to request admin access.</p>
+
+            <h4>Q: Is the website mobile-friendly?</h4>
+            <p><strong>A:</strong> Yes, the entire platform is designed with a mobile-first approach and is fully responsive across all device sizes.</p>
+
+            <h4>Q: How are images optimized?</h4>
+            <p><strong>A:</strong> The platform uses Cloudinary for automatic image optimization, resizing, and CDN delivery, ensuring fast load times without sacrificing quality.</p>
+
+            <h3>Technical Questions</h3>
+
+            <h4>Q: What happens if Firebase goes down?</h4>
+            <p><strong>A:</strong> Firebase has 99.95% uptime SLA. In rare outages, the website will show cached content where available. Real-time features will resume automatically when service is restored.</p>
+
+            <h4>Q: Can I export data from the platform?</h4>
+            <p><strong>A:</strong> Yes, admins can use Firebase console or custom scripts to export all Firestore data in JSON format for backup or migration purposes.</p>
+
+            <h4>Q: How do I add a new admin?</h4>
+            <p><strong>A:</strong> Use the Firebase console to add a new document to the <code>admins</code> collection with the user's email address as the document ID.</p>
+
+            <div class="code-block">
+<span class="comment">// Add admin via Firebase console or script</span>
+<span class="keyword">await</span> setDoc(doc(db, <span class="string">"admins"</span>, <span class="string">"newadmin@uc.edu.ph"</span>), {
+    email: <span class="string">"newadmin@uc.edu.ph"</span>,
+    role: <span class="string">"admin"</span>,
+    addedAt: serverTimestamp()
+});
+            </div>
+
+            <h4>Q: How do I customize the website theme?</h4>
+            <p><strong>A:</strong> Edit the CSS files in the <code>/css</code> directory. The main color scheme uses CSS variables for easy customization:</p>
+
+            <div class="code-block">
+:root {
+    --primary-color: #1a472a;
+    --secondary-color: #3d7a52;
+    --accent-color: #2d5a3d;
+    --text-color: #333;
+    --background-color: #f5f5f5;
+}
+            </div>
+
+            <h3>Troubleshooting</h3>
+
+            <h4>Q: I can't log in to the admin panel. What should I do?</h4>
+            <p><strong>A:</strong> Ensure you are using the correct email and password. Check if your email is registered in the <code>admins</code> collection. Clear browser cache and try again. If issues persist, contact the system administrator.</p>
+
+            <h4>Q: Images are not uploading. What's wrong?</h4>
+            <p><strong>A:</strong> Check your internet connection. Verify that image files are under 10MB and in supported formats (JPG, PNG, WebP). Ensure Cloudinary configuration is correct in the admin panel settings.</p>
+
+            <h4>Q: The website is loading slowly. How can I fix this?</h4>
+            <p><strong>A:</strong> Check your internet connection. Clear browser cache. Ensure images are properly optimized through Cloudinary. Monitor Firebase usage to identify any bottlenecks.</p>
+
+            <div class="warning-box">
+                <strong>Security Warning:</strong> Never commit Firebase configuration keys to public repositories. Use environment variables for production deployments.
+            </div>
+
+            <h3>Support</h3>
+            <p>For additional support or questions not covered in this documentation:</p>
+            <ul>
+                <li><strong>Email:</strong> intto@uc-bcf.edu.ph</li>
+                <li><strong>GitHub Repository:</strong> <a href="https://github.com/KharonKade/InTTO-Website" target="_blank">github.com/KharonKade/InTTO-Website</a></li>
+                <li><strong>Office Hours:</strong> Monday-Friday, 8:00 AM - 5:00 PM (PHT)</li>
+            </ul>
+        </section>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 University of the Cordilleras Innovation & Technology Transfer Office. All rights reserved.</p>
+        <p>Developed with ❤️ by the InTTO Development Team</p>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Smooth scroll to target
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Update active navigation on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

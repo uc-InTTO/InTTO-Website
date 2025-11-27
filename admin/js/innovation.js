@@ -85,19 +85,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const activeFilterBtn = document.querySelector('.filter-btn.active');
         const activeStatus = activeFilterBtn ? activeFilterBtn.dataset.status : 'all';
         const sortValue = sortSelect.value;
-        
-        // Filter applications
+
         let filtered = applications.filter(app => {
-            // Normalize status to lowercase
             const appStatus = (app.status || 'pending').toLowerCase();
             
-            // Search filter
             const matchesSearch = 
                 (app.fullName || '').toLowerCase().includes(searchTerm) ||
                 (app.email || '').toLowerCase().includes(searchTerm) ||
                 (app.startupName || '').toLowerCase().includes(searchTerm);
             
-            // Status filter - handle both 'approved'/'approve' and 'rejected'/'reject'
             let matchesStatus = false;
             if (activeStatus === 'all') {
                 matchesStatus = true;
@@ -111,8 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return matchesSearch && matchesStatus;
         });
-        
-        // Sort applications
+
         filtered.sort((a, b) => {
             switch (sortValue) {
                 case 'recent':
@@ -127,8 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return 0;
             }
         });
-        
-        // Render
+
         if (filtered.length === 0) {
             showEmptyState();
         } else {
@@ -136,24 +130,19 @@ document.addEventListener('DOMContentLoaded', function() {
             attachCardEventListeners();
         }
     }
-    
-    /**
-     * Create application card HTML
-     */
+
     function createApplicationCard(app) {
         const status = (app.status || 'pending').toLowerCase();
         const submittedAt = app.submittedAt?.toDate() || new Date();
         const formattedDate = submittedAt.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            day: 'numeric'
         });
-        
-        // Normalize status for display
+
         let statusDisplay = '';
         let statusClass = '';
+
         if (status === 'approved' || status === 'approve') {
             statusDisplay = 'Approved';
             statusClass = 'approved';
@@ -164,89 +153,88 @@ document.addEventListener('DOMContentLoaded', function() {
             statusDisplay = 'Pending';
             statusClass = 'pending';
         }
-        
+
         return `
-            <div class="application-card" data-id="${app.id}">
-                <div class="card-header">
-                    <div class="card-title-section">
-                        <h3 class="card-title">${app.fullName || 'N/A'}</h3>
-                        <p class="card-subtitle">${app.email || 'N/A'}</p>
-                        <div class="card-startup-name">
+            <div class="application-row" data-id="${app.id}">
+                
+                <div class="row-section profile-section">
+                    <div class="profile-main">
+                        <div class="startup-icon">
                             <i class="fas fa-rocket"></i>
-                            ${app.startupName || 'No startup name'}
+                        </div>
+                        <div>
+                            <h3 class="row-title">${app.fullName || 'N/A'}</h3>
+                            <div class="row-subtitle">
+                                <span>${app.startupName || 'No Startup'}</span>
+                                <span class="dot-separator">•</span>
+                                <span>${app.email || 'N/A'}</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-status-section">
+                </div>
+
+                <div class="row-section details-section">
+                    <div class="detail-item">
+                        <span class="detail-label">Department</span>
+                        <span class="detail-value">${app.deptCollege || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Industry</span>
+                        <span class="detail-value">${app.industry || 'N/A'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Submitted</span>
+                        <span class="detail-value">${formattedDate}</span>
+                    </div>
+                    <div class="detail-item status-wrapper">
                         <span class="status-badge ${statusClass}">${statusDisplay}</span>
-                        <span class="card-date">${formattedDate}</span>
                     </div>
                 </div>
-                
-                <div class="card-body">
-                    <div class="card-info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Phone</span>
-                            <span class="info-value">${app.phone || 'N/A'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Department</span>
-                            <span class="info-value">${app.deptCollege || 'N/A'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Industry</span>
-                            <span class="info-value">${app.industry || 'N/A'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Team Size</span>
-                            <span class="info-value">${app.teamSize || 'N/A'}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card-footer">
-                    <div class="card-actions">
-                        <button class="action-btn btn-view" data-id="${app.id}">
-                            <i class="fas fa-eye"></i> View Details
+
+                <div class="row-section action-section">
+                    <button class="action-btn-icon view" title="View Details" data-id="${app.id}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    
+                    ${statusClass !== 'approved' ? `
+                        <button class="action-btn-icon approve" title="Approve" data-id="${app.id}" data-action="approve">
+                            <i class="fas fa-check"></i>
                         </button>
-                    </div>
-                    <div class="card-actions">
-                        ${statusClass !== 'approved' ? `
-                            <button class="action-btn btn-approve" data-id="${app.id}" data-action="approve">
-                                <i class="fas fa-check"></i> Approve
-                            </button>
-                        ` : ''}
-                        ${statusClass !== 'rejected' ? `
-                            <button class="action-btn btn-reject" data-id="${app.id}" data-action="reject">
-                                <i class="fas fa-times"></i> Reject
-                            </button>
-                        ` : ''}
-                        <button class="action-btn btn-delete" data-id="${app.id}" data-action="delete">
-                            <i class="fas fa-trash"></i>
+                    ` : ''}
+
+                    ${statusClass !== 'rejected' ? `
+                        <button class="action-btn-icon reject" title="Reject" data-id="${app.id}" data-action="reject">
+                            <i class="fas fa-times"></i>
                         </button>
-                    </div>
+                    ` : ''}
+
+                    <button class="action-btn-icon delete" title="Delete" data-id="${app.id}" data-action="delete">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
+
             </div>
         `;
     }
-    
-    /**
-     * Attach event listeners to cards
-     */
+
     function attachCardEventListeners() {
-        // View details buttons
-        document.querySelectorAll('.btn-view').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const id = e.currentTarget.dataset.id;
-                showApplicationDetails(id);
-            });
-        });
+        const buttons = applicationsContainer.querySelectorAll('.action-btn-icon');
         
-        // Quick action buttons
-        document.querySelectorAll('.btn-approve, .btn-reject, .btn-delete').forEach(btn => {
+        buttons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const id = e.currentTarget.dataset.id;
-                const action = e.currentTarget.dataset.action;
-                confirmAction(id, action);
+                e.stopPropagation(); 
+                const id = btn.dataset.id;
+                const action = btn.dataset.action;
+
+                if (btn.classList.contains('view')) {
+                    showApplicationDetails(id);
+                } else if (action === 'approve') {
+                    confirmAction(id, 'approve');
+                } else if (action === 'reject') {
+                    confirmAction(id, 'reject');
+                } else if (action === 'delete') {
+                    confirmAction(id, 'delete');
+                }
             });
         });
     }

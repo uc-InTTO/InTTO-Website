@@ -1029,9 +1029,13 @@ main {
     margin-bottom: 1rem;
     font-family: 'Poppins', sans-serif;
     display: -webkit-box;
-    -webkit-line-clamp: 3; line-clamp: 3;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 .card-footer {

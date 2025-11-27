@@ -1,4 +1,3 @@
-
 body {
     position: relative;
     overflow-x: hidden;
@@ -12,7 +11,6 @@ body {
     border-radius: 50%;
 }
 
-
 .project-detail-page {
     margin-top: 2rem;
     max-width: 90%;
@@ -20,6 +18,7 @@ body {
     margin-right: auto;
     padding: 0 1rem;
     padding-bottom: 6rem;
+    box-sizing: border-box;
 }
 
 .back-link {
@@ -33,9 +32,11 @@ body {
     transition: color 0.3s ease;
     font-family: 'Poppins', sans-serif;
 }
+
 .back-link:hover {
     color: var(--primary-green);
 }
+
 .back-link svg {
     margin-top: -2px;
 }
@@ -45,10 +46,12 @@ body {
     gap: 3rem;
     align-items: flex-start;
     margin-bottom: 3rem;
+    max-width: 100%;
 }
 
 .hero-left {
     flex: 1;
+    min-width: 0;
 }
 
 .hero-left .card-icon {
@@ -63,6 +66,7 @@ body {
     color: var(--text-dark);
     margin-bottom: 0.5rem;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: break-word;
 }
 
 .hero-tags {
@@ -78,6 +82,9 @@ body {
     margin-bottom: 1.5rem;
     line-height: 1.6;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 .contact-founder-btn {
@@ -90,74 +97,80 @@ body {
     border: none;
     font-family: 'Poppins', sans-serif;
 }
+
 .contact-founder-btn:hover {
     background-color: #1a5238;
 }
+
 .contact-founder-btn svg {
     margin-top: -1px;
 }
-
 
 .hero-right {
     flex-basis: 45%;
     flex-shrink: 0;
     position: relative;
+    max-width: 100%;
 }
 
 .hero-right img {
     width: 100%;
-    height: auto;
+    height: 350px;
+    object-fit: cover;
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.5s ease-in-out; 
+    transition: opacity 0.5s ease-in-out;
 }
 
-@media (max-width: 1024px) {
-    .project-hero {
-        flex-direction: column;
-        gap: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    .hero-right {
-        flex-basis: 100%; 
-        order: -1; 
-    }
-
-    .hero-left h1 {
-        font-size: 2.25rem;
-    }
-
-    .hero-description {
-        font-size: 1rem;
-    }
+.hero-slide-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: all 0.3s ease;
 }
 
-@media (max-width: 600px) {
-    .project-detail-page {
-        margin-top: 1rem;
-        padding-bottom: 4rem;
-    }
-    
-    .back-link {
-        margin-bottom: 1.5rem;
-    }
-    
-    .hero-left h1 {
-        font-size: 1.75rem;
-    }
-    
-    .contact-founder-btn {
-        width: 100%;
-        justify-content: center;
-        padding: 0.75rem 1.5rem;
-    }
+.hero-slide-btn:hover,
+.hero-slide-btn:focus {
+    background-color: rgba(0, 0, 0, 0.7);
+    opacity: 1;
+    outline: none;
+}
+
+.hero-slide-btn.prev {
+    left: 1rem;
+}
+
+.hero-slide-btn.next {
+    right: 1rem;
+}
+
+.hero-slide-btn svg {
+    width: 22px;
+    height: 22px;
+    margin-left: -2px;
+}
+
+.hero-slide-btn.next svg {
+    margin-left: 2px;
 }
 
 .detail-content-area {
     display: flex;
     gap: 2rem;
     align-items: flex-start;
+    max-width: 100%;
 }
 
 .detail-main-column {
@@ -165,6 +178,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    min-width: 0;
 }
 
 .detail-sidebar {
@@ -173,6 +187,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    min-width: 0;
 }
 
 .detail-section-card {
@@ -182,6 +197,8 @@ body {
     padding: 2rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     font-family: 'Poppins', sans-serif;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .detail-section-card h2 {
@@ -194,10 +211,10 @@ body {
     gap: 0.6rem;
     font-family: 'Poppins', sans-serif;
 }
+
 .detail-section-card h2 svg {
     color: var(--primary-green);
 }
-
 
 .detail-section-card p {
     font-size: 1rem;
@@ -205,7 +222,11 @@ body {
     line-height: 1.7;
     margin-bottom: 1rem;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    max-width: 100%;
 }
+
 .detail-section-card p:last-child {
     margin-bottom: 0;
 }
@@ -218,10 +239,10 @@ body {
     margin-bottom: 0.5rem;
     font-family: 'Poppins', sans-serif;
 }
+
 .detail-section-card h3:first-of-type {
     margin-top: 0;
 }
-
 
 .features-grid {
     display: grid;
@@ -234,6 +255,7 @@ body {
     border-radius: 10px;
     padding: 1.25rem;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: break-word;
 }
 
 .feature-item h4 {
@@ -258,6 +280,8 @@ body {
     padding: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     font-family: 'Poppins', sans-serif;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .sidebar-card h4 {
@@ -270,11 +294,11 @@ body {
     gap: 0.5rem;
     font-family: 'Poppins', sans-serif;
 }
+
 .sidebar-card h4 svg {
     color: var(--primary-green);
     margin-top: -2px;
 }
-
 
 .trl-percentage {
     float: right;
@@ -282,6 +306,7 @@ body {
     color: var(--text-light);
     font-family: 'Poppins', sans-serif;
 }
+
 .trl-bar {
     width: 100%;
     height: 8px;
@@ -290,10 +315,12 @@ body {
     overflow: hidden;
     margin: 0.5rem 0;
 }
+
 .trl-progress {
     height: 100%;
     border-radius: 4px;
 }
+
 .trl-label {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -303,11 +330,11 @@ body {
     margin-top: 0.5rem;
     font-family: 'Poppins', sans-serif;
 }
+
 .trl-blue-sidebar { background-color: #e9e7fd; color: #4527a0; }
 .trl-yellow-sidebar { background-color: #fff8e1; color: #f9a825; }
 .trl-orange-sidebar { background-color: #fff3e0; color: #f57c00; }
 .trl-green-sidebar { background-color: #e8f5e9; color: #2e7d32; }
-
 
 .info-item {
     display: flex;
@@ -316,17 +343,19 @@ body {
     padding: 0.8rem 0;
     border-bottom: 1px solid #f0f0f0;
 }
+
 .info-item:last-child {
     border-bottom: none;
     padding-bottom: 0;
 }
+
 .sidebar-card > .info-item:first-of-type {
     padding-top: 0;
 }
+
 .sidebar-card h4 + .info-item:first-of-type {
     padding-top: 0.8rem;
 }
-
 
 .info-label {
     color: var(--text-light);
@@ -334,12 +363,14 @@ body {
     font-size: 0.8rem;
     font-family: 'Poppins', sans-serif;
 }
+
 .info-value {
     color: var(--text-dark);
     font-weight: 500;
     font-size: 0.95rem;
     line-height: 1.4;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: break-word;
 }
 
 .sidebar-card-dark {
@@ -350,36 +381,44 @@ body {
     padding: 1.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
     font-family: 'Poppins', sans-serif;
+    max-width: 100%;
+    box-sizing: border-box;
 }
+
 .sidebar-card-dark h4 {
     color: #ffffff;
     font-size: 1.2rem;
     margin-bottom: 1.5rem;
     font-family: 'Poppins', sans-serif;
 }
+
 .sidebar-card-dark h4 svg {
     color: #ffffff;
 }
+
 .sidebar-card-dark .info-item {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     padding: 1rem 0;
 }
+
 .sidebar-card-dark .info-label {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.8rem;
     font-family: 'Poppins', sans-serif;
 }
+
 .sidebar-card-dark .info-value {
     color: #ffffff;
     font-size: 1rem;
     font-weight: 500;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: break-word;
 }
+
 .sidebar-card-dark .info-item:has(+ .card-separator) {
     padding-bottom: 1rem;
     border-bottom: none;
 }
-
 
 .card-separator {
     border: none;
@@ -406,22 +445,25 @@ body {
     margin-bottom: 0.8rem;
     line-height: 1.5;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: break-word;
 }
+
 .sidebar-card-dark .contact-info:last-child {
     margin-bottom: 0;
 }
+
 .sidebar-card-dark .contact-info svg {
     flex-shrink: 0;
     color: rgba(255, 255, 255, 0.8);
     margin-top: 1px;
 }
 
-
 .sidebar-search {
     position: relative;
     background-color: var(--bg-light-grey);
     border-radius: 10px;
 }
+
 .sidebar-search svg {
     position: absolute;
     left: 0.8rem;
@@ -429,6 +471,7 @@ body {
     transform: translateY(-50%);
     color: #999;
 }
+
 .sidebar-search input {
     width: 100%;
     padding: 0.7rem 1rem 0.7rem 2.5rem;
@@ -438,6 +481,7 @@ body {
     font-size: 0.9rem;
     background: transparent;
     outline: none;
+    box-sizing: border-box;
 }
 
 .gallery-grid {
@@ -468,56 +512,6 @@ body {
     font-size: 0.95rem;
     grid-column: 1 / -1;
     font-family: 'Poppins', sans-serif;
-}
-
-.hero-right img {
-    width: 100%;
-    height: 350px;
-    object-fit: cover;
-    border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    transition: opacity 0.5s ease-in-out; 
-}
-
-.hero-slide-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    background-color: rgba(0, 0, 0, 0.4);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    display: none; 
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-}
-.hero-slide-btn:hover,
-.hero-slide-btn:focus {
-    background-color: rgba(0, 0, 0, 0.7);
-    opacity: 1;
-    outline: none;
-}
-
-.hero-slide-btn.prev {
-    left: 1rem;
-}
-.hero-slide-btn.next {
-    right: 1rem;
-}
-
-.hero-slide-btn svg {
-    width: 22px;
-    height: 22px;
-    margin-left: -2px;
-}
-.hero-slide-btn.next svg {
-    margin-left: 2px;
 }
 
 .gallery-image.active {
@@ -562,7 +556,56 @@ body {
 .gallery-image {
     cursor: pointer;
 }
+
+#founder-avatar-container {
+    width: 64px;
+    height: 64px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+#detail-founder-email-link,
+.sidebar-card-dark a {
+    color: #ffffff !important;
+    text-decoration: none;
+    transition: opacity 0.3s ease;
+}
+
+#detail-founder-email-link:hover,
+.sidebar-card-dark a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+
 @media (max-width: 1024px) {
+    .project-hero {
+        flex-direction: column;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .hero-right {
+        flex-basis: 100%; 
+        order: -1; 
+    }
+
+    .hero-left h1 {
+        font-size: 2.25rem;
+    }
+
+    .hero-description {
+        font-size: 1rem;
+    }
+
     .detail-content-area {
         flex-direction: column;
         gap: 1.5rem;
@@ -594,7 +637,7 @@ body {
 
     .features-grid {
         gap: 1rem;
-        grid-template-columns: 1fr; /* Switch features to a single column */
+        grid-template-columns: 1fr;
     }
     
     .hero-right img {
@@ -607,6 +650,25 @@ body {
 }
 
 @media (max-width: 600px) {
+    .project-detail-page {
+        margin-top: 1rem;
+        padding-bottom: 4rem;
+    }
+    
+    .back-link {
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-left h1 {
+        font-size: 1.75rem;
+    }
+    
+    .contact-founder-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+    }
+
     .detail-section-card {
         padding: 1rem;
     }
@@ -636,34 +698,4 @@ body {
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
         gap: 0.75rem;
     }
-}
-#founder-avatar-container {
-    width: 64px;
-    height: 64px;
-    background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white */
-    color: #ffffff;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%; /* Makes it a perfect circle */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-}
-
-/* 2. Fix the Blue Email Link */
-/* This targets the specific email link ID and any links inside the dark card */
-#detail-founder-email-link,
-.sidebar-card-dark a {
-    color: #ffffff !important; /* Forces text to be white */
-    text-decoration: none;
-    transition: opacity 0.3s ease;
-}
-
-#detail-founder-email-link:hover,
-.sidebar-card-dark a:hover {
-    opacity: 0.8;
-    text-decoration: underline;
 }

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const loggedInUser = user.displayName || user.email;
             updateHeader(user, loggedInUser);
             initializeImageUploaders();
+            initializeCustomDropdown('industry-dropdown-btn', 'industry-checkbox-list', 'industry-selected-pills', 'industry-validation');
             initializeCustomDropdown('college-dropdown-btn', 'college-checkbox-list', 'college-selected-pills', 'college-validation');
             initializeCustomDropdown('sdg-dropdown-btn', 'sdg-checkbox-list', 'sdg-selected-pills', 'sdg-validation');
             initializeCharCounter();
@@ -174,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const finalImageUrls = uploadedImageUrls.filter(url => url !== "");
                 const projectNameValue = document.getElementById('project-name')?.value || 'Project';
                 
+                const selectedIndustries = Array.from(document.querySelectorAll('#industry-checkbox-list input[type="checkbox"]:checked')).map(cb => cb.value);
                 const selectedColleges = Array.from(document.querySelectorAll('#college-checkbox-list input[type="checkbox"]:checked')).map(cb => cb.value);
                 const selectedSdgs = Array.from(document.querySelectorAll('#sdg-checkbox-list input[type="checkbox"]:checked')).map(cb => cb.value);
 
@@ -193,8 +195,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     name: projectNameValue,
                     title: projectNameValue,
                     type: document.getElementById('project-type')?.value || 'N/A',
-                    industry: document.getElementById('industry')?.value || 'N/A',
-                    category: document.getElementById('industry')?.value || 'N/A',
+                    industry: selectedIndustries,
+                    category: selectedIndustries,
                     college: selectedColleges,
                     trl: document.getElementById('trl-level')?.value || 'TRL ?',
                     sdgs: selectedSdgs,

@@ -284,6 +284,7 @@ async function handleBookingSubmit(e) {
   try {
     // Get form data
     const formData = {
+      serviceType: document.getElementById('serviceType').value,
       fullName: document.getElementById('fullName').value,
       email: document.getElementById('email').value,
       projectName: document.getElementById('projectName').value,

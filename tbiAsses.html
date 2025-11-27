@@ -154,6 +154,18 @@
 
       <form id="bookingForm">
         <div class="form-group">
+          <label for="serviceType">Service Type <span class="required">*</span></label>
+          <select id="serviceType" name="serviceType" required>
+            <option value="">Select a service</option>
+            <option value="TBI Assessment">TBI Assessment</option>
+            <option value="Startup Mentoring">Startup Mentoring</option>
+            <option value="Co-Working Space">Co-Working Space</option>
+            <option value="IP Consultation">IP Consultation</option>
+            <option value="Prototype Testing">Prototype Testing</option>
+          </select>
+        </div>
+
+        <div class="form-group">
           <label for="fullName">Full Name <span class="required">*</span></label>
           <input type="text" id="fullName" name="fullName" placeholder="Enter your name" required>
         </div>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBI Bookings - UC InTTO Admin</title>
+    <link rel="stylesheet" href="css/dashboard-style.css">
+    <link rel="stylesheet" href="css/tbi-bookings-style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="js/auth-check.js"></script>
+</head>
+
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>UC InTTO</h3>
+            <p>Admin Portal</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="dashboard.html"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
+                <li><a href="startups.html"><i class="fa-solid fa-rocket"></i> Startups</a></li>
+                <li><a href="ip-applications.html"><i class="fa-solid fa-file-shield"></i> IP Applications</a></li>
+                <li><a href="metrics.html"><i class="fa-solid fa-chart-line"></i> Metrics</a></li>
+                <li><a href="news-events.html"><i class="fa-solid fa-newspaper"></i> News & Events</a></li>
+                <li><a href="team.html"><i class="fa-solid fa-users"></i> Team</a></li>
+                <li><a href="innovation.html"><i class="fa-solid fa-person"></i> Innovation</a></li> 
+                <li><a href="sdg.html"><i class="fa-solid fa-bullseye"></i> SDG</a></li>
+                <li><a href="tbi-bookings.html" class="active"><i class="fa-solid fa-calendar-check"></i> TBI Bookings</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="main-header">
+            <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </header>
+
+        <section class="bookings-section">
+            <div class="section-header">
+                <div>
+                    <h1>TBI Bookings Management</h1>
+                    <p class="section-subtitle">Manage all assessment and service bookings</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-close-schedule" id="openCloseDayModal">
+                        <i class="fa-solid fa-calendar-xmark"></i> Close Day/Time
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="bookings-stats">
+                <div class="stat-card">
+                    <div class="stat-icon pending">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="pendingCount">0</p>
+                        <p class="stat-label">Pending</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon confirmed">
+                        <i class="fa-solid fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="confirmedCount">0</p>
+                        <p class="stat-label">Confirmed</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon completed">
+                        <i class="fa-solid fa-check-double"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="completedCount">0</p>
+                        <p class="stat-label">Completed</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon cancelled">
+                        <i class="fa-solid fa-times-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-value" id="cancelledCount">0</p>
+                        <p class="stat-label">Cancelled</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="statusFilter">Status:</label>
+                    <select id="statusFilter">
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="rescheduled">Rescheduled</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="serviceFilter">Service Type:</label>
+                    <select id="serviceFilter">
+                        <option value="all">All Services</option>
+                        <option value="TBI Assessment">TBI Assessment</option>
+                        <option value="Startup Mentoring">Startup Mentoring</option>
+                        <option value="Co-Working Space">Co-Working Space</option>
+                        <option value="IP Consultation">IP Consultation</option>
+                        <option value="Prototype Testing">Prototype Testing</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="dateFilter">Date:</label>
+                    <input type="date" id="dateFilter">
+                </div>
+                <div class="filter-group">
+                    <input type="text" id="searchFilter" placeholder="Search by name, email, or project...">
+                </div>
+                <button class="btn-reset-filters" id="resetFilters">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+
+            <!-- Bookings Table -->
+            <div class="table-container">
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Service Type</th>
+                            <th>Client Name</th>
+                            <th>Email</th>
+                            <th>Project</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody">
+                        <tr>
+                            <td colspan="10" class="loading-row">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Loading bookings...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Reschedule Modal -->
+    <div class="modal" id="rescheduleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reschedule Booking</h2>
+                <button class="modal-close" id="closeRescheduleModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="booking-info-display">
+                    <p><strong>Client:</strong> <span id="rescheduleClientName">-</span></p>
+                    <p><strong>Service:</strong> <span id="rescheduleServiceType">-</span></p>
+                    <p><strong>Current Date:</strong> <span id="rescheduleCurrentDate">-</span></p>
+                    <p><strong>Current Time:</strong> <span id="rescheduleCurrentTime">-</span></p>
+                </div>
+
+                <form id="rescheduleForm">
+                    <div class="form-group">
+                        <label for="newDate">New Date <span class="required">*</span></label>
+                        <input type="date" id="newDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newTimeSlot">New Time Slot <span class="required">*</span></label>
+                        <select id="newTimeSlot" required>
+                            <option value="">Select time slot</option>
+                            <option value="08:00">8AM - 9AM</option>
+                            <option value="09:00">9AM - 10AM</option>
+                            <option value="10:00">10AM - 11AM</option>
+                            <option value="11:00">11AM - 12NN</option>
+                            <option value="13:00">1PM - 2PM</option>
+                            <option value="14:00">2PM - 3PM</option>
+                            <option value="15:00">3PM - 4PM</option>
+                            <option value="16:00">4PM - 5PM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rescheduleReason">Reason for Rescheduling <span class="required">*</span></label>
+                        <textarea id="rescheduleReason" rows="3" placeholder="Enter reason for rescheduling..." required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancelReschedule">Cancel</button>
+                        <button type="submit" class="btn-primary">Confirm Reschedule & Send Email</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Details Modal -->
+    <div class="modal" id="viewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Booking Details</h2>
+                <button class="modal-close" id="closeViewModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Booking ID:</label>
+                        <span id="viewBookingId">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Service Type:</label>
+                        <span id="viewServiceType">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Client Name:</label>
+                        <span id="viewClientName">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email:</label>
+                        <span id="viewEmail">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Project Name:</label>
+                        <span id="viewProjectName">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Team Members:</label>
+                        <span id="viewTeamMembers">-</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>Project Description:</label>
+                        <p id="viewProjectDescription">-</p>
+                    </div>
+                    <div class="detail-item">
+                        <label>Date:</label>
+                        <span id="viewDate">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Time:</label>
+                        <span id="viewTime">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status:</label>
+                        <span id="viewStatus" class="status-badge">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Created At:</label>
+                        <span id="viewCreatedAt">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close Day/Time Modal -->
+    <div class="modal" id="closeDayModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Close Day or Time Slots</h2>
+                <button class="modal-close" id="closeCloseDayModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="closeDayForm">
+                    <div class="form-group">
+                        <label for="closeType">Close Type <span class="required">*</span></label>
+                        <select id="closeType" required>
+                            <option value="">Select type</option>
+                            <option value="full-day">Full Day</option>
+                            <option value="specific-hours">Specific Time Slots</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="closeDateStart">Date <span class="required">*</span></label>
+                        <input type="date" id="closeDateStart" required>
+                    </div>
+                    
+                    <div class="form-group" id="timeSlotGroup" style="display: none;">
+                        <label>Select Time Slots to Close <span class="required">*</span></label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="08:00"> 8AM - 9AM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="09:00"> 9AM - 10AM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="10:00"> 10AM - 11AM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="11:00"> 11AM - 12NN
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="13:00"> 1PM - 2PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="14:00"> 2PM - 3PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="15:00"> 3PM - 4PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="16:00"> 4PM - 5PM
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="closeReason">Reason for Closure <span class="required">*</span></label>
+                        <textarea id="closeReason" rows="3" placeholder="Enter reason (e.g., Holiday, Maintenance, Event, etc.)" required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancelCloseDay">Cancel</button>
+                        <button type="submit" class="btn-primary">Confirm Closure</button>
+                    </div>
+                </form>
+                
+                <div class="closed-schedule-list" id="closedScheduleList">
+                    <h3>Currently Closed Schedules</h3>
+                    <div id="closedScheduleItems">
+                        <p class="loading-text">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/tbi-bookings.js"></script>
+</body>
+</html>

@@ -93,9 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeFilter = document.querySelector('.category-filters .filter-btn.active').dataset.filter;
         
         let filteredData = startupsData.filter(startup => {
-            const matchesCategory = activeFilter === 'all' || startup.category === activeFilter;
+            // Match category more flexibly
+            const startupCategory = (startup.category || startup.industry || '').trim();
+            const matchesCategory = activeFilter === 'all' || 
+                                    startupCategory === activeFilter ||
+                                    startupCategory.includes(activeFilter) ||
+                                    activeFilter.includes(startupCategory);
+            
             const matchesSearch = startup.name.toLowerCase().includes(searchTerm) ||
                                   (startup.description && startup.description.toLowerCase().includes(searchTerm));
+            
+            // Show all statuses including pending, active, graduated
             return matchesCategory && matchesSearch;
         });
 

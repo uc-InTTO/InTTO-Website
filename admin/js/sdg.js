@@ -42,7 +42,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const snapshot = await db.collection(STARTUPS_COLLECTION).get();
             const startups = [];
             snapshot.forEach(doc => {
-                startups.push({ firestoreId: doc.id, ...doc.data() });
+                const data = doc.data();
+                // Only include active startups (exclude pending)
+                if (data.status !== 'pending') {
+                    startups.push({ firestoreId: doc.id, ...data });
+                }
             });
             return startups;
         } catch (error) {

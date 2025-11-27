@@ -51,7 +51,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const activeFilter = document.querySelector('.category-filters .filter-btn.active').dataset.filter;
         
         let filteredData = startupsData.filter(startup => {
-            const matchesCategory = activeFilter === 'all' || startup.category === activeFilter;
+            // Flexible category matching
+            const startupCategory = String(startup.category || startup.industry || '').trim();
+            const matchesCategory = activeFilter === 'all' || 
+                                    startupCategory === activeFilter ||
+                                    startupCategory.includes(activeFilter) ||
+                                    activeFilter.includes(startupCategory);
+            
             const matchesSearch = (startup.name && startup.name.toLowerCase().includes(searchTerm)) ||
                                   (startup.description && startup.description.toLowerCase().includes(searchTerm));
             return matchesCategory && matchesSearch;
@@ -134,7 +140,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ${sdgTagsHTML}
             `;
             
-            const logoClass = `logo-${(startup.category || 'other').toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+            // Ensure category is a string before toLowerCase
+            const categoryStr = String(startup.category || startup.industry || 'other').trim();
+            const logoClass = `logo-${categoryStr.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
 
             card.innerHTML = `
                 <div class="startup-logo ${logoClass}">${startup.logo || '🚀'}</div>

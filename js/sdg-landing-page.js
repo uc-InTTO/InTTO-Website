@@ -76,38 +76,47 @@ function filterAndDisplay(sdg, searchTerm) {
     const isAll = sdg === 'all';
 
     const filteredProjects = allProjects.filter(project => {
-        const projectSdgsArray = Array.isArray(project.sdgs) ? project.sdgs : [project.sdg].filter(s => s);
-        const matchesSdg = isAll || projectSdgsArray.includes(sdg.toString());
+        // Ensure we always work with arrays and strings
+        const projectSdgsArray = Array.isArray(project.sdgs) 
+            ? project.sdgs.map(s => String(s)) 
+            : (project.sdg ? [String(project.sdg)] : []);
+        
+        const matchesSdg = isAll || projectSdgsArray.includes(String(sdg));
         const projectSdgNames = projectSdgsArray.map(s => (sdgNames[s] || '').toLowerCase()).join(' ');
 
-        const name = (project.name || '').toLowerCase();
-        const category = (project.category || '').toLowerCase();
-        const trl = (project.trl || '').toString().toLowerCase();
-        const desc = (project.description || '').toLowerCase();
+        // Ensure all fields are strings before toLowerCase
+        const name = String(project.name || '').toLowerCase();
+        const category = String(project.category || project.industry || '').toLowerCase();
+        const trl = String(project.trl || '').toLowerCase();
+        const desc = String(project.description || project.shortDescription || '').toLowerCase();
 
         const matchesSearch = name.includes(searchTerm) || 
                               category.includes(searchTerm) || 
                               trl.includes(searchTerm) || 
                               desc.includes(searchTerm) ||
-                              projectSdgsArray.map(s => s.toString()).includes(searchTerm) ||
+                              projectSdgsArray.includes(searchTerm) ||
                               projectSdgNames.includes(searchTerm);
         
         return matchesSdg && matchesSearch;
     });
 
     const filteredNewsEvents = allNewsEvents.filter(event => {
-        const eventSdgArray = Array.isArray(event.sdgs) ? event.sdgs.map(String) : (event.sdg ? [String(event.sdg)] : []);
-        const matchesSdg = isAll || eventSdgArray.includes(sdg.toString());
+        const eventSdgArray = Array.isArray(event.sdgs) 
+            ? event.sdgs.map(s => String(s)) 
+            : (event.sdg ? [String(event.sdg)] : []);
+        
+        const matchesSdg = isAll || eventSdgArray.includes(String(sdg));
         const tagsString = Array.isArray(event.tags) ? event.tags.join(' ').toLowerCase() : '';
         const eventSdgNames = eventSdgArray.map(s => (sdgNames[s] || '').toLowerCase()).join(' ');
         
-        const title = (event.title || '').toLowerCase();
-        const content = (event.content || '').toLowerCase();
+        // Ensure all fields are strings before toLowerCase
+        const title = String(event.title || '').toLowerCase();
+        const content = String(event.content || '').toLowerCase();
 
         const matchesSearch = title.includes(searchTerm) || 
                               content.includes(searchTerm) || 
                               tagsString.includes(searchTerm) || 
-                              eventSdgArray.map(s => s.toString()).includes(searchTerm) ||
+                              eventSdgArray.includes(searchTerm) ||
                               eventSdgNames.includes(searchTerm);
 
         return matchesSdg && matchesSearch;
@@ -159,8 +168,9 @@ function renderProjects() {
             imgUrl = project.logoUrl;
         }
 
-        const category = project.category || 'Innovation';
-        const trl = project.trl || 'TRL ?';
+        // Ensure category and trl are strings
+        const category = String(project.category || project.industry || 'Innovation');
+        const trl = String(project.trl || 'TRL ?');
         
         const badgeHTML = (project.incubationStatus === 'incubated') 
             ? `<div class="incubated-badge" title="Verified / Incubated Project"><i class="fa-solid fa-check"></i></div>`

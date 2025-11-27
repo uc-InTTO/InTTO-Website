@@ -198,6 +198,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadNewsEventsFromFirestore();
             await renderNewsEvents();
             alert('News/Event deleted successfully');
+            // Auto-reload to reflect changes
+            setTimeout(() => location.reload(), 1000);
         } catch (error) {
             alert('Error deleting news/event: ' + error.message);
         }

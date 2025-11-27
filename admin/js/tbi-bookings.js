@@ -346,6 +346,8 @@ async function handleReschedule(e) {
     alert('Booking rescheduled successfully! Gmail compose window opened for email notification.');
     closeRescheduleModal();
     loadBookings();
+    // Auto-reload to reflect changes
+    setTimeout(() => location.reload(), 1500);
     
   } catch (error) {
     console.error('Error rescheduling booking:', error);
@@ -547,6 +549,8 @@ window.confirmBooking = async function(bookingId) {
     
     alert('Booking confirmed successfully! Gmail compose window opened for confirmation email.');
     loadBookings();
+    // Auto-reload to reflect changes
+    setTimeout(() => location.reload(), 1500);
   } catch (error) {
     console.error('Error confirming booking:', error);
     alert('Failed to confirm booking.');
@@ -618,6 +622,8 @@ window.completeBooking = async function(bookingId) {
     
     alert('Booking marked as completed!');
     loadBookings();
+    // Auto-reload to reflect changes
+    setTimeout(() => location.reload(), 1000);
   } catch (error) {
     console.error('Error completing booking:', error);
     alert('Failed to complete booking.');
@@ -645,6 +651,8 @@ window.cancelBooking = async function(bookingId) {
     
     alert('Booking cancelled successfully! Gmail compose window opened for cancellation email.');
     loadBookings();
+    // Auto-reload to reflect changes
+    setTimeout(() => location.reload(), 1500);
   } catch (error) {
     console.error('Error cancelling booking:', error);
     alert('Failed to cancel booking.');

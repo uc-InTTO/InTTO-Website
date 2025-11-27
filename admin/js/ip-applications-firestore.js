@@ -224,6 +224,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadIPsFromFirestore();
             await renderIPs();
             alert('IP application deleted successfully!');
+            // Auto-reload to reflect changes
+            setTimeout(() => location.reload(), 1000);
         } catch (error) {
             alert('Error deleting IP application: ' + error.message);
         }

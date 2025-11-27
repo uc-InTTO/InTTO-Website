@@ -199,6 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
             db.collection('team').doc(id).delete()
                 .then(() => {
                     console.log('Team member deleted successfully');
+                    // Auto-reload to reflect changes
+                    setTimeout(() => location.reload(), 1000);
                 })
                 .catch((error) => {
                     console.error('Error deleting team member:', error);
@@ -510,6 +512,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             closeModal();
+            // Auto-reload to reflect changes
+            setTimeout(() => location.reload(), 1000);
         } catch (error) {
             console.error('Error saving team member:', error);
             alert('Error saving team member. Please try again.');

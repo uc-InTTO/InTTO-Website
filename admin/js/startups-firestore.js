@@ -209,6 +209,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await deleteStartupFromFirestore(firestoreId);
                 await loadStartupsFromFirestore();
                 renderStartups();
+                // Auto-reload to reflect changes
+                setTimeout(() => location.reload(), 1000);
             });
         });
     };

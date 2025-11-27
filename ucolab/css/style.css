@@ -131,7 +131,7 @@ body {
     justify-content: space-between;
     align-items: center;
     width: auto;
-    max-width: 900px;
+    max-width: 850px;
     height: 64px;
     gap: 8px;
     position: static; 
@@ -217,7 +217,7 @@ body {
     justify-content: flex-end;
     gap: 10px;
     flex-shrink: 0;
-    min-width: 140px;
+    width: 271px;
     z-index: 2;
 }
 

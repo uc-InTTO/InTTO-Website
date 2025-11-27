@@ -41,7 +41,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     sdgFilterIcons.forEach(icon => {
         icon.addEventListener('click', () => {
             const dataSdg = icon.getAttribute('data-sdg');
-            const newSdg = dataSdg === 'all' ? 'all' : parseInt(dataSdg);
+            if (!dataSdg) return;
+
+            const newSdg = dataSdg === 'all' ? 'all' : String(dataSdg);
             
             sdgFilterIcons.forEach(i => i.classList.remove('active'));
             icon.classList.add('active');
@@ -67,24 +69,33 @@ async function fetchAllData() {
         allNewsEvents = newsEventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     } catch (error) {
-        if (projectsContainer) projectsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%;">Error loading projects.</p>`;
-        if (newsContainer) newsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%;">Error loading news.</p>`;
+        if (projectsContainer) projectsContainer.innerHTML = `<p style="font-family: 'Poppins', sans-serif; text-align: center; width: 100%;">Error loading projects.</p>`;
+        if (newsContainer) newsContainer.innerHTML = `<p style="font-family: 'Poppins', sans-serif; text-align: center; width: 100%;">Error loading news.</p>`;
     }
 }
 
 function filterAndDisplay(sdg, searchTerm) {
     const isAll = sdg === 'all';
+    const filterSdgStr = String(sdg);
 
     const filteredProjects = allProjects.filter(project => {
-        // Ensure we always work with arrays and strings
-        const projectSdgsArray = Array.isArray(project.sdgs) 
-            ? project.sdgs.map(s => String(s)) 
-            : (project.sdg ? [String(project.sdg)] : []);
+        let rawSdgs = project.sdgs || project.SDGs || project.sdg || project.SDG || project.goals || [];
         
-        const matchesSdg = isAll || projectSdgsArray.includes(String(sdg));
+        let projectSdgsArray = [];
+
+        if (Array.isArray(rawSdgs)) {
+            projectSdgsArray = rawSdgs.map(s => String(s).trim());
+        } else if (rawSdgs !== undefined && rawSdgs !== null && rawSdgs !== '') {
+            projectSdgsArray = [String(rawSdgs).trim()];
+        }
+        
+        const matchesSdg = isAll || projectSdgsArray.some(s => {
+            const numberOnly = s.replace(/[^0-9]/g, ''); 
+            return numberOnly === filterSdgStr;
+        });
+
         const projectSdgNames = projectSdgsArray.map(s => (sdgNames[s] || '').toLowerCase()).join(' ');
 
-        // Ensure all fields are strings before toLowerCase
         const name = String(project.name || '').toLowerCase();
         const category = String(project.category || project.industry || '').toLowerCase();
         const trl = String(project.trl || '').toLowerCase();
@@ -101,15 +112,23 @@ function filterAndDisplay(sdg, searchTerm) {
     });
 
     const filteredNewsEvents = allNewsEvents.filter(event => {
-        const eventSdgArray = Array.isArray(event.sdgs) 
-            ? event.sdgs.map(s => String(s)) 
-            : (event.sdg ? [String(event.sdg)] : []);
+        let rawSdgs = event.sdgs || event.SDGs || event.sdg || event.SDG || event.goals || [];
+        let eventSdgArray = [];
+
+        if (Array.isArray(rawSdgs)) {
+            eventSdgArray = rawSdgs.map(s => String(s).trim());
+        } else if (rawSdgs !== undefined && rawSdgs !== null && rawSdgs !== '') {
+            eventSdgArray = [String(rawSdgs).trim()];
+        }
         
-        const matchesSdg = isAll || eventSdgArray.includes(String(sdg));
+        const matchesSdg = isAll || eventSdgArray.some(s => {
+            const numberOnly = s.replace(/[^0-9]/g, ''); 
+            return numberOnly === filterSdgStr;
+        });
+
         const tagsString = Array.isArray(event.tags) ? event.tags.join(' ').toLowerCase() : '';
         const eventSdgNames = eventSdgArray.map(s => (sdgNames[s] || '').toLowerCase()).join(' ');
         
-        // Ensure all fields are strings before toLowerCase
         const title = String(event.title || '').toLowerCase();
         const content = String(event.content || '').toLowerCase();
 
@@ -122,11 +141,15 @@ function filterAndDisplay(sdg, searchTerm) {
         return matchesSdg && matchesSearch;
     });
 
-    if (projectResultsInfo) projectResultsInfo.textContent = `Showing ${filteredProjects.length} related projects`;
-    if (projectResultsInfo) projectResultsInfo.style.fontFamily = "Poppins, sans-serif";
+    if (projectResultsInfo) {
+        projectResultsInfo.textContent = `Showing ${filteredProjects.length} related projects`;
+        projectResultsInfo.style.fontFamily = "'Poppins', sans-serif";
+    }
 
-    if (newsResultsInfo) newsResultsInfo.textContent = `Showing ${filteredNewsEvents.length} related news & events`;
-    if (newsResultsInfo) newsResultsInfo.style.fontFamily = "Poppins, sans-serif";
+    if (newsResultsInfo) {
+        newsResultsInfo.textContent = `Showing ${filteredNewsEvents.length} related news & events`;
+        newsResultsInfo.style.fontFamily = "'Poppins', sans-serif";
+    }
     
     currentFilteredProjects = filteredProjects;
     currentFilteredNews = filteredNewsEvents;
@@ -143,7 +166,7 @@ function renderProjects() {
     projectsContainer.innerHTML = ''; 
 
     if (currentFilteredProjects.length === 0) {
-        projectsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%; margin-top: 20px;">No projects found for the selected criteria.</p>`;
+        projectsContainer.innerHTML = `<p style="font-family: 'Poppins', sans-serif; text-align: center; width: 100%; margin-top: 20px;">No projects found for the selected criteria.</p>`;
         togglePagination('project-pagination', false);
         return;
     }
@@ -156,7 +179,7 @@ function renderProjects() {
     projectsToShow.forEach(project => {
         const projectCard = document.createElement('div');
         projectCard.className = 'startup-card';
-        projectCard.style.fontFamily = "Poppins, sans-serif";
+        projectCard.style.fontFamily = "'Poppins', sans-serif";
         
         let imgUrl = 'ucolab/Logo/No image.png';
         if (project.imageUrls && Array.isArray(project.imageUrls) && project.imageUrls.length > 0) {
@@ -168,7 +191,6 @@ function renderProjects() {
             imgUrl = project.logoUrl;
         }
 
-        // Ensure category and trl are strings
         const category = String(project.category || project.industry || 'Innovation');
         const trl = String(project.trl || 'TRL ?');
         
@@ -181,17 +203,17 @@ function renderProjects() {
             <div class="card-head">
                 <img src="${imgUrl}" class="startup-logo" alt="${project.name || 'Startup'} Logo" onerror="this.src='ucolab/Logo/No image.png';">
                 <div class="card-meta">
-                    <h3 class="startup-name" style="font-family: Poppins, sans-serif;">${project.name || 'Untitled Project'}</h3>
+                    <h3 class="startup-name" style="font-family: 'Poppins', sans-serif;">${project.name || 'Untitled Project'}</h3>
                     <div class="tags">
-                        <span class="tag" style="font-family: Poppins, sans-serif;">${category}</span>
-                        <span class="tag small" style="font-family: Poppins, sans-serif;">${trl}</span>
+                        <span class="tag" style="font-family: 'Poppins', sans-serif;">${category}</span>
+                        <span class="tag small" style="font-family: 'Poppins', sans-serif;">${trl}</span>
                     </div>
                 </div>
             </div>
-            <p class="startup-desc" style="font-family: Poppins, sans-serif;">
+            <p class="startup-desc" style="font-family: 'Poppins', sans-serif;">
                 ${project.shortDescription || project.description || 'No description available.'}
             </p>
-            <a href="ucolab/project-detail.html?id=${project.id}" class="card-cta" style="font-family: Poppins, sans-serif;">
+            <a href="ucolab/project-detail.html?id=${project.id}" class="card-cta" style="font-family: 'Poppins', sans-serif;">
                 View Details <span class="cta-circle">➜</span>
             </a>
         `;
@@ -210,7 +232,7 @@ function renderNews() {
     newsContainer.innerHTML = ''; 
     
     if (currentFilteredNews.length === 0) {
-        newsContainer.innerHTML = `<p style="font-family: Poppins, sans-serif; text-align: center; width: 100%; margin-top: 20px;">No news or events found for the selected criteria.</p>`;
+        newsContainer.innerHTML = `<p style="font-family: 'Poppins', sans-serif; text-align: center; width: 100%; margin-top: 20px;">No news or events found for the selected criteria.</p>`;
         togglePagination('news-pagination', false);
         return;
     }
@@ -223,7 +245,7 @@ function renderNews() {
     newsToShow.forEach(event => {
         const eventCard = document.createElement('div');
         eventCard.className = 'news-card';
-        eventCard.style.fontFamily = "Poppins, sans-serif";
+        eventCard.style.fontFamily = "'Poppins', sans-serif";
         
         const imageUrl = (event.images && event.images.length > 0) ? event.images[0] : 'graphics/news.png';
         const tag = (event.tags && Array.isArray(event.tags) && event.tags.length > 0) ? event.tags[0] : (event.type || 'News');
@@ -233,12 +255,12 @@ function renderNews() {
             <img src="${imageUrl}" alt="News Image" onerror="this.src='graphics/news.png'">
             <div class="news-content">
                 <div class="news-meta">
-                    ${tag ? `<span class="tag" style="font-family: Poppins, sans-serif;">${tag}</span>` : ''}
-                    ${displayDate ? `<span class="date" style="font-family: Poppins, sans-serif;">${displayDate}</span>` : ''}
+                    ${tag ? `<span class="tag" style="font-family: 'Poppins', sans-serif;">${tag}</span>` : ''}
+                    ${displayDate ? `<span class="date" style="font-family: 'Poppins', sans-serif;">${displayDate}</span>` : ''}
                 </div>
-                <h3 class="news-title" style="font-family: Poppins, sans-serif;">${event.title || 'Untitled Event'}</h3>
-                <p class="news-desc" style="font-family: Poppins, sans-serif;">${event.content ? event.content.substring(0, 150) + '...' : 'No description available.'}</p>
-                <a href="newsEventPage.html?id=${event.id}" class="read-more" style="font-family: Poppins, sans-serif;">Read More →</a>
+                <h3 class="news-title" style="font-family: 'Poppins', sans-serif;">${event.title || 'Untitled Event'}</h3>
+                <p class="news-desc" style="font-family: 'Poppins', sans-serif;">${event.content ? event.content.substring(0, 150) + '...' : 'No description available.'}</p>
+                <a href="newsEventPage.html?id=${event.id}" class="read-more" style="font-family: 'Poppins', sans-serif;">Read More →</a>
             </div>
         `;
         newsContainer.appendChild(eventCard);
@@ -263,6 +285,7 @@ function renderPaginationControls(containerId, targetElement, totalPages, curren
         pagContainer = document.createElement('div');
         pagContainer.id = containerId;
         pagContainer.className = 'pagination-container';
+        pagContainer.style.fontFamily = "'Poppins', sans-serif";
         targetElement.parentNode.insertBefore(pagContainer, targetElement.nextSibling);
     }
 
@@ -327,6 +350,7 @@ function createPageBtn(content, enabled) {
     const btn = document.createElement('button');
     btn.innerHTML = content;
     btn.className = 'page-btn';
+    btn.style.fontFamily = "'Poppins', sans-serif";
 
     if (!enabled) {
         btn.classList.add('disabled');

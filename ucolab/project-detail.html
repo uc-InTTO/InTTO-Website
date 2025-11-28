@@ -8,20 +8,34 @@
     <link rel="stylesheet" href="css/project-detail.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+        .hero-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+        }
+    </style>
 </head>
 <body>
 
     <main class="project-detail-page">
         <a href="startups.html" class="back-link" onclick="history.back(); return false;">
-    <i class="fa-solid fa-arrow-left"></i> Back to Startups
-</a>
+            <i class="fa-solid fa-arrow-left"></i> Back to Startups
         </a>
 
         <section class="project-hero">
             <div class="hero-left">
-                <div class="card-icon" id="detail-icon"></div>
                 <h1 id="detail-title">Loading...</h1>
+                
                 <div class="hero-tags" id="detail-tags"></div>
+                
                 <p class="hero-description" id="detail-short-desc">Loading...</p>
                 <a href="#publisher-info" class="btn btn-primary contact-founder-btn">
                     <i class="fa-solid fa-envelope"></i> Contact Founder

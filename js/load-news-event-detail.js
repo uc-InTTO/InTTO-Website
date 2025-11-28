@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const eventId = urlParams.get('id');
     
-    // Lightbox elements
     const lightbox = document.getElementById('image-lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxCaption = document.querySelector('.lightbox-caption');
@@ -48,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (skeleton) skeleton.style.display = 'none';
         
         if (mainWrapper) {
-            mainWrapper.innerHTML = `<p style="color: black; text-align: center; padding: 100px; font-family: 'Poppins';">${message}</p>`;
+            mainWrapper.innerHTML = `<p style="color: black; text-align: center; padding: 100px; font-family: 'Poppins', sans-serif;">${message}</p>`;
         }
     }
     
@@ -62,13 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (categoryDateDiv) {
                 categoryDateDiv.innerHTML = `
-                    <div class="event-tag">${event.type ? event.type.toUpperCase() : 'EVENT'}</div>
-                    <div class="event-date">${formatDate(event.date)}</div>
+                    <div class="event-tag" style="font-family: 'Poppins', sans-serif;">${event.type ? event.type.toUpperCase() : 'EVENT'}</div>
+                    <div class="event-date" style="font-family: 'Poppins', sans-serif;">${formatDate(event.date)}</div>
                 `;
             }
             
             if (titleDiv) {
                 titleDiv.textContent = event.title;
+                titleDiv.style.fontFamily = "'Poppins', sans-serif";
             }
         }
         
@@ -84,11 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateValue = infoCards.querySelector('.info-card:nth-child(1) .info-value');
             if (dateValue) {
                 dateValue.textContent = formatDate(event.date);
+                dateValue.style.fontFamily = "'Poppins', sans-serif";
             }
             
             const authorValue = infoCards.querySelector('.info-card:nth-child(2) .info-value');
             if (authorValue) {
                 authorValue.textContent = 'UC InTTO';
+                authorValue.style.fontFamily = "'Poppins', sans-serif";
             }
             
             const sdgIconsContainer = infoCards.querySelector('.sdg-icons');
@@ -110,16 +112,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const aboutTitle = document.querySelector('.about-title');
         if (aboutTitle) {
             aboutTitle.textContent = `About This ${event.type === 'event' ? 'Event' : 'News'}`;
+            aboutTitle.style.fontFamily = "'Poppins', sans-serif";
         }
         
         const aboutDescription = document.querySelector('.about-description');
         if (aboutDescription) {
-            aboutDescription.textContent = event.content || event.description || '';
+            const textContent = event.content || event.description || '';
+            aboutDescription.innerHTML = textContent.replace(/[\r\n]+/g, '<br><br>');
+            aboutDescription.style.fontFamily = "'Poppins', sans-serif";
         }
         
         const eventGallery = document.querySelector('.event-gallery');
         if (eventGallery && event.images && event.images.length > 0) {
-            currentImages = event.images; // Store images for lightbox
+            currentImages = event.images; 
             
             const mainImage = eventGallery.querySelector('.main-image img');
             if (mainImage) {
@@ -142,18 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         openLightbox(i);
                     };
                     thumbnailContainer.appendChild(img);
-                }
-                
-                // Add "View More" if there are more than 4 images
-                if (event.images.length > 4) {
-                    const viewMoreDiv = document.createElement('div');
-                    viewMoreDiv.className = 'view-more-thumbnail thumbnail';
-                    viewMoreDiv.onclick = () => openLightbox(4);
-                    viewMoreDiv.innerHTML = `
-                        <img src="${event.images[4]}" alt="View More Thumbnail" class="gallery-img view-more-img">
-                        <div class="view-more-overlay">+${event.images.length - 4} More</div>
-                    `;
-                    thumbnailContainer.appendChild(viewMoreDiv);
                 }
             }
         } else {
@@ -199,12 +192,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             <img src="${imgUrl}" alt="${post.title}" onerror="this.src='graphics/news.png'">
                             <div class="news-content">
                                 <div class="news-meta">
-                                    <span class="tag">${(post.type || 'news').toUpperCase()}</span>
-                                    <span class="date">${formatDate(post.date)}</span>
+                                    <span class="tag" style="font-family: 'Poppins', sans-serif;">${(post.type || 'news').toUpperCase()}</span>
+                                    <span class="date" style="font-family: 'Poppins', sans-serif;">${formatDate(post.date)}</span>
                                 </div>
-                                <h3 class="news-title">${post.title}</h3>
-                                <p class="news-desc">${excerpt}</p>
-                                <a href="newsEventPage.html?id=${post.id}" class="read-more">Read More →</a>
+                                <h3 class="news-title" style="font-family: 'Poppins', sans-serif;">${post.title}</h3>
+                                <p class="news-desc" style="font-family: 'Poppins', sans-serif;">${excerpt}</p>
+                                <a href="newsEventPage.html?id=${post.id}" class="read-more" style="font-family: 'Poppins', sans-serif;">Read More →</a>
                             </div>
                         `;
                         
@@ -219,20 +212,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
     
-    // Lightbox Functions
     function openLightbox(index) {
         if (!currentImages || currentImages.length === 0) return;
         
         currentImageIndex = index;
         lightboxImg.src = currentImages[index];
         lightboxCaption.textContent = `Image ${index + 1} of ${currentImages.length}`;
+        lightboxCaption.style.fontFamily = "'Poppins', sans-serif";
         lightbox.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        document.body.style.overflow = 'hidden';
     }
     
     function closeLightbox() {
         lightbox.classList.remove('active');
-        document.body.style.overflow = 'auto'; // Re-enable scrolling
+        document.body.style.overflow = 'auto';
     }
     
     function showPrevImage() {
@@ -247,12 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
         lightboxCaption.textContent = `Image ${currentImageIndex + 1} of ${currentImages.length}`;
     }
     
-    // Event listeners for lightbox
     if (closeBtn) closeBtn.onclick = closeLightbox;
     if (prevBtn) prevBtn.onclick = showPrevImage;
     if (nextBtn) nextBtn.onclick = showNextImage;
     
-    // Close lightbox when clicking outside the image
     if (lightbox) {
         lightbox.onclick = (e) => {
             if (e.target === lightbox) {
@@ -261,7 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
     
-    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         if (!lightbox.classList.contains('active')) return;
         

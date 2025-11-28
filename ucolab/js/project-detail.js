@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const lightboxOverlay = document.getElementById('lightbox-overlay');
     const lightboxImage = document.getElementById('lightbox-image');
 
-    // --- 1. VISUALS ---
     function createRandomCircles() {
         const body = document.body;
         if (!body) return;
@@ -30,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- 2. LIGHTBOX ---
     function openLightbox(url) {
         if (!lightboxOverlay || !url || url.includes('No image')) return;
         lightboxImage.src = url;
@@ -46,7 +44,31 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleEscape(e) { if (e.key === 'Escape') closeLightbox(); }
     if(lightboxOverlay) lightboxOverlay.addEventListener('click', (e) => { if (e.target === lightboxOverlay) closeLightbox(); });
 
-    // --- 3. LOAD DATA ---
+    function getSDGColor(text) {
+        const colors = {
+            1: '#E5243B', 
+            2: '#DDA63A', 
+            3: '#4C9F38', 
+            4: '#C5192D', 
+            5: '#FF3A21', 
+            6: '#26BDE2', 
+            7: '#FCC30B', 
+            8: '#A21942', 
+            9: '#FD6925', 
+            10: '#DD1367', 
+            11: '#FD9D24', 
+            12: '#BF8B2E', 
+            13: '#3F7E44', 
+            14: '#0A97D9', 
+            15: '#56C02B', 
+            16: '#00689D', 
+            17: '#19486A'  
+        };
+        const match = text.match(/\d+/); 
+        const number = match ? parseInt(match[0]) : 0;
+        return colors[number] || '#555555'; 
+    }
+
     async function loadProjectData() {
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('id');
@@ -58,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!doc.exists) return setText('detail-title', "Project Not Found");
 
             const project = doc.data();
-            // Basic Info
+            
             document.title = `${project.name} - UCoLab`;
             setText('detail-title', project.name || project.title);
             setText('detail-short-desc', project.shortDescription || project.description);
@@ -72,7 +94,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const collegeEl = document.getElementById('detail-college');
             if(collegeEl) collegeEl.textContent = Array.isArray(project.college) ? project.college.join(', ') : (project.college || 'N/A');
 
-            // --- DEBUG FEATURES ---
+            const tagsContainer = document.getElementById('detail-tags');
+            if (tagsContainer) {
+                tagsContainer.innerHTML = '';
+                const sdgs = project.sdg || project.sdgs || []; 
+                if (Array.isArray(sdgs) && sdgs.length > 0) {
+                    sdgs.forEach(tag => {
+                        const span = document.createElement('span');
+                        span.className = 'sdg-tag';
+                        span.textContent = tag;
+                        span.style.backgroundColor = getSDGColor(String(tag));
+                        tagsContainer.appendChild(span);
+                    });
+                }
+            }
+
             const featuresGrid = document.getElementById('detail-features-grid');
             if (featuresGrid) {
                 featuresGrid.innerHTML = ''; 
@@ -93,35 +129,26 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 }
                 if (!hasFeatures) {
-                    console.warn("⚠️ No valid features found to display.");
                     featuresGrid.innerHTML = '<p style="color:#777; font-style:italic;">No specific features listed.</p>';
-                } else {
                 }
-            } else {
-                console.error("❌ CRITICAL: HTML Element id='detail-features-grid' NOT FOUND.");
             }
 
-            // --- DEBUG PHONE NUMBER ---
             const phoneLink = document.getElementById('detail-founder-phone-link');
             const phoneText = document.getElementById('detail-founder-phone');
-            // Check both possible field names
+            
             let phoneVal = project.founderPhone;
-            if (!phoneVal) phoneVal = project.phone; // Try fallback
+            if (!phoneVal) phoneVal = project.phone; 
             if (phoneLink && phoneText) {
                 if (phoneVal && String(phoneVal).trim() !== "" && String(phoneVal) !== "undefined") {
                     phoneText.textContent = phoneVal;
                     phoneLink.href = `tel:${phoneVal}`;
                     phoneLink.style.display = 'flex'; 
-                    phoneLink.style.setProperty('display', 'flex', 'important'); // Extreme force
+                    phoneLink.style.setProperty('display', 'flex', 'important'); 
                 } else {
                     phoneLink.style.display = 'none';
-                    console.warn("⚠️ Phone value is empty or undefined. Hiding element.");
                 }
-            } else {
-                console.error("❌ CRITICAL: HTML Elements for phone NOT FOUND.");
             }
 
-            // Founder Info
             setText('detail-founder-name', project.founderName);
             setText('detail-founder-role', project.founderRole);
             setText('detail-founder-affiliation', project.founderAffiliation);
@@ -129,14 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const emailLink = document.getElementById('detail-founder-email-link');
             if(emailLink) emailLink.href = `mailto:${project.founderEmail}`;
 
-            // Avatar
             const avatar = document.getElementById('founder-avatar-container');
             if(avatar) {
                 const name = project.founderName || 'U';
                 avatar.textContent = name.charAt(0).toUpperCase();
             }
 
-            // TRL Logic
             const trlNum = parseInt((String(project.trl || '0')).replace(/\D/g,'')) || 0;
             const trlPct = Math.min(Math.round((trlNum/9)*100), 100);
             setText('detail-trl-text', `TRL ${trlNum} of 9`);
@@ -154,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 else { trlLabel.textContent = "System Ready"; trlLabel.className = "trl-label trl-green-sidebar"; }
             }
 
-            // Images
             const images = (project.imageUrls || []).filter(u => u && !u.includes('No image'));
             const mainImg = document.getElementById('detail-image');
             const galleryGrid = document.getElementById('detail-gallery-grid');
@@ -201,14 +225,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const el = document.getElementById(id);
         if(el) el.textContent = val || 'N/A';
     }
-    function stringToHash(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return hash;
-    }
+    
     loadProjectData();
     
-    // Animation
     const anims = document.querySelectorAll('.animate-on-scroll');
     const obs = new IntersectionObserver(entries => {
         entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-visible'); });

@@ -2,7 +2,7 @@
 // LIVE GOOGLE SHEETS METRICS DASHBOARD
 // ===================================
 const CONFIG = {
-    API_KEY: 'AIzaSyAzUTxdA5Dqgyj-ZqUB5YHDfnZDU7gLTg8',
+    API_KEY: 'AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE',
     SHEET_ID: '15MutTSdpR-1-iQcuFsMnuTD52vkfLaWwQgdDsBdYdRg'
 };
 

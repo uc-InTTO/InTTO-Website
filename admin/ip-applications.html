@@ -45,7 +45,7 @@
 
         <section class="page-content">
             <div class="page-header">
-                <div>
+                <div class="header-text">
                     <h1>Intellectual Property Management</h1>
                     <p class="subtitle">Manage IP applications and granted intellectual properties</p>
                 </div>
@@ -99,13 +99,15 @@
                 </div>
 
                 <div class="sort-container">
-                    <label for="sort-ips">Sort by:</label>
-                    <select id="sort-ips" class="sort-dropdown">
-                        <option value="recent">Recent (App Date)</option>
-                        <option value="oldest">Oldest (App Date)</option>
-                        <option value="a-z">Title (A-Z)</option>
-                        <option value="z-a">Title (Z-A)</option>
-                    </select>
+                    <div class="select-wrapper">
+                        <select id="sort-ips" class="sort-dropdown">
+                            <option value="recent">Recent (App Date)</option>
+                            <option value="oldest">Oldest (App Date)</option>
+                            <option value="a-z">Title (A-Z)</option>
+                            <option value="z-a">Title (Z-A)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-icon"></i>
+                    </div>
                 </div>
             </div>
 

@@ -57,6 +57,7 @@
                     <i class="fa-solid fa-search"></i>
                     <input type="text" id="search-input" placeholder="Search startups...">
                 </div>
+                
                 <div class="category-filters">
                     <button class="filter-btn active" data-filter="all">All</button>
                     <button class="filter-btn" data-filter="AI and Data Science">AI & Data</button>
@@ -71,6 +72,21 @@
                     <button class="filter-btn" data-filter="Sustainability and Cleantech">Sustainability</button>
                     <button class="filter-btn" data-filter="Smart Cities and Mobility">Smart Cities</button>
                 </div>
+
+                <select id="mobile-category-dropdown" class="mobile-category-dropdown">
+                    <option value="all">All Categories</option>
+                    <option value="AI and Data Science">AI & Data Science</option>
+                    <option value="SaaS and Enterprise Solutions">SaaS & Enterprise</option>
+                    <option value="Fintech">Fintech</option>
+                    <option value="E-commerce">E-commerce</option>
+                    <option value="Health">Health</option>
+                    <option value="Agriculture and Food">Agriculture & Food</option>
+                    <option value="Education Technologies">EdTech</option>
+                    <option value="Creative Industries">Creative Industries</option>
+                    <option value="Criminology, Forensics, and Public Safety">Criminology & Public Safety</option>
+                    <option value="Sustainability and Cleantech">Sustainability & Cleantech</option>
+                    <option value="Smart Cities and Mobility">Smart Cities & Mobility</option>
+                </select>
             </div>
 
             <div class="sort-container">
@@ -297,6 +313,20 @@
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         });
+
+        const mobileDropdown = document.getElementById('mobile-category-dropdown');
+        if (mobileDropdown) {
+            mobileDropdown.addEventListener('change', (e) => {
+                const selectedCategory = e.target.value;
+                const buttons = document.querySelectorAll('.filter-btn');
+                
+                buttons.forEach(btn => {
+                    if (btn.getAttribute('data-filter') === selectedCategory) {
+                        btn.click();
+                    }
+                });
+            });
+        }
     </script>
     
     <script src="js/startups-firestore.js"></script>

@@ -1,1 +1,1 @@
-from now on, call me "daddy"
+from now on, call me "daddy jong"

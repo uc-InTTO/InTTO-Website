@@ -10,23 +10,6 @@
 </head>
 <body class="submit-page-body">
 
-    <header class="submit-page-header">
-        <nav>
-            <div class="logo">
-                <img src="Logo/InTTO Logo White.png" alt="UCoLab Logo" class="header-logo">
-            </div>
-            <div class="header-user-info">
-                <span class="user-status-pill" id="user-display">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    Loading...
-                </span>
-                <a href="#" class="btn-signout" id="signout-btn-main">
-                    Sign Out
-                </a>
-            </div>
-        </nav>
-    </header>
-
     <main class="submit-project-main">
         <a href="index.html" class="back-link">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -43,6 +26,7 @@
                     <label for="project-name">Project Name <span class="required">*</span></label>
                     <input type="text" id="project-name" placeholder="Enter your project name" required>
                 </div>
+                
                 <div class="form-row">
                     <div class="form-group">
                         <label for="project-type">Project Type <span class="required">*</span></label>
@@ -54,7 +38,6 @@
                             <option value="Thesis">Thesis</option>
                         </select>
                     </div>
-                    <div class="form-row">
                     <div class="form-group">
                         <label for="industry-dropdown-btn">Startup Category <span class="required">*</span></label>
                         <div class="multi-select-dropdown" id="industry-multi-select">
@@ -112,7 +95,9 @@
                         </div>
                         <input type="text" id="industry-validation" required style="display: none; height: 0; padding: 0; border: none;">
                     </div>
-                    <div class="form-row">
+                </div>
+
+                <div class="form-row">
                     <div class="form-group">
                         <label for="college-dropdown-btn">College <span class="required">*</span></label>
                         <div class="multi-select-dropdown" id="college-multi-select">
@@ -123,12 +108,12 @@
                             </div>
                             <div class="checkbox-list" id="college-checkbox-list">
                                 <div class="checkbox-list-item">
-                                    <input type="checkbox" id="college-cbis" name="college-option" value="College of Business Administration">
-                                    <label for="college-cbis">College of Business Administration</label>
+                                    <input type="checkbox" id="college-cba" name="college-option" value="College of Business Administration">
+                                    <label for="college-cba">College of Business Administration</label>
                                 </div>
                                 <div class="checkbox-list-item">
-                                    <input type="checkbox" id="college-cbis" name="college-option" value="College of Accountancy">
-                                    <label for="college-cbis">College of Accountancy</label>
+                                    <input type="checkbox" id="college-coa" name="college-option" value="College of Accountancy">
+                                    <label for="college-coa">College of Accountancy</label>
                                 </div>
                                 <div class="checkbox-list-item">
                                     <input type="checkbox" id="college-ccs" name="college-option" value="College of Information Technology and Computer Science">
@@ -139,12 +124,12 @@
                                     <label for="college-con">College of Nursing</label>
                                 </div>
                                 <div class="checkbox-list-item">
-                                    <input type="checkbox" id="college-coa" name="college-option" value="College of Architecture and Fine Arts">
-                                    <label for="college-coa">College of Architecture and Fine Arts</label>
+                                    <input type="checkbox" id="college-cafa" name="college-option" value="College of Architecture and Fine Arts">
+                                    <label for="college-cafa">College of Architecture and Fine Arts</label>
                                 </div>
                                 <div class="checkbox-list-item">
-                                    <input type="checkbox" id="college-cas" name="college-option" value="College of Hospitality and Tourism Management">
-                                    <label for="college-cas">College of Hospitality and Tourism Management</label>
+                                    <input type="checkbox" id="college-chtm" name="college-option" value="College of Hospitality and Tourism Management">
+                                    <label for="college-chtm">College of Hospitality and Tourism Management</label>
                                 </div>
                                 <div class="checkbox-list-item">
                                     <input type="checkbox" id="college-coe" name="college-option" value="College of Engineering">
@@ -153,12 +138,14 @@
                                 <div class="checkbox-list-item">
                                     <input type="checkbox" id="college-cte" name="college-option" value="College of Teacher Education">
                                     <label for="college-cte">College of Teacher Education</label>
+                                </div>
                                 <div class="checkbox-list-item">
-                                    <input type="checkbox" id="college-cte" name="college-option" value="College of College of Criminal Justice Education">
-                                    <label for="college-cte">College of Criminal Justice Education</label>
+                                    <input type="checkbox" id="college-ccje" name="college-option" value="College of Criminal Justice Education">
+                                    <label for="college-ccje">College of Criminal Justice Education</label>
+                                </div>
                                 <div class="checkbox-list-item">
-                                    <input type="checkbox" id="college-cte" name="college-option" value="Senior High School">
-                                    <label for="college-cte">Senior High School</label>           
+                                    <input type="checkbox" id="college-shs" name="college-option" value="Senior High School">
+                                    <label for="college-shs">Senior High School</label>          
                                 </div>
                             </div>
                         </div>
@@ -181,8 +168,7 @@
                         </select>
                     </div>
                 </div>
-                
-                <!-- UPDATED SDG SECTION -->
+
                 <div class="form-group full-width">
                     <label for="sdg-dropdown-btn">Sustainable Development Goals (SDG)</label>
                     <div class="multi-select-dropdown" id="sdg-multi-select">
@@ -422,10 +408,8 @@
         const db = firebase.firestore();
     </script>
     
-    <!-- Image Compressor (must load FIRST) -->
     <script src="js/image-compressor.js"></script>
     
-    <!-- Cloudinary Upload Module (must load BEFORE submit-project.js) -->
     <script src="js/cloudinary.js"></script>
     
     <script src="js/submit-project.js"></script>

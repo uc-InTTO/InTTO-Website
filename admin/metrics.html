@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Metrics & Impact - UC InTTO Admin</title>
-    <link rel="stylesheet" href="css/dashboard-style.css">
     <link rel="stylesheet" href="css/metrics-style.css"> 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,8 +33,13 @@
         </nav>
     </aside>
 
+    <div class="menu-overlay"></div>
+
     <main class="main-content">
         <header class="main-header">
+            <button class="menu-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             <div class="header-left">
                 <h1>Live Metrics Dashboard</h1>
                 <p class="last-updated">Last updated: <span id="last-update-time">Loading...</span></p>
@@ -51,7 +55,6 @@
         </header>
 
         <section class="page-content">
-            <!-- Active Startups -->
             <div class="tab-section" id="active-startups-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -70,7 +73,6 @@
                 </div>
             </div>
 
-            <!-- KRA -->
             <div class="tab-section" id="kra-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -89,7 +91,6 @@
                 </div>
             </div>
 
-            <!-- Cohort Information -->
             <div class="tab-section" id="cohort-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -108,7 +109,6 @@
                 </div>
             </div>
 
-            <!-- TBI Metrics -->
             <div class="tab-section" id="tbi-metrics-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -127,7 +127,6 @@
                 </div>
             </div>
 
-            <!-- Investments Received -->
             <div class="tab-section" id="investment-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -146,7 +145,6 @@
                 </div>
             </div>
 
-            <!-- Revenue Generated -->
             <div class="tab-section" id="revenue-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -165,7 +163,6 @@
                 </div>
             </div>
 
-            <!-- Incubation KPI -->
             <div class="tab-section" id="incubation-kpi-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -184,7 +181,6 @@
                 </div>
             </div>
 
-            <!-- Incubation Metrics -->
             <div class="tab-section" id="incubation-metrics-section">
                 <div class="tab-header">
                     <div class="tab-title">
@@ -204,6 +200,36 @@
             </div>
         </section>
     </main>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE",
+            authDomain: "uc-intto.firebaseapp.com",
+            projectId: "uc-intto",
+            storageBucket: "uc-intto.firebasestorage.app",
+            messagingSenderId: "156771180433",
+            appId: "1:156771180433:web:4f9d57eb6b0e7882ef0430",
+            measurementId: "G-ETY9E0F1K6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.menu-overlay');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
     
     <script src="js/metrics.js"></script>
 </body>

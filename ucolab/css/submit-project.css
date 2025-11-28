@@ -1,14 +1,12 @@
-/* ======== Submit Project Page Specific Styles ======== */
-
 .submit-page-body {
-    background-color: #f8f9fa; /* Lighter background for the form page */
+    background-color: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
 }
 
-/* Simplified Header - UPDATED Padding */
 .submit-page-header {
     max-width: 100%;
     margin: 0;
-    padding: 1.25rem 2rem; /* Increased vertical padding */
+    padding: 1.25rem 2rem;
     background-color: var(--primary-green);
     border-radius: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -28,7 +26,6 @@
    align-items: center;
 }
 
-/* Remove main nav links container */
 .submit-page-header .nav-links-container {
     display: none;
 }
@@ -64,13 +61,12 @@
     font-weight: 500;
     font-size: 0.9rem;
     transition: all 0.3s ease;
-    cursor: pointer; /* Added cursor */
+    cursor: pointer;
 }
 .btn-signout:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Main Content Area */
 .submit-project-main {
     max-width: 800px;
     margin: 2rem auto 4rem auto;
@@ -95,7 +91,6 @@
     margin-top: -2px;
 }
 
-
 .submit-project-main h1 {
     font-size: 2.25rem;
     font-weight: 700;
@@ -109,7 +104,6 @@
     margin-bottom: 2.5rem;
 }
 
-/* Form Styles */
 .submit-form {
     background-color: #ffffff;
     border-radius: 15px;
@@ -132,13 +126,12 @@
 .form-group {
     margin-bottom: 1.25rem;
     flex: 1;
-    position: relative; /* Added for counter */
+    position: relative;
 }
 .form-section > *:last-child:not(.form-row) > .form-group:last-child,
 .form-section > .form-row:last-child > .form-group {
     margin-bottom: 0;
 }
-
 
 .form-group label {
     display: block;
@@ -152,7 +145,6 @@
     margin-left: 2px;
 }
 
-/* --- UPDATED: Added 'select' and 'input[type="date"]' --- */
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="tel"],
@@ -176,20 +168,17 @@
     color: #aaa;
 }
 
-/* --- NEW: Add custom arrow for select dropdowns --- */
 .form-group select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b6b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1rem center;
     background-size: 16px 16px;
-    padding-right: 2.5rem; /* Make space for the arrow */
+    padding-right: 2.5rem;
 }
 
-/* --- NEW: Let date input keep its own icon --- */
 .form-group input[type="date"] {
     background-image: none;
 }
-/* Fix for date input text not aligning in some browsers */
 .form-group input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0.6;
@@ -201,8 +190,6 @@
     color: #aaa;
 }
 
-
-/* --- UPDATED: Added 'select' and 'input[type="date"]' --- */
 .form-group input:focus,
 .form-group input[type="date"]:focus,
 .form-group select:focus,
@@ -213,7 +200,6 @@
     background-color: #fff;
 }
 
-/* --- NEW: Style for readonly email field --- */
 .form-group input:read-only {
     background-color: #f0f0f0;
     color: #777;
@@ -230,12 +216,10 @@
     min-height: 80px;
 }
 
-/* Override for short description */
 #short-description {
     min-height: auto;
 }
 
-/* --- NEW: Character Counter Style --- */
 .char-counter {
     text-align: right;
     font-size: 0.85rem;
@@ -244,7 +228,6 @@
     padding-right: 0.25rem;
 }
 
-/* Form Row Layout */
 .form-row {
     display: flex;
     flex-wrap: wrap;
@@ -258,12 +241,10 @@
     margin-bottom: 0;
 }
 
-
 .form-group.full-width {
    flex-basis: 100%;
 }
 
-/* Form Actions (Buttons) */
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -282,6 +263,7 @@
     text-decoration: none;
     transition: all 0.3s ease;
     border: none;
+    font-family: 'Poppins', sans-serif;
 }
 
 .btn-cancel {
@@ -303,36 +285,33 @@
     background-color: #1a5238;
 }
 
-/* Footer reuse */
 footer {
     margin-top: 4rem;
 }
 
-/* Re-add blur circle styles if not inheriting from style.css */
 .blur-circle {
     position: absolute;
     z-index: -1;
     border-radius: 50%;
 }
 
-/* ======== NEW: Image Upload Styles ======== */
 .image-upload-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 columns */
+    grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
 }
 
 .image-upload-slot {
-    position: relative; /* Needed for remove button */
+    position: relative;
     border: 2px dashed var(--border-color);
     border-radius: 10px;
     background-color: #fdfdfd;
     transition: border-color 0.3s ease;
-    aspect-ratio: 16 / 9; /* Makes it a nice rectangle */
+    aspect-ratio: 16 / 9;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden; /* Clips the image preview */
+    overflow: hidden;
 }
 .image-upload-slot:hover {
     border-color: var(--primary-green);
@@ -345,12 +324,12 @@ footer {
     position: absolute;
     top: 0;
     left: 0;
-    opacity: 0; /* Hidden by default */
+    opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 .image-upload-slot .image-preview.visible {
-    opacity: 1; /* Show if image is loaded */
+    opacity: 1;
 }
 
 .image-upload-slot .upload-label {
@@ -358,7 +337,7 @@ footer {
     text-align: center;
     color: var(--text-light);
     font-size: 0.85rem;
-    z-index: 2; /* Above the preview */
+    z-index: 2;
     padding: 0.5rem;
 }
 .image-upload-slot .upload-label svg {
@@ -367,60 +346,52 @@ footer {
     margin-bottom: 0.5rem;
 }
 
-/* When preview is visible, hide the icon/text */
 .image-upload-slot .image-preview.visible + .upload-label {
     opacity: 0;
-    pointer-events: none; /* Make label unclickable when preview is visible */
+    pointer-events: none;
 }
 .image-upload-slot:hover .image-preview.visible + .upload-label {
-    opacity: 1; /* Show text on hover */
+    opacity: 1;
     background-color: rgba(0, 0, 0, 0.4);
     color: white;
-    pointer-events: auto; /* Make label clickable again on hover */
+    pointer-events: auto;
 }
 
-
-/* Hide the actual file input */
 .hidden-file-input {
     display: none;
 }
 
-/* ======== Image Upload Slot Remove Button ======== */
 .image-upload-slot {
-    position: relative; /* Needed to position the remove button */
+    position: relative;
 }
 
 .remove-image-btn {
     position: absolute;
     top: 5px;
     right: 5px;
-    z-index: 3; /* Ensure it's above the preview image */
-
+    z-index: 3;
     background-color: rgba(0, 0, 0, 0.6);
     color: white;
     border: none;
     border-radius: 50%;
     width: 24px;
     height: 24px;
-
     font-size: 16px;
     font-weight: bold;
-    line-height: 22px; /* Adjust for vertical centering */
+    line-height: 22px;
     text-align: center;
     cursor: pointer;
     padding: 0;
     transition: background-color 0.2s ease;
-
-    display: none; /* Hidden by default - JS MUST show it */
+    display: none;
 }
 
 .remove-image-btn:hover {
-    background-color: rgba(200, 0, 0, 0.8); /* Red on hover */
+    background-color: rgba(200, 0, 0, 0.8);
 }
 
-/* ======== Success Message Styles ======== */
 .success-message-container {
-    display: block; /* Required for the style.display='' to work */
+    display: block;
     background-color: #ffffff;
     border-radius: 15px;
     padding: 3rem 2.5rem;
@@ -438,7 +409,7 @@ footer {
     font-weight: 600;
     color: var(--text-dark);
     margin-bottom: 0.75rem;
-    border: none; /* Override form-section h2 border */
+    border: none;
     padding-bottom: 0;
 }
 
@@ -468,6 +439,7 @@ footer {
     gap: 0.5rem;
     transition: all 0.3s ease;
     cursor: pointer;
+    font-family: 'Poppins', sans-serif;
 }
 
 .success-actions .btn-primary {
@@ -490,7 +462,6 @@ footer {
     border-color: #ccc;
 }
 
-
 .btn-close-window {
     background: none;
     border: none;
@@ -500,6 +471,7 @@ footer {
     cursor: pointer;
     text-decoration: underline;
     padding: 0.5rem;
+    font-family: 'Poppins', sans-serif;
 }
 .btn-close-window:hover {
     color: var(--primary-green);
@@ -544,8 +516,8 @@ footer {
     display: flex;
     flex-wrap: wrap;
     gap: 0.3rem;
-    max-height: 50px; /* Limit height */
-    overflow-y: auto; /* Allow scrolling if many pills */
+    max-height: 50px;
+    overflow-y: auto;
 }
 
 .pill {
@@ -572,7 +544,6 @@ footer {
     color: #ffcdd2;
 }
 
-
 .checkbox-list {
     position: absolute;
     top: calc(100% + 5px);
@@ -586,7 +557,7 @@ footer {
     max-height: 250px;
     overflow-y: auto;
     padding: 0.5rem;
-    display: none; /* Hidden by default */
+    display: none;
 }
 
 .checkbox-list.visible {
@@ -617,10 +588,11 @@ footer {
 .checkbox-list-item label {
     font-size: 0.95rem;
     color: var(--text-dark);
-    margin-bottom: 0; /* Override other label styles */
+    margin-bottom: 0;
     cursor: pointer;
     flex: 1;
 }
+
 .char-counter {
     text-align: right;
     font-size: 0.85rem;

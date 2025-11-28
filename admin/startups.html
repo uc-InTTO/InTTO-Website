@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Startups Management - UC InTTO Admin</title>
-    <link rel="stylesheet" href="css/dashboard-style.css"> 
     <link rel="stylesheet" href="css/startups-style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,8 +33,13 @@
         </nav>
     </aside>
 
+    <div class="menu-overlay"></div>
+
     <main class="main-content">
         <header class="main-header">
+            <button class="menu-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </header>
 
@@ -80,13 +84,11 @@
             </div>
             
             <div class="startup-list">
-                <!-- Cards injected by JS -->
             </div>
 
         </section>
     </main>
 
-    <!-- View/Edit Startup Modal -->
     <div class="modal-overlay" id="startup-modal-overlay" style="display: none;">
         <div class="startup-modal">
             <div class="modal-header">
@@ -95,7 +97,6 @@
             </div>
             <div class="modal-body">
                 <form id="startup-form">
-                    <!-- Basic Info -->
                     <div class="form-section">
                         <h3>Basic Information</h3>
                         <div class="form-row">
@@ -161,7 +162,6 @@
                         </div>
                     </div>
 
-                    <!-- Description -->
                     <div class="form-section">
                         <h3>Description</h3>
                         <div class="form-group">
@@ -182,7 +182,6 @@
                         </div>
                     </div>
 
-                    <!-- SDGs -->
                     <div class="form-section">
                         <h3>Sustainable Development Goals</h3>
                         <div class="form-group">
@@ -209,7 +208,6 @@
                         </div>
                     </div>
 
-                    <!-- Project Details -->
                     <div class="form-section">
                         <h3>Project Details</h3>
                         <div class="form-row">
@@ -228,7 +226,6 @@
                         </div>
                     </div>
 
-                    <!-- Founder Info -->
                     <div class="form-section">
                         <h3>Founder Information</h3>
                         <div class="form-row">
@@ -257,11 +254,9 @@
                         </div>
                     </div>
 
-                    <!-- Images -->
                     <div class="form-section">
                         <h3>Project Images</h3>
                         <div id="edit-images-preview" class="images-preview-grid">
-                            <!-- Images will be displayed here -->
                         </div>
                     </div>
 
@@ -274,7 +269,6 @@
         </div>
     </div>
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
@@ -289,6 +283,20 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.menu-overlay');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
     </script>
     
     <script src="js/startups-firestore.js"></script>

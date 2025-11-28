@@ -1,4 +1,167 @@
-/* TBI Bookings Admin Styles */
+:root {
+    --primary-green: #166647;
+    --light-green: #f0f7f4;
+    --background-gray: #f8f9fa;
+    --border-gray: #e9ecef;
+    --text-dark: #212529;
+    --text-light: #6c757d;
+    --white: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+body {
+    display: flex;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-gray);
+    color: var(--text-dark);
+    height: 100vh;
+    overflow: hidden; 
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.sidebar {
+    width: 260px;
+    background-color: var(--primary-green);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-header {
+    margin-bottom: 30px;
+    padding-left: 10px;
+}
+.sidebar-header h3 {
+    margin: 0;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+}
+.sidebar-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.8;
+}
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--white);
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.sidebar-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.sidebar-nav a.active {
+    background-color: var(--white);
+    color: var(--primary-green);
+    font-weight: 600;
+}
+.sidebar-nav a i {
+    width: 20px;
+    text-align: center;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 30px;
+    width: 100%;
+    height: 100vh; 
+    overflow-y: auto; 
+    overflow-x: hidden;
+    padding-bottom: 80px; 
+}
+
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+.main-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.main-content::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+.main-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-dark);
+    cursor: pointer;
+    margin-right: auto;
+}
+
+.menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.menu-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.logout-btn {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 600;
+    padding: 8px 16px;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    font-size: 0;
+    font-family: 'Poppins', sans-serif;
+}
+.logout-btn:hover {
+    background-color: var(--border-gray);
+}
+.logout-btn i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+.logout-btn::after {
+    content: 'uColab';
+    font-size: 16px;
+    font-weight: 600;
+}
 
 .bookings-section {
     padding: 20px;
@@ -15,6 +178,7 @@
     font-size: 2rem;
     color: #1a1a1a;
     margin-bottom: 5px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .section-subtitle {
@@ -49,7 +213,6 @@
     box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
 }
 
-/* Stats Cards */
 .bookings-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -110,7 +273,6 @@
     margin: 0;
 }
 
-/* Filters */
 .filters-container {
     background: #fff;
     padding: 20px;
@@ -172,7 +334,6 @@
     color: #1a1a1a;
 }
 
-/* Table */
 .table-container {
     background: #fff;
     border-radius: 12px;
@@ -255,7 +416,6 @@
     color: #5a3fb3;
 }
 
-/* Action Buttons */
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -318,7 +478,6 @@
     background: #bee5eb;
 }
 
-/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -359,6 +518,7 @@
     font-size: 1.5rem;
     color: #1a1a1a;
     margin: 0;
+    font-family: 'Poppins', sans-serif;
 }
 
 .modal-close {
@@ -472,7 +632,6 @@
     color: #1a1a1a;
 }
 
-/* Details Grid */
 .details-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -501,7 +660,6 @@
     color: #1a1a1a;
 }
 
-/* Close Day/Time Modal Specific Styles */
 .checkbox-group {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -595,7 +753,6 @@
     padding: 20px;
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
     .bookings-table {
         font-size: 0.85rem;
@@ -608,6 +765,31 @@
 }
 
 @media (max-width: 768px) {
+    body {
+        position: relative;
+    }
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        transform: translateX(-100%);
+        width: 260px;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    }
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    .main-content {
+        padding: 20px;
+        width: 100%;
+    }
+    .menu-toggle {
+        display: block;
+    }
+    .main-header {
+        justify-content: space-between;
+    }
     .filters-container {
         flex-direction: column;
     }

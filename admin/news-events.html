@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>News & Events - UC InTTO Admin</title>
-    <link rel="stylesheet" href="css/dashboard-style.css">
     <link rel="stylesheet" href="css/news-events-style.css">
     <link rel="stylesheet" href="../ucolab/css/submit-project.css">
     
@@ -36,8 +35,13 @@
         </nav>
     </aside>
 
+    <div class="menu-overlay"></div>
+
     <main class="main-content">
         <header class="main-header">
+            <button class="menu-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </header>
 
@@ -73,7 +77,7 @@
             </div>
             
             <div class="news-event-list" id="news-event-list">
-                </div>
+            </div>
         </section>
     </main>
     
@@ -214,7 +218,6 @@
         </div>
     </div>
     
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
@@ -229,9 +232,22 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.menu-overlay');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
     </script>
     
-    <!-- Cloudinary Upload Module -->
     <script src="../ucolab/js/cloudinary.js"></script>
     <script src="js/news-events-firestore.js"></script>
 </body>

@@ -11,97 +11,101 @@
     <script type="module" src="js/auth-check.js"></script>
 </head>
 <body>
-    <div class="admin-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>UC InTTO</h3>
-                <p>Admin Portal</p>
-            </div>
-            <nav class="sidebar-nav">
-                <ul>
-                    <li><a href="dashboard.html"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
-                    <li><a href="startups.html"><i class="fa-solid fa-rocket"></i> Startups</a></li>
-                    <li><a href="ip-applications.html"><i class="fa-solid fa-file-shield"></i> IP Applications</a></li>
-                    <li><a href="metrics.html"><i class="fa-solid fa-chart-line"></i> Metrics</a></li>
-                    <li><a href="news-events.html"><i class="fa-solid fa-newspaper"></i> News & Events</a></li>
-                    <li><a href="team.html"><i class="fa-solid fa-users"></i> Team</a></li>
-                    <li><a href="innovation.html" class="active"><i class="fa-solid fa-person"></i> Innovation</a></li> 
-                    <li><a href="sdg.html"><i class="fa-solid fa-bullseye"></i> SDG</a></li>
-                    <li><a href="tbi-bookings.html"><i class="fa-solid fa-calendar-check"></i> TBI Bookings</a></li>
-                </ul>
-            </nav>
-        </aside>
+    
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>UC InTTO</h3>
+            <p>Admin Portal</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="dashboard.html"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
+                <li><a href="startups.html"><i class="fa-solid fa-rocket"></i> Startups</a></li>
+                <li><a href="ip-applications.html"><i class="fa-solid fa-file-shield"></i> IP Applications</a></li>
+                <li><a href="metrics.html"><i class="fa-solid fa-chart-line"></i> Metrics</a></li>
+                <li><a href="news-events.html"><i class="fa-solid fa-newspaper"></i> News & Events</a></li>
+                <li><a href="team.html"><i class="fa-solid fa-users"></i> Team</a></li>
+                <li><a href="innovation.html" class="active"><i class="fa-solid fa-person"></i> Innovation</a></li> 
+                <li><a href="sdg.html"><i class="fa-solid fa-bullseye"></i> SDG</a></li>
+                <li><a href="tbi-bookings.html"><i class="fa-solid fa-calendar-check"></i> TBI Bookings</a></li>
+            </ul>
+        </nav>
+    </aside>
 
-        <main class="main-content">
-            <header class="content-header">
-                <div class="header-left">
-                    <h1>Innovation Program Applications</h1>
-                    <p class="subtitle">Manage incubation applications</p>
-                </div>
-                <div class="header-right">
-                    <div class="header-stats">
-                        <div class="stat-item">
-                            <span class="stat-value" id="total-applications">0</span>
-                            <span class="stat-label">Total</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value pending-color" id="pending-count">0</span>
-                            <span class="stat-label">Pending</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value approved-color" id="approved-count">0</span>
-                            <span class="stat-label">Approved</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value rejected-color" id="rejected-count">0</span>
-                            <span class="stat-label">Rejected</span>
-                        </div>
+    <div class="menu-overlay"></div>
+
+    <main class="main-content">
+        <header class="main-header">
+            <button class="menu-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </header>
+
+        <header class="content-header">
+            <div class="header-left">
+                <h1>Innovation Program Applications</h1>
+                <p class="subtitle">Manage incubation applications</p>
+            </div>
+            <div class="header-right">
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="total-applications">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value pending-color" id="pending-count">0</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value approved-color" id="approved-count">0</span>
+                        <span class="stat-label">Approved</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value rejected-color" id="rejected-count">0</span>
+                        <span class="stat-label">Rejected</span>
                     </div>
                 </div>
-            </header>
+            </div>
+        </header>
 
-            <!-- Filters and Search -->
-            <div class="controls-section">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Search by name, email, or startup name...">
+        <div class="controls-section">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Search by name, email, or startup name...">
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <div class="status-filters" id="status-filters">
+                        <button class="filter-btn active" data-status="all">All</button>
+                        <button class="filter-btn" data-status="pending">Pending</button>
+                        <button class="filter-btn" data-status="approved">Approved</button>
+                        <button class="filter-btn" data-status="rejected">Rejected</button>
+                    </div>
                 </div>
                 
-                <div class="filters">
-                    <div class="filter-group">
-                        <label>Status:</label>
-                        <div class="status-filters" id="status-filters">
-                            <button class="filter-btn active" data-status="all">All</button>
-                            <button class="filter-btn" data-status="pending">Pending</button>
-                            <button class="filter-btn" data-status="approved">Approved</button>
-                            <button class="filter-btn" data-status="rejected">Rejected</button>
-                        </div>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label>Sort:</label>
-                        <select id="sort-select" class="sort-dropdown">
-                            <option value="recent">Most Recent</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="name-asc">Name (A-Z)</option>
-                            <option value="name-desc">Name (Z-A)</option>
-                        </select>
-                    </div>
+                <div class="filter-group">
+                    <label>Sort:</label>
+                    <select id="sort-select" class="sort-dropdown">
+                        <option value="recent">Most Recent</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                    </select>
                 </div>
             </div>
+        </div>
 
-            <!-- Applications List -->
-            <div class="applications-container" id="applications-container">
-                <!-- Applications will be dynamically loaded here -->
-                <div class="loading-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Loading applications...</p>
-                </div>
+        <div class="applications-container" id="applications-container">
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading applications...</p>
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
-    <!-- Application Details Modal -->
     <div class="modal-overlay" id="details-modal">
         <div class="modal-content details-modal">
             <div class="modal-header">
@@ -112,7 +116,6 @@
             </div>
             
             <div class="modal-body" id="modal-body">
-                <!-- Personal Information Section -->
                 <div class="details-section">
                     <h3><i class="fas fa-user"></i> Personal Information</h3>
                     <div class="details-grid">
@@ -143,7 +146,6 @@
                     </div>
                 </div>
 
-                <!-- Startup Information Section -->
                 <div class="details-section">
                     <h3><i class="fas fa-rocket"></i> Startup Information</h3>
                     <div class="details-grid">
@@ -178,7 +180,6 @@
                     </div>
                 </div>
 
-                <!-- Team Information Section -->
                 <div class="details-section">
                     <h3><i class="fas fa-users"></i> Team Information</h3>
                     <div class="details-grid">
@@ -197,7 +198,6 @@
                     </div>
                 </div>
 
-                <!-- Program Expectations Section -->
                 <div class="details-section">
                     <h3><i class="fas fa-bullseye"></i> Program Expectations</h3>
                     <div class="details-grid">
@@ -212,7 +212,6 @@
                     </div>
                 </div>
 
-                <!-- Submission Info -->
                 <div class="details-section">
                     <h3><i class="fas fa-info-circle"></i> Submission Information</h3>
                     <div class="details-grid">
@@ -254,7 +253,6 @@
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
     <div class="modal-overlay" id="confirm-modal">
         <div class="modal-content confirm-modal">
             <div class="modal-header">
@@ -273,7 +271,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
@@ -288,6 +285,20 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.menu-overlay');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
     </script>
     
     <script src="js/innovation.js"></script>

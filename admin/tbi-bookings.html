@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TBI Bookings - UC InTTO Admin</title>
-    <link rel="stylesheet" href="css/dashboard-style.css">
     <link rel="stylesheet" href="css/tbi-bookings-style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script type="module" src="js/auth-check.js"></script>
 </head>
 
@@ -34,8 +33,13 @@
         </nav>
     </aside>
 
+    <div class="menu-overlay"></div>
+
     <main class="main-content">
         <header class="main-header">
+            <button class="menu-toggle">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </header>
 
@@ -52,7 +56,6 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
             <div class="bookings-stats">
                 <div class="stat-card">
                     <div class="stat-icon pending">
@@ -92,7 +95,6 @@
                 </div>
             </div>
 
-            <!-- Filters -->
             <div class="filters-container">
                 <div class="filter-group">
                     <label for="statusFilter">Status:</label>
@@ -128,7 +130,6 @@
                 </button>
             </div>
 
-            <!-- Bookings Table -->
             <div class="table-container">
                 <table class="bookings-table">
                     <thead>
@@ -157,7 +158,6 @@
         </section>
     </main>
 
-    <!-- Reschedule Modal -->
     <div class="modal" id="rescheduleModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -204,7 +204,6 @@
         </div>
     </div>
 
-    <!-- View Details Modal -->
     <div class="modal" id="viewModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -262,7 +261,6 @@
         </div>
     </div>
 
-    <!-- Close Day/Time Modal -->
     <div class="modal" id="closeDayModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -335,6 +333,37 @@
             </div>
         </div>
     </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE",
+            authDomain: "uc-intto.firebaseapp.com",
+            projectId: "uc-intto",
+            storageBucket: "uc-intto.firebasestorage.app",
+            messagingSenderId: "156771180433",
+            appId: "1:156771180433:web:4f9d57eb6b0e7882ef0430",
+            measurementId: "G-ETY9E0F1K6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.menu-overlay');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
 
     <script type="module" src="js/tbi-bookings.js"></script>
 </body>

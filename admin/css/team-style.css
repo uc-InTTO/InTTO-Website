@@ -1,4 +1,171 @@
-/* --- Page Header for Button Alignment --- */
+:root {
+    --primary-green: #166647;
+    --light-green: #f0f7f4;
+    --background-gray: #f8f9fa;
+    --border-gray: #e9ecef;
+    --text-dark: #212529;
+    --text-light: #6c757d;
+    --white: #ffffff;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    --primary-green-rgb: 22, 102, 71;
+    --background-light: #f8f9fa;
+}
+
+body {
+    display: flex;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-gray);
+    color: var(--text-dark);
+    height: 100vh;
+    overflow: hidden; 
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.sidebar {
+    width: 260px;
+    background-color: var(--primary-green);
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    flex-shrink: 0;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+}
+
+.sidebar-header {
+    margin-bottom: 30px;
+    padding-left: 10px;
+}
+.sidebar-header h3 {
+    margin: 0;
+    font-weight: 700;
+    font-family: 'Poppins', sans-serif;
+}
+.sidebar-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.8;
+}
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: var(--white);
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+.sidebar-nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.sidebar-nav a.active {
+    background-color: var(--white);
+    color: var(--primary-green);
+    font-weight: 600;
+}
+.sidebar-nav a i {
+    width: 20px;
+    text-align: center;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 30px;
+    width: 100%;
+    height: 100vh; 
+    overflow-y: auto; 
+    overflow-x: hidden;
+    padding-bottom: 80px; 
+}
+
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+.main-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.main-content::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+.main-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-dark);
+    cursor: pointer;
+    margin-right: auto;
+}
+
+.menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.menu-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.logout-btn {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 600;
+    padding: 8px 16px;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    font-size: 0;
+    font-family: 'Poppins', sans-serif;
+}
+.logout-btn:hover {
+    background-color: var(--border-gray);
+}
+.logout-btn i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+.logout-btn::after {
+    content: 'uColab';
+    font-size: 16px;
+    font-weight: 600;
+}
+
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -7,13 +174,13 @@
 }
 .page-header h1 {
     margin: 0;
+    font-family: 'Poppins', sans-serif;
 }
 .page-header .subtitle {
     margin: 5px 0 0;
     color: var(--text-light);
 }
 
-/* --- Primary Button Styling (ensure this is in dashboard-style.css for global use or here) --- */
 .btn-primary {
     background-color: #1a5d3d;
     color: #ffffff;
@@ -26,6 +193,7 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    font-family: 'Poppins', sans-serif;
 }
 .btn-primary:hover {
     background-color: #164a31;
@@ -43,13 +211,12 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    font-family: 'Poppins', sans-serif;
 }
 .btn-secondary:hover {
     background-color: var(--background-gray);
 }
 
-
-/* --- Search Container (no type filters needed here) --- */
 .filters-container {
     display: flex;
     gap: 16px;
@@ -79,20 +246,18 @@
     background: none;
     font-size: 15px;
     color: var(--text-dark);
+    font-family: 'Poppins', sans-serif;
 }
 #search-input:focus {
     outline: none;
 }
 
-
-/* --- Team Grid --- */
 .team-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 25px;
 }
 
-/* --- Individual Team Member Card --- */
 .team-member-card {
     background-color: var(--white);
     padding: 25px;
@@ -112,13 +277,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 40px; /* For emoji */
+    font-size: 40px; 
     color: var(--white);
     margin-bottom: 15px;
     flex-shrink: 0;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
-.team-member-card .avatar i { /* For Font Awesome icons */
+.team-member-card .avatar i { 
     font-size: 40px;
 }
 
@@ -126,6 +291,7 @@
     margin: 0 0 5px;
     font-size: 18px;
     color: var(--text-dark);
+    font-family: 'Poppins', sans-serif;
 }
 
 .team-member-card .position {
@@ -140,7 +306,7 @@
     color: var(--text-light);
     margin-bottom: 15px;
     line-height: 1.5;
-    flex-grow: 1; /* Allow description to take space */
+    flex-grow: 1; 
 }
 
 .team-member-card .contact-email {
@@ -154,7 +320,7 @@
     transition: color 0.2s ease;
 }
 .team-member-card .contact-email:hover {
-    color: #164a31; /* Darker green */
+    color: #164a31; 
     text-decoration: underline;
 }
 
@@ -179,21 +345,20 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    font-family: 'Poppins', sans-serif;
 }
 .team-member-card .action-btn.edit-btn:hover {
     background-color: var(--background-gray);
     border-color: var(--text-light);
 }
 .team-member-card .action-btn.remove-btn {
-    color: #dc3545; /* Red for remove */
+    color: #dc3545; 
     border-color: #dc3545;
 }
 .team-member-card .action-btn.remove-btn:hover {
-    background-color: #f8d7da; /* Light red */
+    background-color: #f8d7da; 
 }
 
-
-/* --- MODAL STYLES --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -238,6 +403,7 @@
     margin: 0;
     font-size: 24px;
     color: var(--text-dark);
+    font-family: 'Poppins', sans-serif;
 }
 .close-modal-btn {
     background: none;
@@ -250,14 +416,13 @@
 .close-modal-btn:hover {
     color: var(--text-dark);
 }
-.modal-content > p { /* Subtitle */
+.modal-content > p { 
     color: var(--text-light);
     margin-top: 0;
     margin-bottom: 25px;
 }
 
-/* Form Styles */
-.team-member-form .form-grid { /* Specific form grid */
+.team-member-form .form-grid { 
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
@@ -285,6 +450,7 @@
     font-size: 15px;
     color: var(--text-dark);
     background-color: var(--background-light);
+    font-family: 'Poppins', sans-serif;
 }
 .form-group input:focus,
 .form-group select:focus,
@@ -312,8 +478,6 @@
     margin-top: 20px;
 }
 
-
-/* Responsive adjustments */
 @media (max-width: 600px) {
     .team-member-form .form-grid {
         grid-template-columns: 1fr;
@@ -325,7 +489,7 @@
         font-size: 20px;
     }
 }
-/* Photo Upload Styles */
+
 .photo-upload-container {
     display: flex;
     flex-direction: column;
@@ -377,7 +541,6 @@
     font-size: 13px;
 }
 
-/* Cropper Modal Styles */
 .cropper-modal {
     position: fixed;
     top: 0;
@@ -412,6 +575,7 @@
     margin: 0;
     font-size: 20px;
     color: #333;
+    font-family: 'Poppins', sans-serif;
 }
 
 .cropper-close-btn {
@@ -455,6 +619,7 @@
     cursor: pointer;
     font-size: 14px;
     transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
 }
 
 .cropper-btn:hover {
@@ -466,4 +631,37 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+}
+
+@media (max-width: 768px) {
+    body {
+        position: relative;
+    }
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        transform: translateX(-100%);
+        width: 260px;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    }
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    .main-content {
+        padding: 20px;
+        width: 100%;
+    }
+    .menu-toggle {
+        display: block;
+    }
+    .main-header {
+        justify-content: space-between;
+    }
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
 }

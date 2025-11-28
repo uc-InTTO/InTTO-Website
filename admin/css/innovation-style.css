@@ -10,7 +10,14 @@
     --status-pending: #ffc107; 
     --status-approved: #198754; 
     --status-rejected: #dc3545; 
-    --status-secondary: #0dcaf0; 
+    --status-secondary: #0dcaf0;
+    --primary: #4361ee;
+    --success: #06d6a0;
+    --danger: #ef476f;
+    --dark: #2b2d42;
+    --gray: #8d99ae;
+    --light-bg: #f8f9fa;
+    --border: #e9ecef; 
 }
 
 body {
@@ -19,15 +26,12 @@ body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--background-gray);
     color: var(--text-dark);
+    height: 100vh;
+    overflow: hidden; 
 }
 
 * {
     box-sizing: border-box;
-}
-.admin-container {
-    display: flex;
-    width: 100%;
-    min-height: 100vh;
 }
 
 .sidebar {
@@ -41,6 +45,8 @@ body {
     position: sticky;
     top: 0;
     flex-shrink: 0;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
 }
 .sidebar-header {
     margin-bottom: 30px;
@@ -49,6 +55,7 @@ body {
 .sidebar-header h3 {
     margin: 0;
     font-weight: 700;
+    font-family: 'Poppins', sans-serif;
 }
 .sidebar-header p {
     margin: 0;
@@ -87,11 +94,85 @@ body {
 .main-content {
     flex-grow: 1;
     padding: 30px;
-    overflow-y: auto;
+    height: 100vh; 
+    overflow-y: auto; 
+    overflow-x: hidden;
+    padding-bottom: 80px; 
     width: 100%;
 }
 
-/* --- Content Header & Stats --- */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+.main-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.main-content::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+.main-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-dark);
+    cursor: pointer;
+    margin-right: auto;
+}
+
+.menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.menu-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.logout-btn {
+    text-decoration: none;
+    color: var(--text-dark);
+    font-weight: 600;
+    padding: 8px 16px;
+    border: 1px solid var(--border-gray);
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    font-size: 0;
+    font-family: 'Poppins', sans-serif;
+}
+.logout-btn:hover {
+    background-color: var(--border-gray);
+}
+.logout-btn i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+.logout-btn::after {
+    content: 'uColab';
+    font-size: 16px;
+    font-weight: 600;
+}
+
 .content-header {
     display: flex;
     justify-content: space-between;
@@ -106,6 +187,7 @@ body {
     margin: 0;
     font-weight: 600;
     color: var(--text-dark);
+    font-family: 'Poppins', sans-serif;
 }
 
 .header-left .subtitle {
@@ -143,12 +225,10 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Color overrides for stat values */
 .pending-color { color: var(--status-pending); }
 .approved-color { color: var(--status-approved); }
 .rejected-color { color: var(--status-rejected); }
 
-/* --- Filters and Search Section --- */
 .controls-section {
     display: flex;
     justify-content: space-between;
@@ -236,7 +316,6 @@ body {
     border-color: var(--primary-green);
 }
 
-/* Reusing dropdown style from dashboard-style.css */
 .sort-dropdown {
     appearance: none;
     -webkit-appearance: none;
@@ -245,7 +324,7 @@ body {
     border: 1px solid var(--border-gray);
     border-radius: 8px;
     background-color: var(--white);
-    font-family: 'Poppins', sans-serif; /* Adjusted font */
+    font-family: 'Poppins', sans-serif; 
     font-size: 14px;
     color: var(--text-dark);
     cursor: pointer;
@@ -266,7 +345,6 @@ body {
     box-shadow: 0 0 0 3px rgba(24, 99, 75, 0.1);
 }
 
-/* --- Applications List Container --- */
 .applications-container {
     display: grid;
     gap: 20px;
@@ -298,6 +376,7 @@ body {
     font-size: 18px;
     font-weight: 600;
     margin: 0;
+    font-family: 'Poppins', sans-serif;
 }
 
 .card-subtitle {
@@ -316,7 +395,7 @@ body {
 .detail-segment {
     display: flex;
     flex-direction: column;
-    align-items: flex-start; /* Aligned for better reading */
+    align-items: flex-start;
 }
 
 .detail-segment label {
@@ -333,7 +412,6 @@ body {
     color: var(--text-dark);
 }
 
-/* Status Badges */
 .status-badge {
     padding: 5px 10px;
     border-radius: 6px;
@@ -361,12 +439,10 @@ body {
     border-left-color: var(--status-rejected);
 }
 
-/* Application Card status border */
 .application-card.status-pending { border-left-color: var(--status-pending); }
 .application-card.status-approved { border-left-color: var(--status-approved); }
 .application-card.status-rejected { border-left-color: var(--status-rejected); }
 
-/* Loading State */
 .loading-state {
     text-align: center;
     padding: 50px 0;
@@ -381,7 +457,6 @@ body {
     display: block;
 }
 
-/* --- Modal Styles (Details and Confirmation) --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -389,7 +464,7 @@ body {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    display: none; /* Hidden by default */
+    display: none; 
     justify-content: center;
     align-items: center;
     z-index: 1000;
@@ -433,6 +508,7 @@ body {
     margin: 0;
     font-size: 22px;
     font-weight: 600;
+    font-family: 'Poppins', sans-serif;
 }
 
 .close-modal {
@@ -453,8 +529,6 @@ body {
     flex-grow: 1;
 }
 
-
-/* Details Modal Specific Styles */
 .details-section {
     margin-bottom: 30px;
     padding: 20px;
@@ -470,6 +544,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .details-section h3 i {
@@ -525,7 +600,6 @@ body {
     font-weight: 500;
 }
 
-/* Action Buttons */
 .modal-footer {
     display: flex;
     justify-content: space-between;
@@ -619,7 +693,6 @@ body {
     }
 }
 
-/* --- Responsive Design (from dashboard-style.css & adjusted) --- */
 @media (max-width: 1024px) {
     .content-header {
         flex-direction: column;
@@ -645,16 +718,30 @@ body {
 }
 
 @media (max-width: 768px) {
-    .admin-container {
-        flex-direction: column;
+    body {
+        position: relative;
     }
     .sidebar {
-        width: 100%;
-        height: auto;
-        position: static;
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100%;
+        transform: translateX(-100%);
+        width: 260px;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+    }
+    .sidebar.active {
+        transform: translateX(0);
     }
     .main-content {
         padding: 20px;
+        width: 100%;
+    }
+    .menu-toggle {
+        display: block;
+    }
+    .main-header {
+        justify-content: space-between;
     }
     .header-stats {
         flex-wrap: wrap;
@@ -668,9 +755,6 @@ body {
     }
     .details-grid {
         grid-template-columns: 1fr;
-    }
-    .action-buttons {
-        justify-content: center;
     }
     .btn {
         flex: 1 1 auto;
@@ -694,16 +778,6 @@ body {
     }
 }
 
-:root {
-    --primary: #4361ee;
-    --success: #06d6a0;
-    --danger: #ef476f;
-    --dark: #2b2d42;
-    --gray: #8d99ae;
-    --light-bg: #f8f9fa;
-    --border: #e9ecef;
-}
-
 .cards-container {
     display: flex;
     flex-direction: column;
@@ -716,7 +790,6 @@ body {
 
 .application-row {
     display: grid;
-    /* CHANGE: 'auto' to '160px' to reserve fixed space for buttons */
     grid-template-columns: 1.5fr 2fr 160px; 
     background: white;
     border-radius: 12px;
@@ -829,8 +902,8 @@ body {
 .action-section {
     display: flex;
     gap: 8px;
-    justify-content: flex-end; /* Keeps buttons anchored to the right */
-    min-width: 160px; /* Enforce the width */
+    justify-content: flex-end; 
+    min-width: 160px; 
 }
 
 .action-btn-icon {

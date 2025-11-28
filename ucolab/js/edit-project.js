@@ -3,6 +3,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     let uploadedImageUrls = ["", "", "", "", ""]; 
     let projectId = null;
 
+    // Debounce function to prevent rapid writes
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
     // 1. Get Project ID
     const params = new URLSearchParams(window.location.search);
     projectId = params.get('id');
@@ -31,14 +40,32 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 3. Load Data
     async function loadProjectData(id) {
-        try {
-            const doc = await db.collection('startups').doc(id).get();
-            if (!doc.exists) {
-                alert("Project not found.");
+        const CACHE_KEY = `ucolab_edit_project_${id}`;
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        let data;
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            data = JSON.parse(cached);
+        } else {
+            try {
+                const doc = await db.collection('startups').doc(id).get();
+                if (!doc.exists) {
+                    alert("Project not found.");
+                    window.close();
+                    return;
+                }
+                data = doc.data();
+                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+                localStorage.setItem(CACHE_KEY + '_time', now);
+            } catch (error) {
+                alert("Error loading project.");
                 window.close();
                 return;
             }
-            const data = doc.data();
+        }
 
             // Standard Fields
             setVal('project-name', data.name);
@@ -155,7 +182,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             };
 
             try {
-                await db.collection('startups').doc(projectId).update(updatedData);
+                const debouncedUpdate = debounce(async (data) => {
+                    await db.collection('startups').doc(projectId).update(data);
+                }, 1000);
+                await debouncedUpdate(updatedData);
                 alert("Saved successfully!");
                 if (window.opener && !window.opener.closed) {
                     window.opener.location.reload();

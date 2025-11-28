@@ -10,6 +10,23 @@ document.addEventListener('DOMContentLoaded', () => {
     teamCardsContainer.innerHTML = '<p style="text-align: center; width: 100%; padding: 40px;">Loading team members...</p>';
 
     // Load team members from Firestore
+    const CACHE_KEY = 'public_team_members';
+    const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+    let cached = localStorage.getItem(CACHE_KEY);
+    let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+    let now = Date.now();
+
+    if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+        // Use cached value
+        const activeMembers = JSON.parse(cached);
+        teamCardsContainer.innerHTML = '';
+        activeMembers.forEach((member) => {
+            const teamCard = createTeamCard(member);
+            teamCardsContainer.appendChild(teamCard);
+        });
+        return;
+    }
+
     db.collection('team')
         .orderBy('displayOrder', 'asc')
         .get()
@@ -30,6 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     activeMembers.push(member);
                 }
             });
+
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(activeMembers));
+            localStorage.setItem(CACHE_KEY + '_time', now);
 
             if (activeMembers.length === 0) {
                 teamCardsContainer.innerHTML = '<p style="text-align: center; width: 100%; padding: 40px;">No team members found.</p>';

@@ -20,25 +20,44 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
     
-    db.collection('newsEvents').doc(eventId).get()
-        .then((doc) => {
-            if (!doc.exists) {
-                showError('Event not found');
-                return;
-            }
-            
-            const event = { id: doc.id, ...doc.data() };
-            displayEventDetails(event);
-            loadRelatedPosts(event);
+    const CACHE_KEY = `news_event_detail_${eventId}`;
+    const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+    let cached = localStorage.getItem(CACHE_KEY);
+    let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+    let now = Date.now();
 
-            setTimeout(() => {
-                skeleton.style.display = 'none';
-                realContent.style.display = 'block';
-            }, 300);
-        })
-        .catch((error) => {
-            showError('Error loading event details');
-        });
+    let event;
+    if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+        event = JSON.parse(cached);
+        displayEventDetails(event);
+        loadRelatedPosts(event);
+        setTimeout(() => {
+            skeleton.style.display = 'none';
+            realContent.style.display = 'block';
+        }, 300);
+    } else {
+        db.collection('newsEvents').doc(eventId).get()
+            .then((doc) => {
+                if (!doc.exists) {
+                    showError('Event not found');
+                    return;
+                }
+                
+                event = { id: doc.id, ...doc.data() };
+                localStorage.setItem(CACHE_KEY, JSON.stringify(event));
+                localStorage.setItem(CACHE_KEY + '_time', now);
+                displayEventDetails(event);
+                loadRelatedPosts(event);
+
+                setTimeout(() => {
+                    skeleton.style.display = 'none';
+                    realContent.style.display = 'block';
+                }, 300);
+            })
+            .catch((error) => {
+                showError('Error loading event details');
+            });
+    }
     
     function showError(message) {
         const skeleton = document.getElementById('loading-skeleton');

@@ -23,6 +23,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Firestore Functions ---
     const loadNewsEventsFromFirestore = async () => {
+        const CACHE_KEY = 'admin_news_events';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            newsEventsData = JSON.parse(cached);
+            return newsEventsData;
+        }
+
         try {
             if (!db) {
                 throw new Error('Database not initialized');
@@ -37,6 +49,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ...doc.data()
                 });
             });
+
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(newsEventsData));
+            localStorage.setItem(CACHE_KEY + '_time', now);
             
             return newsEventsData;
         } catch (error) {

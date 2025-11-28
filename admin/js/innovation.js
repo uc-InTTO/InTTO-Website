@@ -30,9 +30,23 @@ document.addEventListener('DOMContentLoaded', function() {
      * Load applications from Firestore
      */
     function loadApplications() {
+        const CACHE_KEY = 'innovation_applications';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            applications = JSON.parse(cached);
+            updateStats();
+            renderApplications();
+            return;
+        }
+
         showLoading();
         
-        db.collection('incubation_applications').onSnapshot((snapshot) => {
+        db.collection('incubation_applications').get().then((snapshot) => {
             applications = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
@@ -46,9 +60,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
             
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(applications));
+            localStorage.setItem(CACHE_KEY + '_time', now);
+
             updateStats();
             renderApplications();
-        }, (error) => {
+        }).catch((error) => {
             showError('Failed to load applications: ' + error.message);
         });
     }

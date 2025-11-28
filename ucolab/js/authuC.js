@@ -1,4 +1,4 @@
-import { saveApplication } from "./saveInfouC.js";
+import { saveApplication, debouncedSaveApplication } from "./saveInfouC.js";
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
@@ -126,6 +126,36 @@ const adminModalHTML = `
 // Inject popup into body
 document.body.insertAdjacentHTML('beforeend', adminModalHTML);
 
+// Cache for user data to reduce Firebase reads
+const USER_CACHE_KEY = 'ucolab_user_data';
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
+function getCachedUserData(uid) {
+    try {
+        const cached = localStorage.getItem(`${USER_CACHE_KEY}_${uid}`);
+        if (cached) {
+            const { data, timestamp } = JSON.parse(cached);
+            if (Date.now() - timestamp < CACHE_EXPIRY) {
+                return data;
+            }
+        }
+    } catch (e) {
+        console.warn('Error reading user cache:', e);
+    }
+    return null;
+}
+
+function setCachedUserData(uid, data) {
+    try {
+        localStorage.setItem(`${USER_CACHE_KEY}_${uid}`, JSON.stringify({
+            data,
+            timestamp: Date.now()
+        }));
+    } catch (e) {
+        console.warn('Error setting user cache:', e);
+    }
+}
+
 /**
  * Redirects user based on admin status
  */
@@ -183,14 +213,21 @@ if (signInForm) {
             const user = userCredential.user;
             
             const userDocRef = doc(db, 'Registered Accounts', user.uid);
-            const userDoc = await getDoc(userDocRef);
+            let userData = getCachedUserData(user.uid);
+            let userDoc;
+            if (!userData) {
+                userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    setCachedUserData(user.uid, userData);
+                }
+            }
             
-            if (!userDoc.exists()) {
+            if (!userData) {
                 alert('User profile not found. Please complete registration.');
                 window.location.href = 'signupform.html';
             } else {
                 await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
-                const userData = userDoc.data();
                 const isAdmin = userData.isAdmin || false;
                 redirectUser(isAdmin);
             }
@@ -212,10 +249,18 @@ if (googleSignInBtn) {
             const isNewUser = result._tokenResponse?.isNewUser || false;
             
             const userDocRef = doc(db, 'Registered Accounts', user.uid);
-            const userDoc = await getDoc(userDocRef);
+            let userData = getCachedUserData(user.uid);
+            let userDoc;
+            if (!userData && !isNewUser) {
+                userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    userData = userDoc.data();
+                    setCachedUserData(user.uid, userData);
+                }
+            }
             
-            if (!userDoc.exists() || isNewUser) {
-                const userData = {
+            if (!userData || isNewUser) {
+                const userDataNew = {
                     uid: user.uid,
                     email: user.email,
                     displayName: user.displayName || 'N/A',
@@ -228,12 +273,12 @@ if (googleSignInBtn) {
                     photoURL: user.photoURL || null,
                     isAdmin: false
                 };
-                await saveApplication(userData);
+                await debouncedSaveApplication(userDataNew);
+                setCachedUserData(user.uid, userDataNew);
                 alert('Welcome! Please complete your profile.');
                 window.location.href = 'index.html';
             } else {
                 await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
-                const userData = userDoc.data();
                 const isAdmin = userData.isAdmin || false;
                 redirectUser(isAdmin);
             }
@@ -276,7 +321,7 @@ if (signUpForm) {
                 isAdmin: false
             };
             
-            await saveApplication(userData);
+            await debouncedSaveApplication(userData);
             alert('Registration successful! Welcome to UCoLab.');
             window.location.href = 'index.html';
         } catch (error) {

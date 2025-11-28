@@ -2,6 +2,15 @@ document.addEventListener('DOMContentLoaded', function() {
     let uploadedImageUrls = ["", "", "", "", ""]; 
     let uploadingImages = [false, false, false, false, false]; 
 
+    // Debounce function to prevent rapid writes
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
     // --- 1. Authentication Check ---
     // We use 'auth' from your firebase config to check user status
     auth.onAuthStateChanged(function(user) {
@@ -229,7 +238,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
 
                 try {
-                    await db.collection('startups').add(newProject);
+                    const debouncedAdd = debounce(async (project) => {
+                        await db.collection('startups').add(project);
+                    }, 1000);
+                    await debouncedAdd(newProject);
                     alert("Project submitted successfully!");
                     window.location.href = 'index.html';
                 } catch (error) {

@@ -37,6 +37,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Firestore Functions ---
     const loadIPsFromFirestore = async () => {
+        const CACHE_KEY = 'ip_applications';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            ipData = JSON.parse(cached);
+            return ipData;
+        }
+
         try {
             const snapshot = await db.collection(IP_COLLECTION).get();
             
@@ -47,6 +59,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ...doc.data()
                 });
             });
+
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(ipData));
+            localStorage.setItem(CACHE_KEY + '_time', now);
             
             return ipData;
         } catch (error) {
@@ -73,12 +89,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    const deleteIPFromFirestore = async (firestoreId) => {
-        try {
-            await db.collection(IP_COLLECTION).doc(firestoreId).delete();
-        } catch (error) {
-        }
+    // --- Debounce for writes ---
+    const debounce = (func, wait) => {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     };
+
+    const debouncedUpdateIPInFirestore = debounce(updateIPInFirestore, 1000); // 1 second delay
 
     // --- Function to Update Stat Cards ---
     const updateStats = () => {
@@ -272,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             if (editingIpId !== null) {
                 // Update existing IP
-                await updateIPInFirestore(editingIpId, formData);
+                await debouncedUpdateIPInFirestore(editingIpId, formData);
                 alert('IP application updated successfully!');
             } else {
                 // Create new IP

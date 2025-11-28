@@ -23,6 +23,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     let filteredNewsEvents = [];
 
     async function loadAllNewsEvents() {
+        const CACHE_KEY = 'public_newsEvents';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            allNewsEvents = JSON.parse(cached);
+            applyFiltersAndSearch();
+            return;
+        }
+
         try {
             if (window.LoadingScreen) {
                 window.LoadingScreen.show('Loading news & events');
@@ -43,11 +56,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             newsEvents.sort((a, b) => {
                 const dateA = a.date ? (typeof a.date === 'string' ? new Date(a.date) : a.date.toDate()) : new Date(0);
-                const dateB = b.date ? (typeof b.date === 'string' ? new Date(b.date) : b.date.toDate()) : new Date(0);
+                const dateB = b.date ? (typeof b.date === 'string' ? new Date(b.date) : a.date.toDate()) : new Date(0);
                 return dateB - dateA;
             });
             
             allNewsEvents = newsEvents;
+
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(allNewsEvents));
+            localStorage.setItem(CACHE_KEY + '_time', now);
+
+            renderPage();
             
             if (window.LoadingScreen) window.LoadingScreen.hide();
             

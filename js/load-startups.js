@@ -82,6 +82,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchStartups() {
         if(!cardsGrid) return;
 
+        const CACHE_KEY = 'public_startups';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            allStartupsData = JSON.parse(cached);
+            applyFilters();
+            return;
+        }
+
         try {
             cardsGrid.innerHTML = '<p style="text-align:center; width:100%;">Loading startups...</p>';
             
@@ -92,6 +105,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             snapshot.forEach(doc => {
                 allStartupsData.push({ id: doc.id, ...doc.data() });
             });
+
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(allStartupsData));
+            localStorage.setItem(CACHE_KEY + '_time', now);
 
             applyFilters(); // Initial Render
 

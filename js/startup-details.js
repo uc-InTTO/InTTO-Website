@@ -26,14 +26,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     let imageUrls = [];
 
     try {
-        const doc = await db.collection('startups').doc(startupId).get();
+        const CACHE_KEY = `startup_detail_${startupId}`;
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
 
-        if (!doc.exists) {
-            document.getElementById('detail-title').textContent = 'Startup Not Found';
-            return;
+        let data;
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            data = JSON.parse(cached);
+        } else {
+            const doc = await db.collection('startups').doc(startupId).get();
+            if (!doc.exists) {
+                document.getElementById('detail-title').textContent = 'Startup Not Found';
+                return;
+            }
+            data = doc.data();
+            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            localStorage.setItem(CACHE_KEY + '_time', now);
         }
 
-        const data = doc.data();
         imageUrls = data.imageUrls || [];
 
         document.title = `${data.name || 'Details'} - InTTO`;

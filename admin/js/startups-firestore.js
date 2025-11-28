@@ -13,6 +13,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Firestore Functions ---
     const loadStartupsFromFirestore = async () => {
+        const CACHE_KEY = 'admin_startups_firestore';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            startupsData = JSON.parse(cached);
+            return startupsData;
+        }
+
         try {
             const snapshot = await db.collection(STARTUPS_COLLECTION).get();
             startupsData = [];
@@ -22,6 +34,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ...doc.data()
                 });
             });
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(startupsData));
+            localStorage.setItem(CACHE_KEY + '_time', now);
             return startupsData;
         } catch (error) {
             return [];

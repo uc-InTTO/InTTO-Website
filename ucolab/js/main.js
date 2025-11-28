@@ -3,6 +3,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const auth = window.auth || firebase.auth();
     const db = window.db || firebase.firestore();
 
+    // Debounce function to prevent rapid writes
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
     let allProjectsData = [];
     let currentFilteredProjects = [];
     let currentPage = 1;
@@ -193,7 +202,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastLogin: firebase.firestore.FieldValue.serverTimestamp()
             };
             
-            await db.collection('Registered Accounts').doc(user.uid).set(userData);
+            const debouncedSet = debounce(async (data) => {
+                await db.collection('Registered Accounts').doc(user.uid).set(data);
+            }, 1000);
+            await debouncedSet(userData);
             closeAuthModal();
             alert('Registration successful! Welcome to UCoLab.');
         } catch (error) {
@@ -211,7 +223,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (userDoc.exists) { 
                 const userData = userDoc.data();
-                await userDocRef.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+                const debouncedUpdate = debounce(async (ref) => {
+                    await ref.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+                }, 1000);
+                await debouncedUpdate(userDocRef);
                 
                 if (userData.isAdmin === true) {
                     setTimeout(() => {
@@ -250,12 +265,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp()
                 };
-                await userDocRef.set(userData);
+                const debouncedSet = debounce(async (ref, data) => {
+                    await ref.set(data);
+                }, 1000);
+                await debouncedSet(userDocRef, userData);
                 closeAuthModal();
                 setTimeout(() => { showAlertModal("Welcome! Please complete your profile."); }, 500);
             } else {
                 const userData = userDoc.data();
-                await userDocRef.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+                const debouncedUpdate = debounce(async (ref) => {
+                    await ref.update({ lastLogin: firebase.firestore.FieldValue.serverTimestamp() });
+                }, 1000);
+                await debouncedUpdate(userDocRef);
                 if (userData.isAdmin === true) {
                     setTimeout(() => {
                         alert('Welcome Admin! Redirecting to dashboard.');
@@ -376,6 +397,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadProjects() {
+        const CACHE_KEY = 'ucolab_projects';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            allProjectsData = JSON.parse(cached);
+            filterProjects();
+            return;
+        }
+
         try {
             // Load all projects from Firestore
             const snapshot = await db.collection('startups').get();
@@ -406,6 +440,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     inquiries: data.inquiries || 0
                 });
             });
+
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(allProjectsData));
+            localStorage.setItem(CACHE_KEY + '_time', now);
 
             filterProjects();
             

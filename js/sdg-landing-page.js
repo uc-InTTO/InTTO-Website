@@ -62,11 +62,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchAllData() {
     try {
-        const projectsSnapshot = await window.db.collection('startups').get();
-        allProjects = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const CACHE_KEY_PROJECTS = 'sdg_projects';
+        const CACHE_KEY_NEWS = 'sdg_news_events';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cachedProjects = localStorage.getItem(CACHE_KEY_PROJECTS);
+        let cachedNews = localStorage.getItem(CACHE_KEY_NEWS);
+        let cachedProjectsTime = localStorage.getItem(CACHE_KEY_PROJECTS + '_time');
+        let cachedNewsTime = localStorage.getItem(CACHE_KEY_NEWS + '_time');
+        let now = Date.now();
 
-        const newsEventsSnapshot = await window.db.collection('newsEvents').get();
-        allNewsEvents = newsEventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (cachedProjects && cachedProjectsTime && (now - cachedProjectsTime < CACHE_EXPIRY)) {
+            allProjects = JSON.parse(cachedProjects);
+        } else {
+            const projectsSnapshot = await window.db.collection('startups').get();
+            allProjects = projectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            localStorage.setItem(CACHE_KEY_PROJECTS, JSON.stringify(allProjects));
+            localStorage.setItem(CACHE_KEY_PROJECTS + '_time', now);
+        }
+
+        if (cachedNews && cachedNewsTime && (now - cachedNewsTime < CACHE_EXPIRY)) {
+            allNewsEvents = JSON.parse(cachedNews);
+        } else {
+            const newsEventsSnapshot = await window.db.collection('newsEvents').get();
+            allNewsEvents = newsEventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            localStorage.setItem(CACHE_KEY_NEWS, JSON.stringify(allNewsEvents));
+            localStorage.setItem(CACHE_KEY_NEWS + '_time', now);
+        }
 
     } catch (error) {
         if (projectsContainer) projectsContainer.innerHTML = `<p style="font-family: 'Poppins', sans-serif; text-align: center; width: 100%;">Error loading projects.</p>`;

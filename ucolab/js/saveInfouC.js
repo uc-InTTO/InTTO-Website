@@ -11,6 +11,15 @@ try {
     throw error;
 }
 
+// Debounce function to prevent rapid writes
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
 export async function saveApplication(data) {
     try {
         const collectionRef = collection(db, "Registered Accounts");
@@ -29,3 +38,6 @@ export async function saveApplication(data) {
         throw e;
     }
 }
+
+// Debounced version for rapid submissions
+export const debouncedSaveApplication = debounce(saveApplication, 1000);

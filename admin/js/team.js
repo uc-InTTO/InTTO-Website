@@ -76,7 +76,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Load Team Members from Firestore ---
     const loadTeamMembers = () => {
-        db.collection('team').onSnapshot((snapshot) => {
+        const CACHE_KEY = 'admin_team_members';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            // Use cached value
+            teamData = JSON.parse(cached);
+            renderTeamMembers();
+            return;
+        }
+
+        db.collection('team').get().then((snapshot) => {
             teamData = [];
             snapshot.forEach((doc) => {
                 teamData.push({
@@ -84,8 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     ...doc.data()
                 });
             });
+            // Cache result
+            localStorage.setItem(CACHE_KEY, JSON.stringify(teamData));
+            localStorage.setItem(CACHE_KEY + '_time', now);
             renderTeamMembers();
-        }, (error) => {
+        }).catch((error) => {
             console.error('Error loading team members:', error);
             teamGrid.innerHTML = '<p style="text-align: center; color: var(--text-light); margin-top: 30px;">Error loading team members. Please refresh the page.</p>';
         });

@@ -38,6 +38,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Load Data from Firestore ---
     const loadStartupsFromFirestore = async () => {
+        const CACHE_KEY = 'sdg_startups';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            return JSON.parse(cached);
+        }
+
         try {
             const snapshot = await db.collection(STARTUPS_COLLECTION).get();
             const startups = [];
@@ -48,6 +58,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     startups.push({ firestoreId: doc.id, ...data });
                 }
             });
+            localStorage.setItem(CACHE_KEY, JSON.stringify(startups));
+            localStorage.setItem(CACHE_KEY + '_time', now);
             return startups;
         } catch (error) {
             return [];
@@ -55,12 +67,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const loadNewsEventsFromFirestore = async () => {
+        const CACHE_KEY = 'sdg_newsEvents';
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
+
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            return JSON.parse(cached);
+        }
+
         try {
             const snapshot = await db.collection(NEWS_EVENTS_COLLECTION).get();
             const newsEvents = [];
             snapshot.forEach(doc => {
                 newsEvents.push({ firestoreId: doc.id, ...doc.data() });
             });
+            localStorage.setItem(CACHE_KEY, JSON.stringify(newsEvents));
+            localStorage.setItem(CACHE_KEY + '_time', now);
             return newsEvents;
         } catch (error) {
             return [];

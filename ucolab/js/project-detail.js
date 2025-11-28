@@ -75,11 +75,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!projectId) return setText('detail-title', "No Project ID");
 
-        try {
-            const doc = await db.collection('startups').doc(projectId).get();
-            if (!doc.exists) return setText('detail-title', "Project Not Found");
+        const CACHE_KEY = `ucolab_project_${projectId}`;
+        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        let cached = localStorage.getItem(CACHE_KEY);
+        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
+        let now = Date.now();
 
-            const project = doc.data();
+        let project;
+        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
+            project = JSON.parse(cached);
+        } else {
+            try {
+                const doc = await db.collection('startups').doc(projectId).get();
+                if (!doc.exists) return setText('detail-title', "Project Not Found");
+                project = doc.data();
+                localStorage.setItem(CACHE_KEY, JSON.stringify(project));
+                localStorage.setItem(CACHE_KEY + '_time', now);
+            } catch (error) {
+                return setText('detail-title', "Error Loading Project");
+            }
+        }
             
             document.title = `${project.name} - UCoLab`;
             setText('detail-title', project.name || project.title);

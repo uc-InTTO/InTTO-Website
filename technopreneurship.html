@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/contact-auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="main-wrapper">
@@ -39,7 +40,7 @@
                 </div>
             </div>
             
-            <a href="incubation.html" class="nav-btn">Apply for Incubation <span class="nav-arrow-icon">➜</span></a>
+            <a href="incubation.html" class="nav-btn desktop-only">Apply for Incubation <span class="arrow-icon">➜</span></a>
         </div>
     </div>
 
@@ -179,6 +180,14 @@
         <p>© 2025 University of the Cordilleras Innovation & Technology Transfer Office. All rights reserved.</p>
       </div>
     </footer>
+
+    <script>
+        document.getElementById('hamburger').addEventListener('click', function() {
+        const navLinks = document.getElementById('navLinks');
+        navLinks.classList.toggle('open');
+        this.classList.toggle('open');
+    });
+    </script>
 
 </body>
 </html>

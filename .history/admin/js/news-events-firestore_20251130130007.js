@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             card.className = 'news-event-card';
             card.dataset.firestoreId = item.firestoreId;
+            card.style.fontFamily = "'Poppins', sans-serif";
             
             const imgUrl = (item.images && item.images.length > 0) ? item.images[0] : 'https://via.placeholder.com/150?text=No+Image';
             
@@ -152,17 +153,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            const typeLabel = (item.type || 'news').toUpperCase();
+
             card.innerHTML = `
                 <div class="card-img" style="width: 120px; height: 120px; border-radius: 8px; overflow: hidden; flex-shrink: 0;">
                     <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/150?text=Error'">
                 </div>
                 <div class="card-content" style="font-family: 'Poppins', sans-serif;">
-                    <h3>${item.title || 'Untitled'}</h3>
-                    <p class="description">${(item.content || '').substring(0, 120)}...</p>
-                    <div class="meta-tags">
-                        <span class="tag type-${item.type}">${(item.type || 'news').toUpperCase()}</span>
-                        <span class="tag status-${item.status}">${item.status || 'draft'}</span>
-                        <span><i class="fa-regular fa-calendar"></i> ${displayDate}</span>
+                    <h3 style="font-weight: 600;">${item.title || 'Untitled'}</h3>
+                    <p class="description" style="font-weight: 400;">${(item.content || '').substring(0, 120)}...</p>
+                    <div class="meta-tags" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                        <span class="tag type-${item.type}" style="font-weight: 500;">${typeLabel}</span>
+                        <span class="tag status-${item.status}" style="font-weight: 500;">${item.status || 'draft'}</span>
+                        <span style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px;"><i class="fa-regular fa-calendar"></i> ${displayDate}</span>
                         ${sdgTags}
                     </div>
                 </div>
@@ -207,18 +210,88 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const openAddModal = () => {
-        window.open('news-event-form.html', '_blank');
+        currentEditingId = null;
+        if(modalTitle) modalTitle.textContent = 'Add News/Event';
+        if(newsEventForm) newsEventForm.reset();
+        
+        uploadedImageUrls = ["", "", "", "", ""];
+        
+        for (let i = 1; i <= 5; i++) {
+            const preview = document.getElementById(`image-preview-${i}`);
+            const label = document.querySelector(`#image-upload-${i}`).closest('.image-upload-slot').querySelector('.upload-label');
+            const removeBtn = document.querySelector(`#image-upload-${i}`).closest('.image-upload-slot').querySelector('.remove-image-btn');
+            
+            if(preview) {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+            if(label) label.style.display = 'flex';
+            if(removeBtn) removeBtn.style.display = 'none';
+        }
+
+        const pillsContainer = document.getElementById('sdg-selected-pills');
+        const defaultText = document.querySelector('#sdg-dropdown-btn .dropdown-button-text');
+        const checkboxes = document.querySelectorAll('#sdg-checkbox-list input[type="checkbox"]');
+        
+        checkboxes.forEach(cb => cb.checked = false);
+        if(pillsContainer) pillsContainer.innerHTML = '';
+        if(pillsContainer) pillsContainer.style.display = 'none';
+        if(defaultText) defaultText.style.display = 'block';
+
+        if(modalOverlay) modalOverlay.style.display = 'flex';
     };
 
-    const openEditModal = (firestoreId) => {
-        window.open(`news-event-form.html?id=${firestoreId}`, '_blank');
+    const openEditModal = async (firestoreId) => {
+        const item = newsEventsData.find(i => i.firestoreId === firestoreId);
+        if (!item) return;
+
+        currentEditingId = firestoreId;
+        if(modalTitle) modalTitle.textContent = 'Edit News/Event';
+        if(modalOverlay) modalOverlay.style.display = 'flex';
+
+        document.getElementById('news-event-title').value = item.title || '';
+        document.getElementById('news-event-type').value = item.type || 'news';
+        document.getElementById('news-event-status').value = item.status || 'draft';
+        document.getElementById('news-event-date').value = item.date || '';
+        document.getElementById('news-event-content').value = item.content || '';
+        document.getElementById('news-event-tags').value = (item.tags || []).join(', ');
+
+        const checkboxes = document.querySelectorAll('#sdg-checkbox-list input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.checked = (item.sdgs || []).includes(cb.value);
+        });
+        updateSDGPills();
+
+        uploadedImageUrls = ["", "", "", "", ""];
+        if (item.images && Array.isArray(item.images)) {
+            item.images.forEach((url, index) => {
+                if (index < 5) {
+                    uploadedImageUrls[index] = url;
+                    
+                    const preview = document.getElementById(`image-preview-${index + 1}`);
+                    const slot = preview.closest('.image-upload-slot');
+                    const label = slot.querySelector('.upload-label');
+                    const removeBtn = slot.querySelector('.remove-image-btn');
+
+                    if (preview && url) {
+                        preview.src = url;
+                        preview.style.display = 'block';
+                        label.style.display = 'none';
+                        removeBtn.style.display = 'flex';
+                    }
+                }
+            });
+        }
     };
 
     const closeModal = () => {
-        modalOverlay.style.display = 'none';
+        if(modalOverlay) modalOverlay.style.display = 'none';
         currentEditingId = null;
         uploadedImageUrls = ["", "", "", "", ""];
     };
+
+    if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+    if(cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
     const initializeImageUploaders = () => {
         for (let i = 1; i <= 5; i++) {
@@ -322,6 +395,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hasSelection = true;
                 const pill = document.createElement('span');
                 pill.className = 'pill';
+                pill.style.fontFamily = "'Poppins', sans-serif";
                 pill.innerHTML = `SDG ${checkbox.value} <span class="pill-remove" data-value="${checkbox.value}">×</span>`;
                 pillsContainer.appendChild(pill);
             }
@@ -390,6 +464,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    if (newsEventForm) {
+        newsEventForm.addEventListener('submit', handleFormSubmit);
+    }
+
     if (searchInput) searchInput.addEventListener('input', renderNewsEvents);
     if (sortDropdown) sortDropdown.addEventListener('change', renderNewsEvents);
     
@@ -403,14 +481,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    window.addEventListener('focus', async () => {
-        renderNewsEvents(true); 
-        await loadNewsEventsFromFirestore(true);
-        await renderNewsEvents();
-    });
+    initializeImageUploaders();
+    initializeSDGDropdown();
 
     renderNewsEvents(true); 
     await loadNewsEventsFromFirestore();
     await renderNewsEvents();
-    
 });

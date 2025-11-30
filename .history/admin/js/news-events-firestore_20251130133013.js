@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const NEWS_EVENTS_COLLECTION = 'newsEvents';
-    
-    let uploadedImageUrls = ["", "", "", "", ""]; 
+
+    let uploadedImageUrls = ["", "", "", "", ""];
     let uploadingImages = [false, false, false, false, false];
-    
+
     let newsEventsData = [];
     let currentEditingId = null;
 
@@ -18,9 +18,47 @@ document.addEventListener('DOMContentLoaded', async () => {
     const newsEventForm = document.getElementById('news-event-form');
     const modalTitle = document.getElementById('news-event-modal-title');
 
+    const compressImage = async (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const maxWidth = 1200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                            type: 'image/jpeg',
+                            lastModified: Date.now(),
+                        });
+                        resolve(compressedFile);
+                    }, 'image/jpeg', 0.7);
+                };
+                img.onerror = (error) => reject(error);
+            };
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
     const loadNewsEventsFromFirestore = async (forceRefresh = false) => {
         const CACHE_KEY = 'admin_news_events';
-        const CACHE_EXPIRY = 5 * 60 * 1000; 
+        const CACHE_EXPIRY = 5 * 60 * 1000;
         let cached = localStorage.getItem(CACHE_KEY);
         let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
         let now = Date.now();
@@ -34,9 +72,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!db) {
                 throw new Error('Database not initialized');
             }
-            
+
             const snapshot = await db.collection(NEWS_EVENTS_COLLECTION).get();
-            
+
             newsEventsData = [];
             snapshot.forEach(doc => {
                 newsEventsData.push({
@@ -47,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             localStorage.setItem(CACHE_KEY, JSON.stringify(newsEventsData));
             localStorage.setItem(CACHE_KEY + '_time', now);
-            
+
             return newsEventsData;
         } catch (error) {
             newsEventList.innerHTML = `<div style="text-align: center; padding: 40px; color: #e74c3c; font-family: 'Poppins', sans-serif;">
@@ -66,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             newsEventData.createdAt = newsEventData.createdAt || firebase.firestore.Timestamp.now();
             newsEventData.updatedAt = firebase.firestore.Timestamp.now();
-            
+
             const docRef = await db.collection(NEWS_EVENTS_COLLECTION).add(newsEventData);
             return docRef.id;
         } catch (error) {
@@ -96,18 +134,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             newsEventList.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light); font-family: \'Poppins\', sans-serif;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 32px;"></i><p style="margin-top: 16px;">Loading news & events...</p></div>';
             return;
         }
-        
+
         const searchTerm = searchInput.value.toLowerCase();
         const activeBtn = document.querySelector('.type-filters .filter-btn.active');
         const activeTypeFilter = activeBtn ? activeBtn.dataset.filter : 'all';
 
         let filteredData = newsEventsData.filter(item => {
             const matchesSearch = (item.title && item.title.toLowerCase().includes(searchTerm)) ||
-                                (item.content && item.content.toLowerCase().includes(searchTerm));
+                (item.content && item.content.toLowerCase().includes(searchTerm));
             const matchesType = activeTypeFilter === 'all' || item.type === activeTypeFilter;
             return matchesSearch && matchesType;
         });
-        
+
         const sortValue = sortDropdown.value;
         if (sortValue === 'recent') {
             filteredData.sort((a, b) => {
@@ -137,9 +175,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             card.className = 'news-event-card';
             card.dataset.firestoreId = item.firestoreId;
-            
+
             const imgUrl = (item.images && item.images.length > 0) ? item.images[0] : 'https://via.placeholder.com/150?text=No+Image';
-            
+
             const sdgs = Array.isArray(item.sdgs) ? item.sdgs : [];
             const sdgTags = sdgs.map(s => `<span class="tag tag-sdg">SDG ${s}</span>`).join('');
 
@@ -173,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
             newsEventList.appendChild(card);
         });
-        
+
         attachActionListeners();
     };
 
@@ -184,7 +222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 openEditModal(firestoreId);
             });
         });
-        
+
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const firestoreId = e.target.closest('.news-event-card').dataset.firestoreId;
@@ -195,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const deleteNewsEvent = async (firestoreId) => {
         if (!confirm('Are you sure you want to delete this item?')) return;
-        
+
         try {
             await deleteNewsEventFromFirestore(firestoreId);
             await loadNewsEventsFromFirestore(true);
@@ -224,7 +262,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         for (let i = 1; i <= 5; i++) {
             const input = document.getElementById(`image-upload-${i}`);
             const preview = document.getElementById(`image-preview-${i}`);
-            
+
             if (input && preview) {
                 input.addEventListener('change', async function() {
                     const file = this.files[0];
@@ -246,7 +284,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     uploadingImages[index] = true;
                     try {
-                        const cloudinaryUrl = await CloudinaryUploader.uploadImage(file);
+                        const compressedFile = await compressImage(file);
+                        const cloudinaryUrl = await CloudinaryUploader.uploadImage(compressedFile);
                         uploadedImageUrls[index] = cloudinaryUrl;
                     } catch (error) {
                         alert(`Failed to upload image ${i}: ${error.message}`);
@@ -297,7 +336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', updateSDGPills);
         });
-        
+
         checkboxList.querySelectorAll('.checkbox-list-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 if (e.target.type !== 'checkbox') {
@@ -313,7 +352,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pillsContainer = document.getElementById('sdg-selected-pills');
         const defaultText = document.querySelector('#sdg-dropdown-btn .dropdown-button-text');
         const checkboxes = document.querySelectorAll('#sdg-checkbox-list input[type="checkbox"]');
-        
+
         pillsContainer.innerHTML = '';
         let hasSelection = false;
 
@@ -392,7 +431,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (searchInput) searchInput.addEventListener('input', renderNewsEvents);
     if (sortDropdown) sortDropdown.addEventListener('change', renderNewsEvents);
-    
+
     if (typeFilters) {
         typeFilters.addEventListener('click', (e) => {
             if (e.target.classList.contains('filter-btn')) {
@@ -404,13 +443,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     window.addEventListener('focus', async () => {
-        renderNewsEvents(true); 
+        renderNewsEvents(true);
         await loadNewsEventsFromFirestore(true);
         await renderNewsEvents();
     });
 
-    renderNewsEvents(true); 
+    renderNewsEvents(true);
     await loadNewsEventsFromFirestore();
     await renderNewsEvents();
-    
+
 });

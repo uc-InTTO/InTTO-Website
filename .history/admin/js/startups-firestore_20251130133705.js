@@ -177,15 +177,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 e.stopPropagation();
                 const firestoreId = e.target.closest('.startup-card').dataset.firestoreId;
                 if (!confirm("Approve this project?")) return;
-                
-                const index = startupsData.findIndex(s => s.firestoreId === firestoreId);
-                if (index !== -1) {
-                    startupsData[index].status = 'active';
-                    renderStartups();
-                }
-
                 await updateStartupInFirestore(firestoreId, { status: 'active' });
-                localStorage.setItem('admin_startups_firestore', JSON.stringify(startupsData));
+                await loadStartupsFromFirestore(true);
+                renderStartups();
             });
         });
         
@@ -194,15 +188,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 e.stopPropagation();
                 const firestoreId = e.target.closest('.startup-card').dataset.firestoreId;
                 if (!confirm("Reject this project?")) return;
-
-                const index = startupsData.findIndex(s => s.firestoreId === firestoreId);
-                if (index !== -1) {
-                    startupsData[index].status = 'rejected';
-                    renderStartups();
-                }
-
                 await updateStartupInFirestore(firestoreId, { status: 'rejected' });
-                localStorage.setItem('admin_startups_firestore', JSON.stringify(startupsData));
+                await loadStartupsFromFirestore(true);
+                renderStartups();
             });
         });
         
@@ -217,16 +205,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('.delete-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const card = e.target.closest('.startup-card');
-                const firestoreId = card.dataset.firestoreId;
-                
+                const firestoreId = e.target.closest('.startup-card').dataset.firestoreId;
                 if (!confirm('Delete this startup?')) return;
-                
-                startupsData = startupsData.filter(s => s.firestoreId !== firestoreId);
-                renderStartups();
-                localStorage.setItem('admin_startups_firestore', JSON.stringify(startupsData));
-                
                 await deleteStartupFromFirestore(firestoreId);
+                await loadStartupsFromFirestore(true);
+                renderStartups();
             });
         });
     };

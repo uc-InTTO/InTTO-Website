@@ -2,6 +2,17 @@ document.addEventListener('DOMContentLoaded', function() {
     let uploadedImageUrls = ["", "", "", "", ""]; 
     let uploadingImages = [false, false, false, false, false]; 
 
+    // Debounce function to prevent rapid writes
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    // --- 1. Authentication Check ---
+    // We use 'auth' from your firebase config to check user status
     auth.onAuthStateChanged(function(user) {
         if (user) {
             const loggedInUser = user.displayName || user.email;
@@ -11,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeCustomDropdown('college-dropdown-btn', 'college-checkbox-list', 'college-selected-pills', 'college-validation');
             initializeCustomDropdown('sdg-dropdown-btn', 'sdg-checkbox-list', 'sdg-selected-pills', 'sdg-validation');
             initializeCharCounter();
-            initializeFormSubmit(user);
+            initializeFormSubmit(user); // Pass user to submit function
             initializeCancelButton();
         } else {
             alert("You must be signed in to submit a project.");
@@ -22,12 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateHeader(user, loggedInUser) {
         const userDisplayPill = document.getElementById('user-display');
         const signOutButton = document.getElementById('signout-btn-main');
-        if (userDisplayPill) {
-            userDisplayPill.innerHTML = `<i class="fa-solid fa-user"></i> ${loggedInUser.split('@')[0]}`;
-            userDisplayPill.style.fontFamily = "'Poppins', sans-serif";
-        }
+        if (userDisplayPill) userDisplayPill.innerHTML = `<i class="fa-solid fa-user"></i> ${loggedInUser.split('@')[0]}`;
         if (signOutButton) signOutButton.addEventListener('click', (e) => { e.preventDefault(); auth.signOut().then(() => { alert("Signed out."); window.location.href = 'index.html'; }); });
         
+        // Auto-fill founder info from Auth
         const founderEmailInput = document.getElementById('founder-email');
         if (founderEmailInput && user.email) { founderEmailInput.value = user.email; founderEmailInput.readOnly = true; }
         
@@ -40,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // --- 2. Multi-Select Dropdown Logic ---
     function initializeCustomDropdown(btnId, listId, pillsId, validationId) {
         const dropdownBtn = document.getElementById(btnId);
         const checkboxList = document.getElementById(listId);
@@ -60,8 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const pill = document.createElement('span');
                     pill.className = 'pill';
                     pill.textContent = checkbox.value;
-                    pill.style.fontFamily = "'Poppins', sans-serif";
-                    
                     const removeBtn = document.createElement('span');
                     removeBtn.className = 'pill-remove';
                     removeBtn.innerHTML = '&times;';
@@ -108,10 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const shortDescTextarea = document.getElementById('short-description');
         const counterElement = document.getElementById('short-desc-counter');
         if (shortDescTextarea && counterElement) {
-            shortDescTextarea.addEventListener('input', () => { 
-                counterElement.textContent = `${shortDescTextarea.value.length} / 100`; 
-                counterElement.style.fontFamily = "'Poppins', sans-serif";
-            });
+            shortDescTextarea.addEventListener('input', () => { counterElement.textContent = `${shortDescTextarea.value.length} / 100`; });
         }
     }
 
@@ -160,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // --- 3. FORM SUBMISSION HANDLING ---
     function initializeFormSubmit(user) {
         const submitForm = document.querySelector('.submit-form');
         if (submitForm) {
@@ -185,6 +191,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const founderFirstName = document.getElementById('founder-first-name')?.value;
                 const founderLastName = document.getElementById('founder-last-name')?.value;
                 
+                // --- FEATURES COLLECTION ---
+                // We filter to ensure at least a TITLE exists. Description is optional.
                 const featuresList = [
                     { title: document.getElementById('feature1-title')?.value, description: document.getElementById('feature1-desc')?.value },
                     { title: document.getElementById('feature2-title')?.value, description: document.getElementById('feature2-desc')?.value },
@@ -217,6 +225,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     founderAffiliation: document.getElementById('founder-affiliation')?.value,
                     founderEmail: document.getElementById('founder-email')?.value,
                     
+                    // --- PHONE FIELD SAVE ---
                     founderPhone: document.getElementById('founder-phone')?.value || '', 
                     
                     views: 0,
@@ -224,13 +233,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     userId: user.uid, 
                     submittedByEmail: user.email,
                     status: 'pending',
-                    createdAt: firebase.firestore.Timestamp.now(), 
+                    createdAt: firebase.firestore.Timestamp.now(), // Time Stamp
                     updatedAt: firebase.firestore.Timestamp.now()
                 };
 
                 try {
-                    await db.collection('startups').add(newProject);
-                    
+                    const debouncedAdd = debounce(async (project) => {
+                        await db.collection('startups').add(project);
+                    }, 1000);
+                    await debouncedAdd(newProject);
                     alert("Project submitted successfully!");
                     window.location.href = 'index.html';
                 } catch (error) {

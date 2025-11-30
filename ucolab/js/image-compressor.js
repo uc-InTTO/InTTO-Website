@@ -29,9 +29,11 @@ const ImageCompressor = (function() {
      * @param {File} file - The image file to compress
      * @returns {Promise<File>} - Compressed image file
      */
-    async function compressImage(file) {
-        // If file is already under 100KB, return as is
-        if (file.size <= CONFIG.TARGET_SIZE_BYTES) {
+    async function compressImage(file, targetKB) {
+        // If targetKB provided, compute target bytes, else default
+        const targetBytes = targetKB ? (targetKB * 1024) : CONFIG.TARGET_SIZE_BYTES;
+        // If file is already under target, return as is
+        if (file.size <= targetBytes) {
             return file;
         }
 
@@ -62,12 +64,13 @@ const ImageCompressor = (function() {
                         // Determine output format
                         const outputFormat = getOutputFormat(file.type);
                         
-                        // Progressive compression
-                        const compressedFile = await progressiveCompress(
-                            canvas,
-                            outputFormat,
-                            file.name
-                        );
+                                        // Progressive compression: pass target bytes via a modified function
+                                        const compressedFile = await progressiveCompress(
+                                            canvas,
+                                            outputFormat,
+                                            file.name,
+                                            targetKB
+                                        );
                         
                         resolve(compressedFile);
                     } catch (error) {
@@ -138,17 +141,18 @@ const ImageCompressor = (function() {
      * @param {string} fileName - Original file name
      * @returns {Promise<File>} - Compressed file
      */
-    async function progressiveCompress(canvas, format, fileName) {
+    async function progressiveCompress(canvas, format, fileName, targetKB) {
         let quality = CONFIG.INITIAL_QUALITY;
         let blob = null;
         let iterations = 0;
+        const targetBytes = targetKB ? (targetKB * 1024) : CONFIG.TARGET_SIZE_BYTES;
         
         // Try different quality levels until we reach target size
         while (iterations < CONFIG.MAX_ITERATIONS) {
             blob = await canvasToBlob(canvas, format, quality);
             
             // Check if we've reached target size or minimum quality
-            if (blob.size <= CONFIG.TARGET_SIZE_BYTES || quality <= CONFIG.MIN_QUALITY) {
+            if (blob.size <= targetBytes || quality <= CONFIG.MIN_QUALITY) {
                 break;
             }
             
@@ -158,7 +162,7 @@ const ImageCompressor = (function() {
         }
         
         // If still too large, try reducing dimensions
-        if (blob.size > CONFIG.TARGET_SIZE_BYTES && quality <= CONFIG.MIN_QUALITY) {
+        if (blob.size > (targetKB ? targetKB * 1024 : CONFIG.TARGET_SIZE_BYTES) && quality <= CONFIG.MIN_QUALITY) {
             const scaleFactor = 0.8; // Reduce by 20%
             const newWidth = Math.round(canvas.width * scaleFactor);
             const newHeight = Math.round(canvas.height * scaleFactor);

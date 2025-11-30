@@ -32,6 +32,175 @@ document.addEventListener('DOMContentLoaded', () => {
     const addNewsEventBtn = document.getElementById('add-news-event-btn');
     const sortDropdown = document.getElementById('sort-news');
 
+    // --- Lazy loaders for Cropper ---
+    async function loadScript(url, id) {
+        return new Promise((resolve, reject) => {
+            if (id && document.getElementById(id)) return resolve();
+            const s = document.createElement('script');
+            if (id) s.id = id;
+            s.src = url;
+            s.async = true;
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error('Failed to load script: ' + url));
+            document.head.appendChild(s);
+        });
+    }
+    async function loadStyle(url, id) {
+        return new Promise((resolve, reject) => {
+            if (id && document.getElementById(id)) return resolve();
+            const l = document.createElement('link');
+            if (id) l.id = id;
+            l.rel = 'stylesheet';
+            l.href = url;
+            l.onload = () => resolve();
+            l.onerror = () => reject(new Error('Failed to load style: ' + url));
+            document.head.appendChild(l);
+        });
+    }
+    async function loadCropperIfNeeded() {
+        if (typeof window.Cropper !== 'undefined') return;
+        try {
+            await loadStyle('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css', 'cropper-css');
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js', 'cropper-js');
+        } catch (err) {
+            console.warn('Failed to load Cropper.js:', err);
+            throw err;
+        }
+    }
+
+    // --- News Events Cropper Modal (UI-only) ---
+    let newsCropperInstance = null;
+    let newsCropperModalEl = null;
+    let newsCropperImageEl = null;
+    let newsCropperDeferred = null;
+    let newsCropperCurrentFile = null;
+    let newsCropperCurrentPreview = null;
+    let newsCropperOpts = null;
+
+    (function initNewsCropperModal() {
+        const modal = document.createElement('div');
+        modal.id = 'news-cropper-modal';
+        modal.style.display = 'none';
+        modal.style.position = 'fixed';
+        modal.style.left = '0'; modal.style.top = '0';
+        modal.style.width = '100%'; modal.style.height = '100%';
+        modal.style.background = 'rgba(0,0,0,0.6)'; modal.style.zIndex = 9999;
+        modal.innerHTML = `
+            <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:90%; max-width:900px; background:white; padding:18px; border-radius:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <strong>Crop & Reposition</strong>
+                    <div>
+                        <button id="news-cropper-rotate-left">⟲</button>
+                        <button id="news-cropper-rotate-right">⟳</button>
+                        <button id="news-cropper-skip">Skip</button>
+                        <button id="news-cropper-apply">Apply</button>
+                        <button id="news-cropper-close">Close</button>
+                    </div>
+                </div>
+                <div style="width:100%; height:60vh; display:flex; justify-content:center; align-items:center; overflow:hidden;">
+                    <img id="news-cropper-image" style="max-width:100%; max-height:100%; display:block;" />
+                </div>
+            </div>`;
+        document.body.appendChild(modal);
+        newsCropperModalEl = modal;
+        newsCropperImageEl = document.getElementById('news-cropper-image');
+
+        modal.querySelector('#news-cropper-apply').addEventListener('click', async () => {
+            if (!newsCropperInstance) return;
+            try {
+                const canvas = newsCropperInstance.getCroppedCanvas({ fillColor: '#ffffff' });
+                const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+                const file = new File([blob], newsCropperCurrentFile.name, { type: 'image/jpeg' });
+                // If an ImageCompressor is available, compress using it
+                let compressedFile = file;
+                try { if (typeof ImageCompressor?.compressImage === 'function') compressedFile = await ImageCompressor.compressImage(file, 50); } catch (e) {}
+                // Resolve with result: { file, blob, dataUrl }
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (newsCropperCurrentPreview) {
+                        newsCropperCurrentPreview.src = e.target.result;
+                        newsCropperCurrentPreview.style.display = 'block';
+                    }
+                    if (newsCropperDeferred) newsCropperDeferred.resolve({ file: compressedFile, blob, dataUrl: e.target.result });
+                };
+                reader.readAsDataURL(compressedFile);
+            } catch (err) {
+                if (newsCropperDeferred) newsCropperDeferred.reject(err);
+            } finally {
+                try { newsCropperInstance && newsCropperInstance.destroy(); } catch(e) {}
+                newsCropperInstance = null; newsCropperModalEl.style.display = 'none'; newsCropperCurrentFile = null; newsCropperCurrentPreview = null; newsCropperOpts = null; newsCropperDeferred = null;
+            }
+        });
+
+        modal.querySelector('#news-cropper-skip').addEventListener('click', async () => {
+            if (!newsCropperCurrentFile) return;
+            try {
+                // Return original file (optionally compress)
+                let uploadFile = newsCropperCurrentFile;
+                try { if (typeof ImageCompressor?.compressImage === 'function') uploadFile = await ImageCompressor.compressImage(uploadFile, 50); } catch (e) {}
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (newsCropperCurrentPreview) {
+                        newsCropperCurrentPreview.src = e.target.result; newsCropperCurrentPreview.style.display = 'block';
+                    }
+                    if (newsCropperDeferred) newsCropperDeferred.resolve({ file: uploadFile, blob: uploadFile, dataUrl: e.target.result });
+                };
+                reader.readAsDataURL(uploadFile);
+            } catch (err) {
+                if (newsCropperDeferred) newsCropperDeferred.reject(err);
+            } finally {
+                try { newsCropperInstance && newsCropperInstance.destroy(); } catch(e) {}
+                newsCropperInstance = null; newsCropperModalEl.style.display = 'none'; newsCropperCurrentFile = null; newsCropperCurrentPreview = null; newsCropperOpts = null; newsCropperDeferred = null;
+            }
+        });
+
+        modal.querySelector('#news-cropper-close').addEventListener('click', () => {
+            if (newsCropperDeferred) newsCropperDeferred.resolve({ file: null });
+            try { newsCropperInstance && newsCropperInstance.destroy(); } catch(e) {}
+            newsCropperInstance = null; newsCropperModalEl.style.display = 'none'; newsCropperCurrentFile = null; newsCropperCurrentPreview = null; newsCropperOpts = null; newsCropperDeferred = null;
+        });
+
+        modal.querySelector('#news-cropper-rotate-left').addEventListener('click', () => { if (newsCropperInstance) newsCropperInstance.rotate(-90); });
+        modal.querySelector('#news-cropper-rotate-right').addEventListener('click', () => { if (newsCropperInstance) newsCropperInstance.rotate(90); });
+    })();
+
+    /**
+     * Open the cropper modal for the news-event flow.
+     * @param {File} file
+     * @param {HTMLImageElement} previewEl - optional image element to update with result
+     * @param {Object} opts - { aspectRatio: number | null }
+     * @returns {Promise<{file:File|null, blob:Blob|null, dataUrl:string|null}>}
+     */
+    async function openNewsCropperModal(file, previewEl = null, opts = { aspectRatio: null }) {
+        await loadCropperIfNeeded();
+        return new Promise((resolve, reject) => {
+            newsCropperDeferred = { resolve, reject };
+            newsCropperCurrentFile = file;
+            newsCropperCurrentPreview = previewEl;
+            newsCropperOpts = opts;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                newsCropperImageEl.src = e.target.result;
+                newsCropperModalEl.style.display = 'block';
+                newsCropperImageEl.onload = () => {
+                    try { newsCropperInstance && newsCropperInstance.destroy(); } catch(e) {}
+                    newsCropperInstance = new Cropper(newsCropperImageEl, {
+                        viewMode: 1,
+                        background: false,
+                        autoCropArea: 1,
+                        movable: true,
+                        zoomable: true,
+                        scalable: true,
+                        cropBoxResizable: true,
+                        aspectRatio: opts.aspectRatio || null
+                    });
+                };
+            };
+            reader.onerror = (err) => reject(err);
+            reader.readAsDataURL(file);
+        });
+    }
+
     // --- Render List ---
     const renderNewsEvents = () => {
         // Reload data to catch updates from other tabs

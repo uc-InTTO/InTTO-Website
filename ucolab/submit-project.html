@@ -6,6 +6,7 @@
     <title>Submit Your Project - UCoLab</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/submit-project.css?v=1.3">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body, button, input, select, textarea, .pill, .success-message-container {
@@ -378,6 +379,25 @@
 
         </form>
 
+        <!-- Image Cropper Modal (moved out of success container so it can be used before submission) -->
+        <div class="modal-overlay modal-hidden" id="image-cropper-modal">
+            <div class="modal-content" style="max-width: 900px; width: 90%;">
+                <div class="modal-header">
+                    <h3>Crop & Reposition Image</h3>
+                    <button class="close-modal-btn" id="close-cropper-modal">&times;</button>
+                </div>
+                <div class="modal-body" style="padding: 10px; text-align: center;">
+                    <img id="cropper-image" style="max-width: 100%; display: block; margin: 0 auto;">
+                </div>
+                <div class="modal-actions" style="display:flex; gap:12px; justify-content:center; padding-bottom: 16px;">
+                    <button id="rotate-left-btn" class="btn btn-secondary">Rotate Left</button>
+                    <button id="rotate-right-btn" class="btn btn-secondary">Rotate Right</button>
+                    <button id="apply-crop-btn" class="btn btn-primary">Apply Crop</button>
+                    <button id="skip-crop-btn" class="btn btn-secondary">Skip</button>
+                </div>
+            </div>
+        </div>
+
         <div class="success-message-container" id="success-message" style="display: none;">
             <div class="success-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="var(--primary-green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -416,6 +436,7 @@
     <script src="js/image-compressor.js"></script>
     
     <script src="js/cloudinary.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     
     <script src="js/submit-project.js"></script>
 

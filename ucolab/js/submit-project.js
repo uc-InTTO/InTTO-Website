@@ -124,27 +124,285 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function initializeImageUploaders() {
+        async function blobFromCanvas(canvas, mimeType, quality) {
+            if (typeof OffscreenCanvas !== 'undefined' && canvas instanceof OffscreenCanvas) {
+                // OffscreenCanvas uses convertToBlob
+                return await canvas.convertToBlob({ type: mimeType, quality });
+            }
+            return await new Promise((resolve) => {
+                canvas.toBlob((b) => resolve(b), mimeType, quality);
+            });
+        }
+
+        async function compressImageToTarget(file, targetKB = 50, options = { maxWidth: 1200, minQuality: 0.12, qualityStep: 0.07, scaleStep: 0.9 }) {
+            if (!file) return file;
+            // Skip GIFs and SVGs (animated or vector) and very small files
+            if (file.type === 'image/gif' || file.type === 'image/svg+xml' || file.size <= targetKB * 1024) return file;
+
+            // Determine if image has alpha - if so, try webp to preserve transparency
+            const useWebP = file.type === 'image/png' || file.type === 'image/webp';
+            const targetType = useWebP ? 'image/webp' : 'image/jpeg';
+
+            // Create an image bitmap for drawing where possible, else use an Image element
+            let bitmap = null;
+            let imgEl = null;
+            const supportsCreateImageBitmap = typeof createImageBitmap === 'function';
+            if (supportsCreateImageBitmap) {
+                try {
+                    bitmap = await createImageBitmap(file);
+                } catch (err) {
+                    // ignore and fall back to Image element
+                    bitmap = null;
+                }
+            }
+            let tmpObjectUrl = null;
+            if (!bitmap) {
+                tmpObjectUrl = URL.createObjectURL(file);
+                imgEl = await new Promise((resolve, reject) => {
+                    const i = new Image();
+                    i.onload = () => resolve(i);
+                    i.onerror = reject;
+                    i.src = tmpObjectUrl;
+                });
+            }
+
+            const sourceWidth = bitmap ? bitmap.width : imgEl.width;
+            const sourceHeight = bitmap ? bitmap.height : imgEl.height;
+            let width = Math.min(options.maxWidth, sourceWidth);
+            let height = Math.round((sourceHeight / sourceWidth) * width);
+            let quality = 0.92;
+            let bestBlob = null;
+
+            while (true) {
+                // Canvas creation: use OffscreenCanvas if available to avoid layout thrash
+                let canvas;
+                if (typeof OffscreenCanvas !== 'undefined') {
+                    canvas = new OffscreenCanvas(Math.max(1, width), Math.max(1, height));
+                } else {
+                    canvas = document.createElement('canvas');
+                    canvas.width = Math.max(1, width);
+                    canvas.height = Math.max(1, height);
+                }
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (bitmap) {
+                    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                } else if (imgEl) {
+                    ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+                }
+
+                const blob = await blobFromCanvas(canvas, targetType, quality);
+                if (blob) {
+                    bestBlob = blob; // store last produced blob in case we can't reach target
+                    if (blob.size <= targetKB * 1024) {
+                        // build file
+                        const ext = targetType === 'image/webp' ? '.webp' : '.jpg';
+                        bitmap && bitmap.close && bitmap.close();
+                        tmpObjectUrl && URL.revokeObjectURL(tmpObjectUrl);
+                        return new File([blob], file.name.replace(/\.[^/.]+$/, ext), { type: targetType });
+                    }
+                }
+
+                // If quality can be reduced more, try reducing quality first
+                if (quality > options.minQuality + 0.01) {
+                    quality = Math.max(options.minQuality, quality - options.qualityStep);
+                    continue; // try again with same dimensions, lower quality
+                }
+
+                // Quality floor reached, try scale down
+                const newWidth = Math.round(width * options.scaleStep);
+                if (newWidth < 64) {
+                    // Can't scale more - stop and return best attempt
+                    bitmap && bitmap.close && bitmap.close();
+                    tmpObjectUrl && URL.revokeObjectURL(tmpObjectUrl);
+                    if (bestBlob) return new File([bestBlob], file.name.replace(/\.[^/.]+$/, targetType === 'image/webp' ? '.webp' : '.jpg'), { type: targetType });
+                    return file; // fallback to original
+                }
+
+                width = newWidth;
+                height = Math.max(1, Math.round((bitmap ? bitmap.height : imgEl.height) / (bitmap ? bitmap.width : imgEl.width) * width));
+                // reset quality for next pass
+                quality = 0.9;
+            }
+        }
+
+        // Cropper variables (global within this module)
+        let cropperModal = null;
+        let cropperInstance = null;
+        let cropperImageEl = null;
+        let currentCropFile = null;
+        let currentCropIndex = null;
+        let currentCropPreview = null;
+
+        function initCropperModal() {
+            cropperModal = document.getElementById('image-cropper-modal');
+            cropperImageEl = document.getElementById('cropper-image');
+            const closeCropBtn = document.getElementById('close-cropper-modal');
+            const applyCropBtn = document.getElementById('apply-crop-btn');
+            const skipCropBtn = document.getElementById('skip-crop-btn');
+            const rotateLeftBtn = document.getElementById('rotate-left-btn');
+            const rotateRightBtn = document.getElementById('rotate-right-btn');
+
+            if (closeCropBtn) closeCropBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                // Capture values then close modal
+                const file = currentCropFile;
+                const preview = currentCropPreview;
+                const idx = currentCropIndex;
+                closeCropperModal();
+                // Close acts as skip -> continue with upload of original file
+                if (file && preview && idx !== null) {
+                    console.log('[Cropper] Close button pressed - skipping crop and uploading original image');
+                    await continueUploadAfterCrop(file, preview, idx);
+                }
+            });
+            if (skipCropBtn) skipCropBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const file = currentCropFile;
+                const preview = currentCropPreview;
+                const idx = currentCropIndex;
+                closeCropperModal();
+                // proceed with original file flow
+                if (file && preview && idx !== null) {
+                    await continueUploadAfterCrop(file, preview, idx);
+                }
+            });
+            if (applyCropBtn) applyCropBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await applyCropAndUpload();
+            });
+            if (rotateLeftBtn) rotateLeftBtn.addEventListener('click', () => { if (cropperInstance) cropperInstance.rotate(-90); });
+            if (rotateRightBtn) rotateRightBtn.addEventListener('click', () => { if (cropperInstance) cropperInstance.rotate(90); });
+
+            // Overlay click should act as skip (upload original file)
+            if (cropperModal) {
+                cropperModal.addEventListener('click', async (e) => {
+                    if (e.target === cropperModal) {
+                        // overlay clicked
+                        e.preventDefault();
+                        const file = currentCropFile;
+                        const preview = currentCropPreview;
+                        const idx = currentCropIndex;
+                        closeCropperModal();
+                        if (file && preview && idx !== null) {
+                            console.log('[Cropper] Overlay clicked - skipping crop and uploading original image');
+                            await continueUploadAfterCrop(file, preview, idx);
+                        }
+                    }
+                });
+            }
+        }
+
+        async function openCropperModal(file, previewElement, index) {
+            console.log('[Cropper] Opening cropper for slot', index + 1, file);
+            if (!cropperModal) initCropperModal();
+            if (!cropperImageEl) return;
+            currentCropFile = file;
+            currentCropIndex = index;
+            currentCropPreview = previewElement;
+
+            try {
+                const url = URL.createObjectURL(file);
+                cropperImageEl.src = url;
+                cropperModal.classList.remove('modal-hidden');
+                // destroy existing
+                if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+                // Choose aspect ratio for slot 1 (cover) => 16/9, else free
+                const options = {
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    movable: true,
+                    scalable: true,
+                    zoomable: true,
+                    responsive: true
+                };
+                if (index === 0) options.aspectRatio = 16 / 9;
+                cropperInstance = new Cropper(cropperImageEl, options);
+            } catch (e) {
+                console.warn('Could not open cropper', e);
+                // fallback: do not open modal, continue with original file
+                await continueUploadAfterCrop(file, previewElement, index);
+            }
+        }
+
+        function closeCropperModal() {
+            if (!cropperModal) return;
+            cropperModal.classList.add('modal-hidden');
+            if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+            if (cropperImageEl && cropperImageEl.src && cropperImageEl.src.startsWith('blob:')) {
+                URL.revokeObjectURL(cropperImageEl.src);
+                cropperImageEl.src = '';
+            }
+            // Reset references
+            currentCropFile = null;
+            currentCropIndex = null;
+            currentCropPreview = null;
+        }
+
+        async function applyCropAndUpload() {
+            if (!cropperInstance || !currentCropFile || !currentCropPreview) return;
+            // Capture the preview & index before closing modal
+            const preview = currentCropPreview;
+            const idx = currentCropIndex;
+            try {
+                const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 1600, maxHeight: 1600, fillColor: '#ffffff' });
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
+                const croppedFile = new File([blob], currentCropFile.name.replace(/\.[^.]+$/, '') + '-cropped.jpg', { type: 'image/jpeg' });
+                closeCropperModal();
+                await continueUploadAfterCrop(croppedFile, preview, idx);
+            } catch (err) {
+                console.error('applyCropAndUpload error', err);
+                closeCropperModal();
+            }
+        }
+
+        async function continueUploadAfterCrop(file, previewElement, index) {
+            const fileToUse = file;
+            // fallback: if previewElement is null (unexpected), try to find it by index
+            if (!previewElement) {
+                previewElement = document.getElementById(`image-preview-${index + 1}`);
+                console.warn('[Uploader] previewElement was null; looked up by index', index + 1, previewElement);
+            }
+            const slot = previewElement ? previewElement.closest('.image-upload-slot') : null;
+            const removeBtn = slot ? slot.querySelector('.remove-image-btn') : null;
+            // Show preview of cropped image
+            try {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewElement.src = e.target.result;
+                    previewElement.classList.add('visible');
+                    if (removeBtn) removeBtn.style.display = 'block';
+                }
+                reader.readAsDataURL(fileToUse);
+            } catch (err) {
+                console.warn('preview read failed', err);
+            }
+
+            uploadingImages[index] = true;
+            try {
+                console.log(`[Uploader] Uploading image slot ${index + 1}`, fileToUse);
+                if (slot) slot.classList.add('uploading');
+                // compress and upload
+                let compressedFile = fileToUse;
+                try { compressedFile = await compressImageToTarget(fileToUse, 50); } catch (err) { compressedFile = fileToUse; }
+                const imageUrl = await CloudinaryUploader.uploadImage(compressedFile, index);
+                uploadedImageUrls[index] = imageUrl;
+                console.log(`[Uploader] Successfully uploaded slot ${index + 1}:`, imageUrl);
+            } catch (error) {
+                alert(`Error uploading image ${index + 1}`);
+            } finally {
+                uploadingImages[index] = false;
+                if (slot) slot.classList.remove('uploading');
+            }
+        }
+
         async function handleImageUpload(fileInput, previewElement, index) {
             const file = fileInput.files[0];
             const slot = previewElement.closest('.image-upload-slot');
             const removeBtn = slot ? slot.querySelector('.remove-image-btn') : null;
             if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewElement.src = e.target.result;
-                    previewElement.classList.add('visible');
-                    if(removeBtn) removeBtn.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-                uploadingImages[index] = true;
-                try {
-                    const imageUrl = await CloudinaryUploader.uploadImage(file, index);
-                    uploadedImageUrls[index] = imageUrl;
-                } catch (error) {
-                    alert(`Error uploading image ${index + 1}`);
-                } finally {
-                    uploadingImages[index] = false;
-                }
+                // Open cropper modal; the cropper will handle upload after crop or skip
+                await openCropperModal(file, previewElement, index);
             }
         }
         for (let i = 1; i <= 5; i++) {

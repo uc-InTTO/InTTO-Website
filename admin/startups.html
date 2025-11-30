@@ -121,8 +121,12 @@
                                 <input type="text" id="edit-name" required>
                             </div>
                             <div class="form-group">
-                                <label>Logo Emoji</label>
+                                <label>Logo Emoji / Image</label>
                                 <input type="text" id="edit-logo" maxlength="2" placeholder="🚀">
+                                <div style="margin-top:8px; display:flex; gap:8px; align-items:center;">
+                                    <input type="file" id="edit-logo-file" accept="image/*">
+                                    <img id="edit-logo-preview" style="max-width:80px; display:none;" alt="Logo Preview">
+                                </div>
                             </div>
                         </div>
                         <div class="form-row">
@@ -272,7 +276,20 @@
 
                     <div class="form-section">
                         <h3>Project Images</h3>
+                        <div class="form-row" style="gap:12px; align-items:center;">
+                            <div style="flex: 1;">
+                                <label for="edit-images-file">Upload Images</label>
+                                <input type="file" id="edit-images-file" accept="image/*" multiple>
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="edit-logo-file">Upload Logo</label>
+                                <input type="file" id="edit-logo-file" accept="image/*">
+                            </div>
+                        </div>
                         <div id="edit-images-preview" class="images-preview-grid">
+                        </div>
+                        <input type="hidden" id="edit-image-urls" />
+                        <input type="hidden" id="edit-logo-url" />
                         </div>
                     </div>
 
@@ -286,6 +303,14 @@
     </div>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+    <script src="../ucolab/js/image-compressor.js"></script>
+    <script>
+        // Cloudinary config used by admin uploads
+        const CLOUDINARY_CLOUD_NAME = 'dwq7bbem0';
+        const CLOUDINARY_UPLOAD_PRESET = 'ucolab_project';
+    </script>
+    <script src="../ucolab/js/cloudinary.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
         const firebaseConfig = {

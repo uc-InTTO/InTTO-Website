@@ -499,10 +499,19 @@ document.addEventListener('DOMContentLoaded', () => {
         submitMemberBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
 
         try {
-            // Upload photo if a new one was selected
+            // Upload photo if a new one was selected; compress to ~50KB first
             if (memberPhotoInput.files.length > 0) {
                 const file = memberPhotoInput.files[0];
-                uploadedPhotoUrl = await uploadImageToCloudinary(file);
+                let compressedFile = file;
+                try {
+                    if (typeof ImageCompressor?.compressImage === 'function') {
+                        compressedFile = await ImageCompressor.compressImage(file, 50);
+                    }
+                } catch (err) {
+                    console.warn('Team photo compression failed, using original', err);
+                    compressedFile = file;
+                }
+                uploadedPhotoUrl = await uploadImageToCloudinary(compressedFile);
             }
 
             const formData = {

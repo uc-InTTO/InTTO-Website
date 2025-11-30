@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     let ipData = [];
     let editingIpId = null;
+    let unsubscribe = null;
 
     // --- DOM Elements ---
     const ipList = document.querySelector('.ip-list');
@@ -36,38 +37,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const totalIpCountEl = document.getElementById('total-ip-count');
 
     // --- Firestore Functions ---
-    const loadIPsFromFirestore = async () => {
-        const CACHE_KEY = 'ip_applications';
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-        let cached = localStorage.getItem(CACHE_KEY);
-        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
-        let now = Date.now();
-
-        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            // Use cached value
-            ipData = JSON.parse(cached);
-            return ipData;
+    const loadIPsFromFirestore = () => {
+        if (typeof unsubscribe === 'function') {
+            try { unsubscribe(); } catch (e) { /* ignore */ }
+            unsubscribe = null;
         }
 
-        try {
-            const snapshot = await db.collection(IP_COLLECTION).get();
-            
-            ipData = [];
-            snapshot.forEach(doc => {
-                ipData.push({
-                    firestoreId: doc.id,
-                    ...doc.data()
+        // Real-time listener
+        unsubscribe = db.collection(IP_COLLECTION)
+            .orderBy('createdAt', 'desc')
+            .onSnapshot((snapshot) => {
+                ipData = [];
+                snapshot.forEach(doc => {
+                    ipData.push({ firestoreId: doc.id, ...doc.data() });
                 });
+                renderIPs();
+            }, (error) => {
+                console.error('Failed to load IP applications', error);
             });
-
-            // Cache result
-            localStorage.setItem(CACHE_KEY, JSON.stringify(ipData));
-            localStorage.setItem(CACHE_KEY + '_time', now);
-            
-            return ipData;
-        } catch (error) {
-            return [];
-        }
     };
 
     const saveIPToFirestore = async (ipData) => {
@@ -103,6 +90,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const debouncedUpdateIPInFirestore = debounce(updateIPInFirestore, 1000); // 1 second delay
+
+    const deleteIPFromFirestore = async (firestoreId) => {
+        try {
+            await db.collection(IP_COLLECTION).doc(firestoreId).delete();
+        } catch (error) {
+            throw error;
+        }
+    };
 
     // --- Function to Update Stat Cards ---
     const updateStats = () => {
@@ -200,6 +195,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
+    function showLoading() {
+        ipList.innerHTML = `
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading IP applications...</p>
+            </div>
+        `;
+    }
+
     const openModal = () => ipModalOverlay.classList.add('active');
     const closeModal = () => {
         ipModalOverlay.classList.remove('active');
@@ -245,11 +249,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         try {
             await deleteIPFromFirestore(firestoreId);
-            await loadIPsFromFirestore();
-            await renderIPs();
+            // onSnapshot will update UI automatically
             alert('IP application deleted successfully!');
             // Auto-reload to reflect changes
-            setTimeout(() => location.reload(), 1000);
+            // No need to reload — real-time snapshot will reflect deletion
         } catch (error) {
             alert('Error deleting IP application: ' + error.message);
         }
@@ -303,9 +306,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await saveIPToFirestore(formData);
                 alert('IP application created successfully!');
             }
-            
-            await loadIPsFromFirestore();
-            await renderIPs();
+            // onSnapshot will update UI automatically
             closeModal();
         } catch (error) {
             alert('Error saving IP application: ' + error.message);
@@ -333,6 +334,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     sortDropdown.addEventListener('change', renderIPs);
 
     // Initial load
-    await loadIPsFromFirestore();
-    await renderIPs();
+    loadIPsFromFirestore();
+    showLoading();
+
+    // Cleanup listener on unload
+    window.addEventListener('beforeunload', () => {
+        if (typeof unsubscribe === 'function') {
+            try { unsubscribe(); } catch (e) { }
+        }
+    });
 });

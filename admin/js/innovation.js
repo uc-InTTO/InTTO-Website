@@ -1,7 +1,3 @@
-/**
- * Innovation Applications Management
- * Manages incubation program applications with Firestore
- */
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const applicationsContainer = document.getElementById('applications-container');
@@ -21,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let applications = [];
     let currentApplicationId = null;
     let currentAction = null;
+    let delegateAttached = false;
+    let currentActionReason = null;
+    let unsubscribe = null; // Firestore onSnapshot unsubscribe
     
     // Initialize
     loadApplications();
@@ -29,46 +28,46 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * Load applications from Firestore
      */
+    // Helper: Safely convert Firestore Timestamp / Date / string to Date
+    function toDateSafe(ts) {
+        if (!ts) return new Date(0);
+        // Firestore Timestamp object
+        if (typeof ts.toDate === 'function') return ts.toDate();
+        // Object with seconds (Firestore JSON repr)
+        if (ts && (typeof ts.seconds === 'number' || typeof ts._seconds === 'number')) return new Date((ts.seconds || ts._seconds) * 1000);
+        // Timestamp-like with toMillis
+        if (ts && typeof ts.toMillis === 'function') return new Date(ts.toMillis());
+        // Already a Date
+        if (ts instanceof Date) return ts;
+        // String ISO
+        if (typeof ts === 'string') return new Date(ts);
+        // Fallback
+        return new Date(0);
+    }
     function loadApplications() {
-        const CACHE_KEY = 'innovation_applications';
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-        let cached = localStorage.getItem(CACHE_KEY);
-        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
-        let now = Date.now();
-
-        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            // Use cached value
-            applications = JSON.parse(cached);
-            updateStats();
-            renderApplications();
-            return;
+        // Unsubscribe existing listener if present
+        if (typeof unsubscribe === 'function') {
+            try { unsubscribe(); } catch (e) { /* ignore */ }
+            unsubscribe = null;
         }
 
         showLoading();
-        
-        db.collection('incubation_applications').get().then((snapshot) => {
-            applications = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                // Normalize status to lowercase
-                let status = (data.status || 'pending').toLowerCase();
-                
-                applications.push({
-                    id: doc.id,
-                    ...data,
-                    status: status
-                });
-            });
-            
-            // Cache result
-            localStorage.setItem(CACHE_KEY, JSON.stringify(applications));
-            localStorage.setItem(CACHE_KEY + '_time', now);
 
-            updateStats();
-            renderApplications();
-        }).catch((error) => {
-            showError('Failed to load applications: ' + error.message);
-        });
+        // Use onSnapshot so the UI reflects Firestore updates in real-time
+        unsubscribe = db.collection('incubation_applications')
+            .orderBy('submittedAt', 'desc')
+            .onSnapshot((snapshot) => {
+                applications = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const status = (data.status || 'pending').toLowerCase();
+                    applications.push({ id: doc.id, ...data, status });
+                });
+                updateStats();
+                renderApplications();
+            }, (error) => {
+                showError('Failed to load applications: ' + (error && error.message ? error.message : error));
+            });
     }
     
     /**
@@ -129,13 +128,12 @@ document.addEventListener('DOMContentLoaded', function() {
         filtered.sort((a, b) => {
             switch (sortValue) {
                 case 'recent':
-                    return (b.submittedAt?.toDate() || new Date()) - (a.submittedAt?.toDate() || new Date());
+                    return toDateSafe(b.submittedAt) - toDateSafe(a.submittedAt);
                 case 'oldest':
-                    return (a.submittedAt?.toDate() || new Date()) - (b.submittedAt?.toDate() || new Date());
+                    return toDateSafe(a.submittedAt) - toDateSafe(b.submittedAt);
                 case 'name-asc':
                     return (a.fullName || '').localeCompare(b.fullName || '');
                 case 'name-desc':
-                    return (b.fullName || '').localeCompare(a.fullName || '');
                 default:
                     return 0;
             }
@@ -151,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createApplicationCard(app) {
         const status = (app.status || 'pending').toLowerCase();
-        const submittedAt = app.submittedAt?.toDate() || new Date();
+        const submittedAt = toDateSafe(app.submittedAt) || new Date();
         const formattedDate = submittedAt.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
@@ -187,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <span class="dot-separator">•</span>
                                 <span>${app.email || 'N/A'}</span>
                             </div>
+                            <p class="row-desc">${(app.briefDescription || app.detailedDescription || '').substring(0, 120)}${(app.briefDescription || app.detailedDescription || '').length > 120 ? '...' : ''}</p>
                         </div>
                     </div>
                 </div>
@@ -255,6 +254,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+        // Fallback: event delegation in case the elements dynamically change
+        if (!delegateAttached) {
+            delegateAttached = true;
+            applicationsContainer.addEventListener('click', (e) => {
+                const viewBtn = e.target.closest('.action-btn-icon.view');
+                if (viewBtn && viewBtn.dataset && viewBtn.dataset.id) {
+                    e.stopPropagation();
+                    showApplicationDetails(viewBtn.dataset.id);
+                }
+            });
+        }
     }
     
     /**
@@ -262,54 +272,99 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function showApplicationDetails(id) {
         const app = applications.find(a => a.id === id);
-        if (!app) return;
-        
+        if (!app) {
+            console.warn('Application not found for id', id);
+            showError('Application not found');
+            return;
+        }
         currentApplicationId = id;
         
         // Personal Information
-        document.getElementById('detail-fullName').textContent = app.fullName || 'N/A';
-        document.getElementById('detail-email').textContent = app.email || 'N/A';
-        document.getElementById('detail-phone').textContent = app.phone || 'N/A';
-        document.getElementById('detail-studentId').textContent = app.studentId || 'N/A';
-        document.getElementById('detail-deptCollege').textContent = app.deptCollege || 'N/A';
-        document.getElementById('detail-yearLevel').textContent = app.yearLevel ? `${app.yearLevel} Year` : 'N/A';
+        const fullNameEl = document.getElementById('detail-fullName');
+        if (fullNameEl) fullNameEl.textContent = app.fullName || 'N/A';
+        const emailEl = document.getElementById('detail-email');
+        if (emailEl) emailEl.textContent = app.email || 'N/A';
+        const phoneEl = document.getElementById('detail-phone');
+        if (phoneEl) phoneEl.textContent = app.phone || 'N/A';
+        const studentIdEl = document.getElementById('detail-studentId');
+        if (studentIdEl) studentIdEl.textContent = app.studentId || 'N/A';
+        const deptEl = document.getElementById('detail-deptCollege');
+        if (deptEl) deptEl.textContent = app.deptCollege || 'N/A';
+        const yearEl = document.getElementById('detail-yearLevel');
+        if (yearEl) yearEl.textContent = app.yearLevel ? `${app.yearLevel} Year` : 'N/A';
         
         // Startup Information
-        document.getElementById('detail-startupName').textContent = app.startupName || 'N/A';
-        document.getElementById('detail-industry').textContent = app.industry || 'N/A';
-        document.getElementById('detail-developmentStage').textContent = app.developmentStage || 'N/A';
-        document.getElementById('detail-problemStatement').textContent = app.problemStatement || 'N/A';
-        document.getElementById('detail-solution').textContent = app.solution || 'N/A';
-        document.getElementById('detail-targetMarket').textContent = app.targetMarket || 'N/A';
+        const startupNameEl = document.getElementById('detail-startupName');
+        if (startupNameEl) startupNameEl.textContent = app.startupName || 'N/A';
+        const industryEl = document.getElementById('detail-industry');
+        if (industryEl) industryEl.textContent = app.industry || 'N/A';
+        const devStageEl = document.getElementById('detail-developmentStage');
+        if (devStageEl) devStageEl.textContent = app.developmentStage || 'N/A';
+        // Short description (form field: briefDescription)
+        const briefDescEl = document.getElementById('detail-briefDescription');
+        if (briefDescEl) briefDescEl.textContent = app.briefDescription || app.description || app.detailedDescription || 'N/A';
+        // Support legacy or combined field names: 'problemSolution' may contain both problem and solution
+        const rawProblemSolution = app.problemSolution || ((app.problemStatement || '') + (app.solution ? '\n\n' + app.solution : '')) || '';
+        function parseProblemSolution(raw) {
+            if (!raw) return { problem: '', solution: '' };
+            const labelIndex = raw.search(/solution\s*:/i);
+            if (labelIndex !== -1) {
+                const problemPart = raw.substring(0, labelIndex).trim().replace(/^problem\s*:/i, '').trim();
+                const solutionPart = raw.substring(labelIndex + raw.match(/solution\s*:/i)[0].length).trim();
+                return { problem: problemPart || '', solution: solutionPart || '' };
+            }
+            if (raw.indexOf('\n\n') !== -1) {
+                const parts = raw.split(/\n\n+/);
+                return { problem: parts[0].trim(), solution: parts.slice(1).join('\n\n').trim() };
+            }
+            return { problem: raw.trim(), solution: '' };
+        }
+        const parsed = parseProblemSolution(rawProblemSolution);
+        const probEl = document.getElementById('detail-problemStatement');
+        if (probEl) probEl.textContent = parsed.problem || 'N/A';
+        const solEl = document.getElementById('detail-solution');
+        if (solEl) solEl.textContent = parsed.solution || app.solution || 'N/A';
+        const targetEl = document.getElementById('detail-targetMarket');
+        if (targetEl) targetEl.textContent = app.targetMarket || 'N/A';
         
         const websiteEl = document.getElementById('detail-websiteSocial');
-        if (app.websiteSocial) {
-            websiteEl.innerHTML = `<a href="${app.websiteSocial}" target="_blank" style="color: var(--secondary-color);">${app.websiteSocial}</a>`;
-        } else {
-            websiteEl.textContent = 'N/A';
+        if (websiteEl) {
+            if (app.websiteSocial) {
+                websiteEl.innerHTML = `<a href="${app.websiteSocial}" target="_blank" style="color: var(--secondary-color);">${app.websiteSocial}</a>`;
+            } else {
+                websiteEl.textContent = 'N/A';
+            }
         }
         
         // Team Information
-        document.getElementById('detail-teamSize').textContent = app.teamSize || 'N/A';
-        document.getElementById('detail-coFounders').textContent = app.coFounders || 'N/A';
-        document.getElementById('detail-teamExperience').textContent = app.teamExperience || 'N/A';
+        const teamSizeEl = document.getElementById('detail-teamSize');
+        if (teamSizeEl) teamSizeEl.textContent = app.teamSize || 'N/A';
+        const coFoundersEl = document.getElementById('detail-coFounders');
+        if (coFoundersEl) coFoundersEl.textContent = app.coFounders || 'N/A';
+        const teamExpEl = document.getElementById('detail-teamExperience');
+        if (teamExpEl) teamExpEl.textContent = app.teamExperience || 'N/A';
         
         // Program Expectations
         const supportNeededEl = document.getElementById('detail-supportNeeded');
-        if (app.supportNeeded && app.supportNeeded.length > 0) {
-            supportNeededEl.innerHTML = app.supportNeeded.map(support => 
-                `<span class="tag">${support}</span>`
-            ).join('');
-        } else {
-            supportNeededEl.textContent = 'N/A';
+        if (supportNeededEl) {
+            if (app.supportNeeded && app.supportNeeded.length > 0) {
+                supportNeededEl.innerHTML = app.supportNeeded.map(support => 
+                    `<span class="tag">${support}</span>`
+                ).join('');
+            } else {
+                supportNeededEl.textContent = 'N/A';
+            }
         }
         
-        document.getElementById('detail-goals').textContent = app.goals || 'N/A';
+        const goalsEl = document.getElementById('detail-goals');
+        if (goalsEl) goalsEl.textContent = app.goals || 'N/A';
         
         // Submission Info
-        document.getElementById('detail-applicationId').textContent = id;
-        const submittedAt = app.submittedAt?.toDate() || new Date();
-        document.getElementById('detail-submittedAt').textContent = submittedAt.toLocaleString('en-US', {
+        const applicationIdEl = document.getElementById('detail-applicationId');
+        if (applicationIdEl) applicationIdEl.textContent = id;
+        const submittedAt = toDateSafe(app.submittedAt) || new Date();
+        const submittedAtEl = document.getElementById('detail-submittedAt');
+        if (submittedAtEl) submittedAtEl.textContent = submittedAt.toLocaleString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -366,6 +421,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('confirm-title').textContent = titles[action];
         document.getElementById('confirm-message').textContent = messages[action];
         
+        // If rejecting, ask for a reason (optional)
+        if (action === 'reject') {
+            const reason = prompt('Enter a reason for rejection (optional):');
+            currentActionReason = reason === null ? '' : reason;
+        } else {
+            currentActionReason = null;
+        }
         confirmModal.classList.add('active');
     }
     
@@ -378,19 +440,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentAction === 'delete') {
             deleteApplication(currentApplicationId);
         } else {
-            updateApplicationStatus(currentApplicationId, currentAction);
+            updateApplicationStatus(currentApplicationId, currentAction, currentActionReason);
         }
         
         confirmModal.classList.remove('active');
         detailsModal.classList.remove('active');
         currentApplicationId = null;
         currentAction = null;
+        currentActionReason = null;
     }
     
     /**
      * Update application status
      */
-    function updateApplicationStatus(id, status) {
+    function updateApplicationStatus(id, status, reason = '') {
         // Normalize status to lowercase
         const normalizedStatus = status.toLowerCase();
         
@@ -398,10 +461,14 @@ document.addEventListener('DOMContentLoaded', function() {
         const app = applications.find(a => a.id === id);
         
         // Show loading or disable buttons while updating
-        db.collection('incubation_applications').doc(id).update({
+        const updateData = {
             status: normalizedStatus,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
+        };
+        if ((normalizedStatus === 'reject' || normalizedStatus === 'rejected') && reason) {
+            updateData.rejectionReason = reason;
+        }
+        db.collection('incubation_applications').doc(id).update(updateData).then(() => {
             const statusText = normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
             showSuccess(`Application ${statusText} successfully`);
             
@@ -409,16 +476,26 @@ document.addEventListener('DOMContentLoaded', function() {
             const appIndex = applications.findIndex(app => app.id === id);
             if (appIndex !== -1) {
                 applications[appIndex].status = normalizedStatus;
+                if (updateData.rejectionReason) {
+                    applications[appIndex].rejectionReason = updateData.rejectionReason;
+                }
             }
             
             // Force re-render
             updateStats();
             renderApplications();
+            // No local cache used; Firestore onSnapshot will update the UI automatically
             
             // If approved, open Gmail to send notification email
-            if (normalizedStatus === 'approve' || normalizedStatus === 'approved') {
+            if ((normalizedStatus === 'approve' || normalizedStatus === 'approved')) {
                 if (app && app.email) {
                     sendApprovalEmail(app);
+                }
+            }
+            // If rejected, send rejection email
+            if ((normalizedStatus === 'reject' || normalizedStatus === 'rejected')) {
+                if (app && app.email) {
+                    sendRejectionEmail(app, reason || '');
                 }
             }
         }).catch((error) => {
@@ -435,6 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const startupName = app.startupName || 'your startup';
         
         // Email template
+        const appliedDateStr = app.submittedAt ? toDateSafe(app.submittedAt).toLocaleDateString() : 'N/A';
         const subject = encodeURIComponent(`Congratulations! Your Innovation Program Application has been Approved`);
         const body = encodeURIComponent(
 `Dear ${applicantName},
@@ -444,7 +522,7 @@ Congratulations! We are pleased to inform you that your application for the UC I
 Application Details:
 - Startup Name: ${startupName}
 - Application ID: ${app.id || 'N/A'}
-- Date Applied: ${app.submittedAt ? app.submittedAt.toDate().toLocaleDateString() : 'N/A'}
+- Date Applied: ${appliedDateStr}
 
 Next Steps:
 1. We will contact you shortly to discuss the onboarding process
@@ -466,6 +544,46 @@ University of Cebu - Innovation, Technology Transfer Office`
         // Open in new tab
         window.open(gmailUrl, '_blank');
     }
+
+    /**
+     * Send rejection email via Gmail (admin-triggered)
+     * @param {Object} app - The application object
+     * @param {string} reason - Optional reason for rejection
+     */
+    function sendRejectionEmail(app, reason = '') {
+        const recipientEmail = app.email;
+        const applicantName = app.fullName || 'Applicant';
+        const startupName = app.startupName || 'your startup';
+        const appliedDateStr = app.submittedAt ? toDateSafe(app.submittedAt).toLocaleDateString() : 'N/A';
+
+        const subject = encodeURIComponent(`Important: Your Innovation Program Application Status`);
+        const body = encodeURIComponent(
+`Dear ${applicantName},
+
+We regret to inform you that your application for the UC InTTO Innovation Program has been REJECTED.
+
+Application Details:
+- Startup Name: ${startupName}
+- Application ID: ${app.id || 'N/A'}
+- Date Applied: ${appliedDateStr}
+
+Rejection Reason:
+${reason || 'Not specified'}
+
+Next Steps:
+1. If you have questions or want feedback, please reply to this email.
+2. You may re-apply in the next intake with updated documentation or improvements.
+
+We appreciate your interest in UC InTTO and encourage you to keep innovating.
+
+Best regards,
+UC InTTO Team
+University of Cebu - Innovation, Technology Transfer Office`
+        );
+
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipientEmail}&su=${subject}&body=${body}`;
+        window.open(gmailUrl, '_blank');
+    }
     
     /**
      * Delete application
@@ -474,7 +592,10 @@ University of Cebu - Innovation, Technology Transfer Office`
         db.collection('incubation_applications').doc(id).delete()
         .then(() => {
             showSuccess('Application deleted successfully');
+            // Update local state; onSnapshot will also sync with Firestore
+            applications = applications.filter(app => String(app.id) !== String(id));
             // Re-render to update the UI immediately
+            updateStats();
             renderApplications();
         }).catch((error) => {
             showError('Failed to delete application: ' + error.message);
@@ -543,6 +664,13 @@ University of Cebu - Innovation, Technology Transfer Office`
         confirmModal.addEventListener('click', (e) => {
             if (e.target === confirmModal) {
                 confirmModal.classList.remove('active');
+            }
+        });
+
+        // Unsubscribe Firestore listeners on unload
+        window.addEventListener('beforeunload', () => {
+            if (typeof unsubscribe === 'function') {
+                try { unsubscribe(); } catch (e) { /* ignore */ }
             }
         });
     }

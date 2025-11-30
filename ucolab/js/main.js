@@ -397,56 +397,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function loadProjects() {
-        const CACHE_KEY = 'ucolab_projects';
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-        let cached = localStorage.getItem(CACHE_KEY);
-        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
-        let now = Date.now();
-
-        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            // Use cached value
-            allProjectsData = JSON.parse(cached);
-            filterProjects();
-            return;
-        }
-
         try {
             // Load all projects from Firestore
             const snapshot = await db.collection('startups').get();
-            
             allProjectsData = [];
-            
             snapshot.forEach(doc => {
                 const data = doc.data();
-                
-                // Exclude only pending status, show both incubated and non-incubated
-                if (data.status === 'pending') {
-                    return; 
-                }
-
+                if (data.status === 'pending') return; // exclude pending
                 allProjectsData.push({
                     id: doc.id,
                     title: data.name || data.title || 'Untitled Project',
                     shortDescription: data.shortDescription || data.description || '',
-                    description: data.description || '', 
+                    description: data.description || '',
                     industry: data.category || data.industry || 'Other',
                     college: data.college || data.affiliation || 'University of the Cordilleras',
                     trl: data.trl || 'TRL 1',
                     type: data.type || 'Startup',
                     imageUrls: data.imageUrls || (data.logo ? [data.logo] : []),
                     logo: data.logo,
-                    userId: data.userId || data.founderEmail, 
+                    userId: data.userId || data.founderEmail,
                     views: data.views || 0,
                     inquiries: data.inquiries || 0
                 });
             });
-
-            // Cache result
-            localStorage.setItem(CACHE_KEY, JSON.stringify(allProjectsData));
-            localStorage.setItem(CACHE_KEY + '_time', now);
-
             filterProjects();
-            
         } catch (error) {
             console.error("Error loading projects from Firestore:", error);
             projectGrid.innerHTML = '<p class="no-projects-message">Error loading projects from database. Please check your connection.</p>';

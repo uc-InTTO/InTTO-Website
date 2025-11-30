@@ -40,31 +40,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 3. Load Data
     async function loadProjectData(id) {
-        const CACHE_KEY = `ucolab_edit_project_${id}`;
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-        let cached = localStorage.getItem(CACHE_KEY);
-        let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
-        let now = Date.now();
-
         let data;
-        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            data = JSON.parse(cached);
-        } else {
-            try {
-                const doc = await db.collection('startups').doc(id).get();
-                if (!doc.exists) {
-                    alert("Project not found.");
-                    window.close();
-                    return;
-                }
-                data = doc.data();
-                localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-                localStorage.setItem(CACHE_KEY + '_time', now);
-            } catch (error) {
-                alert("Error loading project.");
+        try {
+            const doc = await db.collection('startups').doc(id).get();
+            if (!doc.exists) {
+                alert("Project not found.");
                 window.close();
                 return;
             }
+            data = doc.data();
+        } catch (error) {
+            alert("Error loading project.");
+            window.close();
+            return;
         }
 
             // Standard Fields

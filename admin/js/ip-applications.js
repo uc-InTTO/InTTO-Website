@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const STORAGE_KEY = 'ucInttoIpData';
+    // Firestore collection for IP applications
+    const IP_COLLECTION = 'ipApplications';
     const defaultIpData = [
         { id: 1, title: "Smart Irrigation Control System", status: "granted", type: "Utility Model", number: "UM-2023-001234", startup: "AgroTech Solutions", description: "An IoT-based automated irrigation control system using soil moisture sensors and weather data integration.", inventors: "Dr. Juan Dela Cruz, Eng. Maria Santos, Dr. Pedro Reyes", appDate: "2023-05-10", grantDate: "2024-08-20", keywords: ["Agriculture", "IoT", "Automation"] },
         { id: 2, title: "UC InTTO Logo and Branding", status: "granted", type: "Trademark", number: "TM-2024-567890", startup: null, description: "Official Trademark registration for University of the Cordilleras Innovation and Technology Transfer Office logo and brand identity.", inventors: "UC Marketing Team", appDate: "2024-02-08", grantDate: "2024-07-15", keywords: ["Branding", "Logo"] },
@@ -8,15 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 5, title: "Cordillera Traditional Pattern Database", status: "granted", type: "Other IP", number: "CR-2023-778899", startup: "Cordillera Crafts", description: "Coordinated digital database and vectorization of traditional Cordilleran weaving patterns and designs with cultural protocols.", inventors: "Dr. Lirio Baguio, Cultural Heritage Team", appDate: "2023-10-12", grantDate: "2024-12-08", keywords: ["Cultural Heritage", "Database", "Traditional Knowledge"] }
     ];
 
-    const loadData = () => {
-        const savedData = localStorage.getItem(STORAGE_KEY);
-        return savedData ? JSON.parse(savedData) : defaultIpData;
-    };
-    const saveData = () => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(ipData));
-    };
+    // Firestore listener unsubscribe
+    let unsubscribe = null;
 
-    let ipData = loadData();
+    let ipData = [];
     let editingIpId = null;
 
     // --- DOM Elements ---
@@ -58,6 +54,99 @@ document.addEventListener('DOMContentLoaded', () => {
         grantedCountEl.textContent = grantedCount;
         filedCountEl.textContent = filedCount;
     };
+
+    function showLoading() {
+        ipList.innerHTML = `
+            <div class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading IP applications...</p>
+            </div>
+        `;
+    }
+
+    /**
+     * Load IP applications from Firestore in real-time
+     */
+    function loadIPs() {
+        // Remove existing listener
+        if (typeof unsubscribe === 'function') {
+            try { unsubscribe(); } catch (e) { /* ignore */ }
+            unsubscribe = null;
+        }
+
+        showLoading();
+
+        unsubscribe = db.collection(IP_COLLECTION)
+            .orderBy('createdAt', 'desc')
+            .onSnapshot(async (snapshot) => {
+                ipData = [];
+                snapshot.forEach(doc => {
+                    const raw = doc.data() || {};
+                    ipData.push({
+                        id: doc.id,
+                        title: raw.title || 'Untitled',
+                        status: raw.status || 'filed',
+                        type: raw.type || 'Other IP',
+                        number: raw.number || '',
+                        startup: raw.startup || null,
+                        description: raw.description || '',
+                        inventors: raw.inventors || '',
+                        appDate: raw.appDate || '',
+                        grantDate: raw.grantDate || null,
+                        keywords: Array.isArray(raw.keywords) ? raw.keywords : [],
+                        createdAt: raw.createdAt || null,
+                        updatedAt: raw.updatedAt || null
+                    });
+                });
+                // If Firestore has no data, ask whether to seed it with default data
+                if (ipData.length === 0) {
+                    // If there's localStorage data from previous versions, offer to migrate it
+                    try {
+                        const STORAGE_KEY = 'ucInttoIpData';
+                        const localDataRaw = localStorage.getItem(STORAGE_KEY);
+                        if (localDataRaw) {
+                            const migrate = confirm('Found existing IP data stored in localStorage. Do you want to migrate it to Firestore?');
+                            if (migrate) {
+                                const localData = JSON.parse(localDataRaw || '[]');
+                                for (const ip of localData) {
+                                    const { id, ...payload } = ip;
+                                    payload.createdAt = firebase.firestore.Timestamp.now();
+                                    payload.updatedAt = firebase.firestore.Timestamp.now();
+                                    payload.keywords = Array.isArray(payload.keywords) ? payload.keywords : [];
+                                    try {
+                                        await db.collection(IP_COLLECTION).add(payload);
+                                    } catch (e) {
+                                        console.error('Failed to migrate IP:', e);
+                                    }
+                                }
+                                localStorage.removeItem(STORAGE_KEY);
+                                return; // onSnapshot will re-run after writes
+                            }
+                        }
+                    } catch (e) { /* ignore migration errors */ }
+                    if (defaultIpData && defaultIpData.length > 0) {
+                        const applyDefault = confirm('No IP applications found in Firestore. Do you want to upload sample data?');
+                        if (applyDefault) {
+                            for (const ip of defaultIpData) {
+                                const { id, ...payload } = ip;
+                                payload.createdAt = firebase.firestore.Timestamp.now();
+                                payload.updatedAt = firebase.firestore.Timestamp.now();
+                                payload.keywords = Array.isArray(payload.keywords) ? payload.keywords : [];
+                                try {
+                                    await db.collection(IP_COLLECTION).add(payload);
+                                } catch (e) {
+                                    console.error('Seed failed: ', e);
+                                }
+                            }
+                            return; // onSnapshot will re-run after writes
+                        }
+                    }
+                }
+                renderIPs();
+            }, (error) => {
+                alert('Failed to load IP applications: ' + (error && error.message ? error.message : error));
+            });
+    }
 
     // --- Main Render Function ---
     const renderIPs = () => {
@@ -128,13 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const attachActionListeners = () => {
         document.querySelectorAll('.edit-btn').forEach(button => {
             button.addEventListener('click', e => {
-                const id = parseInt(e.target.closest('.ip-card').dataset.id);
+                const id = e.target.closest('.ip-card').dataset.id;
                 editIP(id);
             });
         });
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', e => {
-                const id = parseInt(e.target.closest('.ip-card').dataset.id);
+                const id = e.target.closest('.ip-card').dataset.id;
                 deleteIP(id);
             });
         });
@@ -175,11 +264,15 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal();
     };
 
-    const deleteIP = (id) => {
-        if (confirm('Are you sure you want to delete this IP application?')) {
+    const deleteIP = async (id) => {
+        if (!confirm('Are you sure you want to delete this IP application?')) return;
+        try {
+            await db.collection(IP_COLLECTION).doc(String(id)).delete();
+            // local snapshot will update automatically; optionally optimistically update
             ipData = ipData.filter(item => item.id !== id);
-            saveData();
             renderIPs();
+        } catch (error) {
+            alert('Failed to delete IP application: ' + (error && error.message ? error.message : error));
         }
     };
 
@@ -202,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ipStatusSelect.value !== 'granted') ipGrantDateInput.value = '';
     });
 
-    ipForm.addEventListener('submit', e => {
+    ipForm.addEventListener('submit', async e => {
         e.preventDefault();
         const formData = {
             title: ipTitleInput.value, status: ipStatusSelect.value, type: ipTypeSelect.value,
@@ -211,16 +304,19 @@ document.addEventListener('DOMContentLoaded', () => {
             startup: ipRelatedStartupInput.value || null, description: ipDescriptionTextarea.value,
             inventors: ipInventorsInput.value, keywords: ipTagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
         };
-        if (editingIpId !== null) {
-            const index = ipData.findIndex(item => item.id === editingIpId);
-            if (index !== -1) ipData[index] = { ...ipData[index], ...formData };
-        } else {
-            formData.id = ipData.length > 0 ? Math.max(...ipData.map(item => item.id)) + 1 : 1;
-            ipData.push(formData);
+        try {
+            // Prepare Firestore data
+            formData.updatedAt = firebase.firestore.Timestamp.now();
+            if (editingIpId !== null) {
+                await db.collection(IP_COLLECTION).doc(String(editingIpId)).update(formData);
+            } else {
+                formData.createdAt = firebase.firestore.Timestamp.now();
+                await db.collection(IP_COLLECTION).add(formData);
+            }
+            closeModal();
+        } catch (error) {
+            alert('Failed to save IP application: ' + (error && error.message ? error.message : error));
         }
-        saveData();
-        renderIPs();
-        closeModal();
     });
 
     searchInput.addEventListener('input', renderIPs);
@@ -240,5 +336,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     sortDropdown.addEventListener('change', renderIPs);
 
-    renderIPs();
+    // Load IPs from Firestore (will render via onSnapshot)
+    loadIPs();
+
+    // Cleanup Firestore listener on unload
+    window.addEventListener('beforeunload', () => {
+        if (typeof unsubscribe === 'function') {
+            try { unsubscribe(); } catch (e) { }
+        }
+    });
 });

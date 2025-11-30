@@ -141,6 +141,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE",
@@ -153,6 +154,8 @@
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        // Make Firestore available to legacy scripts
+        window.db = window.db || firebase.firestore();
     </script>
     
     <script src="js/admin.js"></script>

@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const auth = window.auth || firebase.auth();
     const db = window.db || firebase.firestore();
 
+    // Debounce function to prevent rapid writes
     function debounce(func, delay) {
         let timeoutId;
         return function (...args) {
@@ -314,7 +315,9 @@ document.addEventListener('DOMContentLoaded', function() {
     async function handleSignOut() {
         try {
             await auth.signOut();
-            closeProfileModal(); 
+            closeProfileModal(); // Close the modal after signing out
+            // Optional: Show a quick alert
+            // showAlertModal('You have been signed out.', 'Signed Out');
         } catch (error) {
             showAlertModal('Error signing out.', 'Error');
         }
@@ -369,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
             : (project.logo || 'Logo/No image.png'); 
 
         const collegeText = (Array.isArray(project.college) ? project.college.join(', ') : project.college) || 'N/A';
-        const industryText = Array.isArray(project.industry) ? project.industry.join(', ') : (project.industry || 'General');
+        const industryText = project.industry || project.category || 'General';
 
         return `
             <article class="project-card animate-on-scroll" data-id="${project.id}">
@@ -380,9 +383,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3>${project.title}</h3>
                     <div class="card-tags">
                         ${project.type ? `<span class="tag tag-${typeClass}">${project.type}</span>` : ''} 
-                        <span class="tag tag-grey" title="${industryText}">${industryText.substring(0, 25)}${industryText.length > 25 ? '...' : ''}</span>
+                        <span class="tag tag-grey">${industryText}</span>
                     </div>
-                    <p class="card-college" title="${collegeText}">${collegeText}</p>
+                    <p class="card-college">${collegeText}</p>
                     <span class="card-trl trl-${trlClass}">${trlText}</span>
                     <p class="card-description">${project.shortDescription || project.description || 'No description available.'}</p>
                     
@@ -395,11 +398,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function loadProjects() {
         try {
+            // Load all projects from Firestore
             const snapshot = await db.collection('startups').get();
             allProjectsData = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                if (data.status === 'pending') return; 
+                if (data.status === 'pending') return; // exclude pending
                 allProjectsData.push({
                     id: doc.id,
                     title: data.name || data.title || 'Untitled Project',
@@ -440,33 +444,15 @@ document.addEventListener('DOMContentLoaded', function() {
         currentFilteredProjects = allProjectsData.filter(project => {
             if (!project) return false;
             
+            const collegeText = (Array.isArray(project.college) ? project.college.join(', ') : (project.college || ''));
+            const collegeMatch = (filters.college === 'All Colleges') || (collegeText.includes(filters.college));
+            
             const searchMatch = (project.title?.toLowerCase().includes(filters.search) || project.shortDescription?.toLowerCase().includes(filters.search));
             
-            const filterInd = filters.industry.trim();
-            const isAllInd = filterInd === 'All Categories' || filterInd === 'All Startups';
-            let industryMatch = isAllInd;
-
-            if (!industryMatch) {
-                if (Array.isArray(project.industry)) {
-                    industryMatch = project.industry.some(item => 
-                        item.trim().toLowerCase() === filterInd.toLowerCase()
-                    );
-                } else {
-                    industryMatch = project.industry.trim().toLowerCase() === filterInd.toLowerCase();
-                }
-            }
-
-            const filterCol = filters.college.trim();
-            const isAllCol = filterCol === 'All Colleges';
-            let collegeMatch = isAllCol;
-
-            if (!collegeMatch) {
-                const projColStr = Array.isArray(project.college) 
-                    ? project.college.join(' ').toLowerCase() 
-                    : (project.college || '').toLowerCase();
-                collegeMatch = projColStr.includes(filterCol.toLowerCase());
-            }
-
+            const industryMatch = (filters.industry === 'All Categories') || 
+                                  (filters.industry === 'All Startups') || 
+                                  (project.industry === filters.industry); 
+            
             const typeMatch = (filters.type === 'All Types') || (project.type === filters.type);
 
             let trlMatch = true;

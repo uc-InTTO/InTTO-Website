@@ -12,20 +12,12 @@ document.addEventListener('DOMContentLoaded', function() {
             initializeCustomDropdown('sdg-dropdown-btn', 'sdg-checkbox-list', 'sdg-selected-pills', 'sdg-validation');
             initializeCharCounter();
             initializeFormSubmit(user);
-            initializeNavigationLogic();
+            initializeCancelButton();
         } else {
             alert("You must be signed in to submit a project.");
             window.location.href = 'index.html';
         }
     });
-
-    function closeTabOrRedirect() {
-        if (window.opener) {
-            window.close();
-        } else {
-            window.location.href = 'index.html';
-        }
-    }
 
     function updateHeader(user, loggedInUser) {
         const userDisplayPill = document.getElementById('user-display');
@@ -244,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     await db.collection('startups').add(newProject);
                     
                     alert("Project submitted successfully!");
-                    closeTabOrRedirect();
+                    window.location.href = 'index.html';
                 } catch (error) {
                     console.error("Error saving project:", error);
                     alert("Error saving project: " + error.message);
@@ -255,23 +247,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function initializeNavigationLogic() {
-        const backLink = document.querySelector('.back-link');
+    function initializeCancelButton() {
         const cancelButton = document.querySelector('.btn-cancel');
-
-        if (backLink) {
-            backLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                closeTabOrRedirect();
-            });
-        }
-
-        if (cancelButton) {
+        if(cancelButton) {
             cancelButton.addEventListener('click', (e) => {
                 e.preventDefault();
-                if (confirm("Are you sure you want to cancel? Unsaved changes will be lost.")) {
-                    closeTabOrRedirect();
-                }
+                if (confirm("Are you sure you want to cancel?")) window.history.back();
             });
         }
     }

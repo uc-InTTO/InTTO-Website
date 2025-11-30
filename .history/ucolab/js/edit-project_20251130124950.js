@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     auth.onAuthStateChanged(async function(user) {
         if (user) {
-            initializeCustomDropdown('industry-dropdown-btn', 'industry-checkbox-list', 'industry-selected-pills');
             initializeCustomDropdown('college-dropdown-btn', 'college-checkbox-list', 'college-selected-pills');
             initializeCustomDropdown('sdg-dropdown-btn', 'sdg-checkbox-list', 'sdg-selected-pills');
             initializeImageUploaders();
@@ -40,10 +39,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             setVal('project-name', data.name);
             setVal('project-type', data.type);
-            
-            checkMultiSelect('industry-checkbox-list', data.category || data.industry);
-
+            setVal('industry', data.category || data.industry);
             setVal('trl-level', data.trl);
+            
             setVal('incubation-status', data.incubationStatus || 'not-incubated');
 
             setVal('short-description', data.shortDescription || data.description);
@@ -57,10 +55,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             setVal('founder-email', data.founderEmail);
             setVal('founder-phone', data.founderPhone);
 
-            if (data.founderFirstName && data.founderLastName) {
-                setVal('founder-first-name', data.founderFirstName);
-                setVal('founder-last-name', data.founderLastName);
-            } else if (data.founderName) {
+            if (data.founderName) {
                 const parts = data.founderName.split(' ');
                 setVal('founder-first-name', parts[0]);
                 setVal('founder-last-name', parts.slice(1).join(' '));
@@ -124,8 +119,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 name: getVal('project-name'),
                 title: getVal('project-name'),
                 type: getVal('project-type'),
-                category: getCheckedValues('industry-checkbox-list'),
-                industry: getCheckedValues('industry-checkbox-list'),
+                category: getVal('industry'),
+                industry: getVal('industry'),
                 trl: getVal('trl-level'),
                 
                 incubationStatus: getVal('incubation-status'),
@@ -137,11 +132,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 solution: getVal('solution'),
                 startDate: getVal('start-date'),
                 teamSize: getVal('team-size'),
-                
-                founderFirstName: fName,
-                founderLastName: lName,
                 founderName: `${fName} ${lName}`,
-                
                 founderRole: getVal('founder-role'),
                 founderAffiliation: getVal('founder-affiliation'),
                 founderEmail: getVal('founder-email'),
@@ -211,7 +202,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const span = document.createElement('span');
                 span.className = 'pill';
                 span.textContent = cb.value;
-                span.style.fontFamily = "'Poppins', sans-serif";
                 pills.appendChild(span);
             });
             const txt = btn.querySelector('.dropdown-button-text');

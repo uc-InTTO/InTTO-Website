@@ -7,11 +7,6 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/submit-project.css?v=1.2">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body, input, textarea, select, button, label, span, div {
-            font-family: 'Poppins', sans-serif !important;
-        }
-    </style>
 </head>
 <body class="submit-page-body">
     <main class="submit-project-main">
@@ -47,60 +42,21 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="industry-dropdown-btn">Startup Category <span class="required">*</span></label>
-                            <div class="multi-select-dropdown" id="industry-multi-select">
-                                <div class="dropdown-button" id="industry-dropdown-btn" tabindex="0">
-                                    <span class="dropdown-button-text">Select one or more categories...</span>
-                                    <div class="selected-pills" id="industry-selected-pills"></div>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                                </div>
-                                <div class="checkbox-list" id="industry-checkbox-list">
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-ai" name="industry-option" value="AI and Data Science">
-                                        <label for="industry-ai">AI and Data Science</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-saas" name="industry-option" value="SaaS and Enterprise Solutions">
-                                        <label for="industry-saas">SaaS and Enterprise Solutions</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-fintech" name="industry-option" value="Fintech">
-                                        <label for="industry-fintech">Fintech</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-ecommerce" name="industry-option" value="E-commerce">
-                                        <label for="industry-ecommerce">E-commerce</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-health" name="industry-option" value="Health">
-                                        <label for="industry-health">Health</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-agri" name="industry-option" value="Agriculture and Food">
-                                        <label for="industry-agri">Agriculture and Food</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-edtech" name="industry-option" value="Education Technologies">
-                                        <label for="industry-edtech">Education Technologies</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-creative" name="industry-option" value="Creative Industries">
-                                        <label for="industry-creative">Creative Industries</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-crim" name="industry-option" value="Criminology, Forensics, and Public Safety">
-                                        <label for="industry-crim">Criminology, Forensics, and Public Safety</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-sustainability" name="industry-option" value="Sustainability and Cleantech">
-                                        <label for="industry-sustainability">Sustainability and Cleantech</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="industry-smart" name="industry-option" value="Smart Cities and Mobility">
-                                        <label for="industry-smart">Smart Cities and Mobility</label>
-                                    </div>
-                                </div>
-                            </div>
+                            <label for="industry">Startup Category <span class="required">*</span></label>
+                            <select id="industry" required>
+                                <option value="" disabled>Select a Startup Category</option>
+                                <option value="AI and Data Science">AI and Data Science</option>
+                                <option value="SaaS and Enterprise Solutions">SaaS and Enterprise Solutions</option>
+                                <option value="Fintech">Fintech</option>
+                                <option value="E-commerce">E-commerce</option>
+                                <option value="Health">Health</option>
+                                <option value="Agriculture and Food">Agriculture and Food</option>
+                                <option value="Education Technologies">Education Technologies</option>
+                                <option value="Creative Industries">Creative Industries</option>
+                                <option value="Criminology, Forensics, and Public Safety">Criminology, Forensics, and Public Safety</option>
+                                <option value="Sustainability and Cleantech">Sustainability and Cleantech</option>
+                                <option value="Smart Cities and Mobility">Smart Cities and Mobility</option>
+                            </select>
                         </div>
                     </div>
 
@@ -128,46 +84,13 @@
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                                 </div>
                                 <div class="checkbox-list" id="college-checkbox-list">
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-cba" name="college-option" value="college of business administration">
-                                        <label for="college-cba">College of Business Administration</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-coa" name="college-option" value="college of accountancy">
-                                        <label for="college-coa">College of Accountancy</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-ccs" name="college-option" value="college of information technology and computer science">
-                                        <label for="college-ccs">College of Information Technology and Computer Science</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-con" name="college-option" value="college of nursing">
-                                        <label for="college-con">College of Nursing</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-cafa" name="college-option" value="college of architecture and fine arts">
-                                        <label for="college-cafa">College of Architecture and Fine Arts</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-chtm" name="college-option" value="college of hospitality and tourism management">
-                                        <label for="college-chtm">College of Hospitality and Tourism Management</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-coe" name="college-option" value="college of engineering">
-                                        <label for="college-coe">College of Engineering</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-cte" name="college-option" value="college of teacher education">
-                                        <label for="college-cte">College of Teacher Education</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-ccje" name="college-option" value="college of criminal justice education">
-                                        <label for="college-ccje">College of Criminal Justice Education</label>
-                                    </div>
-                                    <div class="checkbox-list-item">
-                                        <input type="checkbox" id="college-shs" name="college-option" value="senior high school">
-                                        <label for="college-shs">Senior High School</label>          
-                                    </div>
+                                    <div class="checkbox-list-item"><input type="checkbox" value="College of Business"><label>College of Business</label></div>
+                                    <div class="checkbox-list-item"><input type="checkbox" value="College of Computer Studies"><label>College of Computer Studies</label></div>
+                                    <div class="checkbox-list-item"><input type="checkbox" value="College of Nursing"><label>College of Nursing</label></div>
+                                    <div class="checkbox-list-item"><input type="checkbox" value="College of Architecture"><label>College of Architecture</label></div>
+                                    <div class="checkbox-list-item"><input type="checkbox" value="College of Arts & Sciences"><label>College of Arts & Sciences</label></div>
+                                    <div class="checkbox-list-item"><input type="checkbox" value="College of Engineering"><label>College of Engineering</label></div>
+                                    <div class="checkbox-list-item"><input type="checkbox" value="College of Teacher Education"><label>College of Teacher Education</label></div>
                                 </div>
                             </div>
                         </div>

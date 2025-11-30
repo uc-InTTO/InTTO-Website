@@ -19,14 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function closeTabOrRedirect() {
-        if (window.opener) {
-            window.close();
-        } else {
-            window.location.href = 'index.html';
-        }
-    }
-
     function updateHeader(user, loggedInUser) {
         const userDisplayPill = document.getElementById('user-display');
         const signOutButton = document.getElementById('signout-btn-main');
@@ -244,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     await db.collection('startups').add(newProject);
                     
                     alert("Project submitted successfully!");
-                    closeTabOrRedirect();
+                    window.location.href = 'index.html';
                 } catch (error) {
                     console.error("Error saving project:", error);
                     alert("Error saving project: " + error.message);
@@ -258,6 +250,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function initializeNavigationLogic() {
         const backLink = document.querySelector('.back-link');
         const cancelButton = document.querySelector('.btn-cancel');
+
+        const closeTabOrRedirect = () => {
+            if (window.opener) {
+                window.close();
+            } else {
+                window.location.href = 'index.html';
+            }
+        };
 
         if (backLink) {
             backLink.addEventListener('click', (e) => {

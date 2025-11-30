@@ -1,21 +1,20 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- Firestore Collections ---
     const STARTUPS_COLLECTION = 'startups';
     const NEWS_EVENTS_COLLECTION = 'newsEvents';
     
-    // --- Chart.js Instance ---
     let sdgChart = null;
+    let hiddenLegendIds = new Set(); 
+    let currentFilteredData = []; 
 
-    // --- DOM Elements ---
     const tabs = document.querySelectorAll('.tab-btn');
     const totalUsageEl = document.getElementById('total-sdg-usage');
     const uniqueSdgsEl = document.getElementById('unique-sdgs');
     const itemCountEl = document.getElementById('item-count');
     const itemCountLabelEl = document.getElementById('item-count-label');
     const chartCanvas = document.getElementById('sdgPieChart');
-    const breakdownListEl = document.getElementById('sdg-breakdown-list'); // Added
+    const breakdownListEl = document.getElementById('sdg-breakdown-list'); 
+    const customLegendEl = document.getElementById('custom-chart-legend');
 
-    // --- Master List of SDGs (1-17 Ordered) ---
     const SDG_CONSTANTS = [
         { id: 1,  code: "SDG 1",  name: "No Poverty", color: "#E5243B" },
         { id: 2,  code: "SDG 2",  name: "Zero Hunger", color: "#DDA63A" },
@@ -36,10 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         { id: 17, code: "SDG 17", name: "Partnerships for the Goals", color: "#19486A" }
     ];
 
-    // --- Load Data from Firestore ---
     const loadStartupsFromFirestore = async () => {
         const CACHE_KEY = 'sdg_startups';
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        const CACHE_EXPIRY = 5 * 60 * 1000; 
         let cached = localStorage.getItem(CACHE_KEY);
         let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
         let now = Date.now();
@@ -53,7 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const startups = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                // Only include active startups (exclude pending)
                 if (data.status !== 'pending') {
                     startups.push({ firestoreId: doc.id, ...data });
                 }
@@ -68,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const loadNewsEventsFromFirestore = async () => {
         const CACHE_KEY = 'sdg_newsEvents';
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        const CACHE_EXPIRY = 5 * 60 * 1000;
         let cached = localStorage.getItem(CACHE_KEY);
         let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
         let now = Date.now();
@@ -91,14 +88,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // --- Main Function to Update Dashboard ---
     const updateDashboard = async (filter) => {
         
-        // UI Loading State
+        hiddenLegendIds.clear();
+
         totalUsageEl.textContent = '...';
         uniqueSdgsEl.textContent = '...';
         itemCountEl.textContent = '...';
         if(breakdownListEl) breakdownListEl.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Loading data...</p>';
+        if(customLegendEl) customLegendEl.innerHTML = '<p style="text-align:center; width:100%; color:#999;">Loading...</p>';
 
         const startups = await loadStartupsFromFirestore();
         const newsEvents = await loadNewsEventsFromFirestore();
@@ -117,18 +115,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             itemCountLabel = 'News & Events';
         }
 
-        // Initialize counters for all 17 SDGs
         let totalUsage = 0;
         let itemCount = 0;
         const sdgCounts = {};
         
-        // Initialize count 0 for all IDs 1-17
         SDG_CONSTANTS.forEach(sdg => sdgCounts[sdg.id] = 0);
 
         itemsToProcess.forEach(item => {
             let itemSDGs = item.sdgs || [];
             
-            // --- Normalize SDG data to numbers correctly ---
             if (Array.isArray(itemSDGs)) {
                 itemSDGs = itemSDGs.map(sdg => {
                     let num = sdg;
@@ -152,48 +147,48 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
 
-        // Calculate how many *different* SDGs are active
         const uniqueSdgs = Object.values(sdgCounts).filter(count => count > 0).length;
 
-        // --- Update Stat Cards ---
         totalUsageEl.textContent = totalUsage;
         uniqueSdgsEl.textContent = uniqueSdgs;
         itemCountEl.textContent = itemCount;
         itemCountLabelEl.textContent = itemCountLabel;
 
-        // --- Prepare Data for Visualization (Strictly 1-17) ---
-        const preparedData = SDG_CONSTANTS.map(sdg => ({
+        currentFilteredData = SDG_CONSTANTS.map(sdg => ({
             ...sdg,
             count: sdgCounts[sdg.id] || 0
         }));
 
-        updateGraph(preparedData);
-        updateList(preparedData);
+        renderChart();
+        renderLegend();
+        updateList(currentFilteredData);
     };
 
-    // --- Render the Graph (Sorted 1-17) ---
-    const updateGraph = (data) => {
+    const renderChart = () => {
         if (!chartCanvas) return;
 
-        if (typeof Chart === 'undefined') {
-            return;
-        }
+        if (typeof Chart === 'undefined') return;
 
         if (sdgChart) {
             sdgChart.destroy();
         }
 
-        // Filter labels/data for chart:
-        const activeData = data.filter(item => item.count > 0); 
+        const activeData = currentFilteredData.filter(item => 
+            item.count > 0 && !hiddenLegendIds.has(item.id)
+        );
 
-        // If no data at all
         if (activeData.length === 0) {
             const ctx = chartCanvas.getContext('2d');
             ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
             ctx.font = '14px Poppins, sans-serif';
             ctx.fillStyle = '#999';
             ctx.textAlign = 'center';
-            ctx.fillText('No SDG data found', chartCanvas.width / 2, chartCanvas.height / 2);
+            
+            if (currentFilteredData.some(i => i.count > 0)) {
+                ctx.fillText('All visible SDGs hidden', chartCanvas.width / 2, chartCanvas.height / 2);
+            } else {
+                ctx.fillText('No SDG data found', chartCanvas.width / 2, chartCanvas.height / 2);
+            }
             return;
         }
 
@@ -204,26 +199,74 @@ document.addEventListener('DOMContentLoaded', async () => {
                 datasets: [{
                     data: activeData.map(item => item.count),
                     backgroundColor: activeData.map(item => item.color),
-                    borderWidth: 1
+                    borderWidth: 0, 
+                    hoverOffset: 15
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '60%', 
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            font: { family: "'Poppins', sans-serif", size: 11 }
-                        }
+                        display: false 
+                    },
+                    tooltip: {
+                        titleFont: { family: "'Poppins', sans-serif" },
+                        bodyFont: { family: "'Poppins', sans-serif" }
                     }
                 }
             }
         });
     };
 
-    // --- Render the List (Strictly 1-17) ---
+    const renderLegend = () => {
+        if (!customLegendEl) return;
+        customLegendEl.innerHTML = '';
+
+        const dataWithCounts = currentFilteredData.filter(item => item.count > 0);
+
+        if (dataWithCounts.length === 0) {
+            customLegendEl.innerHTML = '<p style="color:#999; grid-column:1/-1; text-align:center;">No active SDGs</p>';
+            return;
+        }
+
+        dataWithCounts.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'legend-card';
+            if (hiddenLegendIds.has(item.id)) {
+                card.classList.add('inactive');
+            }
+            card.style.borderLeft = `3px solid ${item.color}`;
+            
+            card.innerHTML = `
+                <div class="legend-color" style="background-color: ${item.color}"></div>
+                <span class="legend-label">${item.code}</span>
+            `;
+
+            card.addEventListener('click', () => {
+                toggleSdgVisibility(item.id);
+                
+                if (hiddenLegendIds.has(item.id)) {
+                    card.classList.add('inactive');
+                } else {
+                    card.classList.remove('inactive');
+                }
+            });
+            
+            customLegendEl.appendChild(card);
+        });
+    };
+
+    const toggleSdgVisibility = (sdgId) => {
+        if (hiddenLegendIds.has(sdgId)) {
+            hiddenLegendIds.delete(sdgId);
+        } else {
+            hiddenLegendIds.add(sdgId);
+        }
+        renderChart();
+    };
+
     const updateList = (data) => {
         if (!breakdownListEl) return;
         
@@ -234,7 +277,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             card.className = 'sdg-item-card';
             card.style.borderLeftColor = item.color;
 
-            // Fade out cards with 0 count
             if (item.count === 0) {
                 card.style.opacity = '0.6'; 
             }
@@ -252,7 +294,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    // --- Tab Event Listeners ---
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
@@ -261,6 +302,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // --- Init ---
     await updateDashboard('all');
 });

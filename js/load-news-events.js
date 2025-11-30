@@ -22,22 +22,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentSearchTerm = '';
     let filteredNewsEvents = [];
 
-    async function loadAllNewsEvents() {
+    async function loadAllNewsEvents(forceRefresh = false) {
         const CACHE_KEY = 'public_newsEvents';
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        const CACHE_EXPIRY = 5 * 60 * 1000; 
         let cached = localStorage.getItem(CACHE_KEY);
         let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
         let now = Date.now();
 
-        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            // Use cached value
+        if (!forceRefresh && cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
             allNewsEvents = JSON.parse(cached);
             applyFiltersAndSearch();
             return;
         }
 
         try {
-            if (window.LoadingScreen) {
+            if (window.LoadingScreen && !forceRefresh) {
                 window.LoadingScreen.show('Loading news & events');
             }
             
@@ -62,11 +61,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             allNewsEvents = newsEvents;
 
-            // Cache result
             localStorage.setItem(CACHE_KEY, JSON.stringify(allNewsEvents));
             localStorage.setItem(CACHE_KEY + '_time', now);
 
-            renderPage();
+            applyFiltersAndSearch();
             
             if (window.LoadingScreen) window.LoadingScreen.hide();
             
@@ -120,9 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        const tagText = (item.tags && item.tags.length > 0) 
-            ? item.tags[0] 
-            : item.type === 'event' ? 'Event' : 'News';
+        const tagText = (item.type === 'event') ? 'Event' : 'News';
 
         const card = document.createElement('div');
         card.className = 'news-card';
@@ -164,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             newsCardsContainer.appendChild(createNewsCard(item));
         });
 
-        if (currentPage > totalPages) {
+        if (currentPage > totalPages && totalPages > 0) {
             currentPage = 1; 
             renderNewsEventsCards();
         }
@@ -325,16 +321,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const imageUrl = (event.images && event.images[0]) ? event.images[0] : 'graphics/students.png';
 
                 const eventHTML = `
-                    <div class="event-item">
+                    <div class="event-item" style="font-family: 'Poppins', sans-serif;">
                         <div class="event-image-container">
                             <img src="${imageUrl}" alt="${event.title}" class="event-image" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div class="event-details">
-                            <p class="event-title">${event.title}</p>
-                            <p class="event-date-time">
+                            <p class="event-title" style="font-family: 'Poppins', sans-serif;">${event.title}</p>
+                            <p class="event-date-time" style="font-family: 'Poppins', sans-serif;">
                                 <span>${dateStr}</span>
                             </p>
-                            <a href="#" class="learn-more">Learn More →</a>
+                            <a href="#" class="learn-more" style="font-family: 'Poppins', sans-serif;">Learn More →</a>
                         </div>
                     </div>
                 `;
@@ -353,13 +349,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadUpcomingEvents();
     
     await loadAllNewsEvents();
-    applyFiltersAndSearch();
 
     try {
         db.collection('newsEvents')
             .where('status', '==', 'published')
             .onSnapshot(() => {
-                loadAllNewsEvents().then(applyFiltersAndSearch);
+                loadAllNewsEvents(true);
             });
     } catch (error) {
     }

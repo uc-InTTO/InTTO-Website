@@ -1,15 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // Firestore collection
     const NEWS_EVENTS_COLLECTION = 'newsEvents';
     
-    // --- Global State for Images ---
     let uploadedImageUrls = ["", "", "", "", ""]; 
     let uploadingImages = [false, false, false, false, false];
     
     let newsEventsData = [];
     let currentEditingId = null;
 
-    // --- DOM Elements ---
     const newsEventList = document.getElementById('news-event-list');
     const searchInput = document.getElementById('search-input');
     const typeFilters = document.getElementById('news-event-type-filters');
@@ -21,16 +18,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const newsEventForm = document.getElementById('news-event-form');
     const modalTitle = document.getElementById('news-event-modal-title');
 
-    // --- Firestore Functions ---
-    const loadNewsEventsFromFirestore = async () => {
+    const loadNewsEventsFromFirestore = async (forceRefresh = false) => {
         const CACHE_KEY = 'admin_news_events';
-        const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+        const CACHE_EXPIRY = 5 * 60 * 1000; 
         let cached = localStorage.getItem(CACHE_KEY);
         let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
         let now = Date.now();
 
-        if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            // Use cached value
+        if (!forceRefresh && cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
             newsEventsData = JSON.parse(cached);
             return newsEventsData;
         }
@@ -50,17 +45,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             });
 
-            // Cache result
             localStorage.setItem(CACHE_KEY, JSON.stringify(newsEventsData));
             localStorage.setItem(CACHE_KEY + '_time', now);
             
             return newsEventsData;
         } catch (error) {
-            newsEventList.innerHTML = `<div style="text-align: center; padding: 40px; color: #e74c3c;">
+            newsEventList.innerHTML = `<div style="text-align: center; padding: 40px; color: #e74c3c; font-family: 'Poppins', sans-serif;">
                 <i class="fa-solid fa-exclamation-triangle" style="font-size: 32px;"></i>
                 <p style="margin-top: 16px; font-weight: 500;">Error loading news & events</p>
                 <p style="margin-top: 8px; font-size: 14px; color: var(--text-light);">${error.message}</p>
-                <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 16px;">
+                <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 16px; font-family: 'Poppins', sans-serif;">
                     <i class="fa-solid fa-refresh"></i> Retry
                 </button>
             </div>`;
@@ -70,7 +64,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const saveNewsEventToFirestore = async (newsEventData) => {
         try {
-            
             newsEventData.createdAt = newsEventData.createdAt || firebase.firestore.Timestamp.now();
             newsEventData.updatedAt = firebase.firestore.Timestamp.now();
             
@@ -83,9 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const updateNewsEventInFirestore = async (firestoreId, updatedData) => {
         try {
-            
             updatedData.updatedAt = firebase.firestore.Timestamp.now();
-            
             await db.collection(NEWS_EVENTS_COLLECTION).doc(firestoreId).update(updatedData);
         } catch (error) {
             throw error;
@@ -100,10 +91,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // --- Render List ---
     const renderNewsEvents = async (isLoading = false) => {
         if (isLoading) {
-            newsEventList.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light);"><i class="fa-solid fa-spinner fa-spin" style="font-size: 32px;"></i><p style="margin-top: 16px;">Loading news & events...</p></div>';
+            newsEventList.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light); font-family: \'Poppins\', sans-serif;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 32px;"></i><p style="margin-top: 16px;">Loading news & events...</p></div>';
             return;
         }
         
@@ -139,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         newsEventList.innerHTML = '';
         if (filteredData.length === 0) {
-            newsEventList.innerHTML = '<p style="text-align: center; color: var(--text-light); margin-top: 30px;">No news or events found.</p>';
+            newsEventList.innerHTML = '<p style="text-align: center; color: var(--text-light); margin-top: 30px; font-family: \'Poppins\', sans-serif;">No news or events found.</p>';
             return;
         }
 
@@ -147,15 +137,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const card = document.createElement('div');
             card.className = 'news-event-card';
             card.dataset.firestoreId = item.firestoreId;
+            card.style.fontFamily = "'Poppins', sans-serif";
             
-            // Use uploaded image or fallback
             const imgUrl = (item.images && item.images.length > 0) ? item.images[0] : 'https://via.placeholder.com/150?text=No+Image';
             
-            // Handle SDG tags safely
             const sdgs = Array.isArray(item.sdgs) ? item.sdgs : [];
             const sdgTags = sdgs.map(s => `<span class="tag tag-sdg">SDG ${s}</span>`).join('');
 
-            // Format date
             let displayDate = 'N/A';
             if (item.date) {
                 if (typeof item.date === 'string') {
@@ -165,17 +153,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
+            const typeLabel = (item.type || 'news').toUpperCase();
+
             card.innerHTML = `
                 <div class="card-img" style="width: 120px; height: 120px; border-radius: 8px; overflow: hidden; flex-shrink: 0;">
                     <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com/150?text=Error'">
                 </div>
-                <div class="card-content">
-                    <h3>${item.title || 'Untitled'}</h3>
-                    <p class="description">${(item.content || '').substring(0, 120)}...</p>
-                    <div class="meta-tags">
-                        <span class="tag type-${item.type}">${(item.type || 'news').toUpperCase()}</span>
-                        <span class="tag status-${item.status}">${item.status || 'draft'}</span>
-                        <span><i class="fa-regular fa-calendar"></i> ${displayDate}</span>
+                <div class="card-content" style="font-family: 'Poppins', sans-serif;">
+                    <h3 style="font-weight: 600;">${item.title || 'Untitled'}</h3>
+                    <p class="description" style="font-weight: 400;">${(item.content || '').substring(0, 120)}...</p>
+                    <div class="meta-tags" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+                        <span class="tag type-${item.type}" style="font-weight: 500;">${typeLabel}</span>
+                        <span class="tag status-${item.status}" style="font-weight: 500;">${item.status || 'draft'}</span>
+                        <span style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px;"><i class="fa-regular fa-calendar"></i> ${displayDate}</span>
                         ${sdgTags}
                     </div>
                 </div>
@@ -211,24 +201,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         try {
             await deleteNewsEventFromFirestore(firestoreId);
-            await loadNewsEventsFromFirestore();
+            await loadNewsEventsFromFirestore(true);
             await renderNewsEvents();
             alert('News/Event deleted successfully');
-            // Auto-reload to reflect changes
-            setTimeout(() => location.reload(), 1000);
         } catch (error) {
             alert('Error deleting news/event: ' + error.message);
         }
     };
 
-    // --- Modal Functions ---
     const openAddModal = () => {
-        // Open the dedicated form page for a new entry
         window.open('news-event-form.html', '_blank');
     };
 
     const openEditModal = (firestoreId) => {
-        // Open the dedicated form page with the ID parameter
         window.open(`news-event-form.html?id=${firestoreId}`, '_blank');
     };
 
@@ -238,7 +223,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         uploadedImageUrls = ["", "", "", "", ""];
     };
 
-    // --- Image Upload Handlers ---
     const initializeImageUploaders = () => {
         for (let i = 1; i <= 5; i++) {
             const input = document.getElementById(`image-upload-${i}`);
@@ -254,7 +238,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const label = slot.querySelector('.upload-label');
                     const removeBtn = slot.querySelector('.remove-image-btn');
 
-                    // Show preview immediately
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         preview.src = e.target.result;
@@ -264,7 +247,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     };
                     reader.readAsDataURL(file);
 
-                    // Upload to Cloudinary
                     uploadingImages[index] = true;
                     try {
                         const cloudinaryUrl = await CloudinaryUploader.uploadImage(file);
@@ -279,7 +261,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Remove image buttons
         document.querySelectorAll('.remove-image-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -299,7 +280,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    // --- SDG Dropdown ---
     const initializeSDGDropdown = () => {
         const dropdownBtn = document.getElementById('sdg-dropdown-btn');
         const checkboxList = document.getElementById('sdg-checkbox-list');
@@ -345,6 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 hasSelection = true;
                 const pill = document.createElement('span');
                 pill.className = 'pill';
+                pill.style.fontFamily = "'Poppins', sans-serif";
                 pill.innerHTML = `SDG ${checkbox.value} <span class="pill-remove" data-value="${checkbox.value}">×</span>`;
                 pillsContainer.appendChild(pill);
             }
@@ -358,7 +339,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             pillsContainer.style.display = 'none';
         }
 
-        // Attach remove listeners
         document.querySelectorAll('.pill-remove').forEach(remove => {
             remove.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -372,17 +352,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
-    // --- Form Submit ---
     const handleFormSubmit = async (e) => {
         e.preventDefault();
 
-        // Check if images are still uploading
         if (uploadingImages.some(status => status === true)) {
             alert('Please wait for all images to finish uploading');
             return;
         }
 
-        // Collect form data
         const newsEventData = {
             title: document.getElementById('news-event-title').value,
             type: document.getElementById('news-event-type').value,
@@ -396,30 +373,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         try {
             if (currentEditingId) {
-                // Update existing
                 await updateNewsEventInFirestore(currentEditingId, newsEventData);
                 alert('News/Event updated successfully!');
             } else {
-                // Create new
                 await saveNewsEventToFirestore(newsEventData);
                 alert('News/Event created successfully!');
             }
 
             closeModal();
-            await loadNewsEventsFromFirestore();
+            await loadNewsEventsFromFirestore(true);
             await renderNewsEvents();
         } catch (error) {
             alert('Error saving news/event: ' + error.message);
         }
     };
 
-    // --- Event Listeners ---
     if (addNewsEventBtn) {
         addNewsEventBtn.addEventListener('click', () => {
             openAddModal();
         });
     }
-    // Modal event listeners removed - using new tab navigation instead
+
     if (searchInput) searchInput.addEventListener('input', renderNewsEvents);
     if (sortDropdown) sortDropdown.addEventListener('change', renderNewsEvents);
     
@@ -433,16 +407,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Auto-refresh when tab comes back into focus
-    // This ensures updates made in the form tab appear here immediately
     window.addEventListener('focus', async () => {
-        renderNewsEvents(true); // Show loading
-        await loadNewsEventsFromFirestore();
+        renderNewsEvents(true); 
+        await loadNewsEventsFromFirestore(true);
         await renderNewsEvents();
     });
 
-    // --- Initialize Everything ---
-    renderNewsEvents(true); // Show loading spinner
+    renderNewsEvents(true); 
     await loadNewsEventsFromFirestore();
     await renderNewsEvents();
     

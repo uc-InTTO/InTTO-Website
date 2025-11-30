@@ -3,16 +3,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     let uploadedImageUrls = ["", "", "", "", ""]; 
     let projectId = null;
 
-    // Debounce function to prevent rapid writes
-    function debounce(func, delay) {
-        let timeoutId;
-        return function (...args) {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
-
-    // 1. Get Project ID
     const params = new URLSearchParams(window.location.search);
     projectId = params.get('id');
 
@@ -22,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
 
-    // 2. Init Auth & Data
     auth.onAuthStateChanged(async function(user) {
         if (user) {
             initializeCustomDropdown('college-dropdown-btn', 'college-checkbox-list', 'college-selected-pills');
@@ -38,9 +27,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // 3. Load Data
     async function loadProjectData(id) {
-        let data;
         try {
             const doc = await db.collection('startups').doc(id).get();
             if (!doc.exists) {
@@ -48,20 +35,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                 window.close();
                 return;
             }
-            data = doc.data();
-        } catch (error) {
-            alert("Error loading project.");
-            window.close();
-            return;
-        }
+            const data = doc.data();
 
-            // Standard Fields
             setVal('project-name', data.name);
             setVal('project-type', data.type);
             setVal('industry', data.category || data.industry);
             setVal('trl-level', data.trl);
             
-            // --- LOAD INCUBATION STATUS ---
             setVal('incubation-status', data.incubationStatus || 'not-incubated');
 
             setVal('short-description', data.shortDescription || data.description);
@@ -81,7 +61,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 setVal('founder-last-name', parts.slice(1).join(' '));
             }
 
-            // Populate Key Features (Title + Desc)
             if (data.features && Array.isArray(data.features)) {
                 data.features.forEach((feat, index) => {
                     if (index < 4) {
@@ -113,10 +92,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         } catch (e) {
             console.error(e);
             alert("Error loading data.");
+            window.close();
         }
     }
 
-    // 4. Save Changes
     function initializeSubmit() {
         const form = document.querySelector('.submit-form');
         form.addEventListener('submit', async (e) => {
@@ -129,7 +108,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             const fName = document.getElementById('founder-first-name').value;
             const lName = document.getElementById('founder-last-name').value;
             
-            // Collect Features as Title + Desc
             const featuresArr = [];
             for(let i=1; i<=4; i++) {
                 const title = getVal(`feature${i}-title`);
@@ -145,7 +123,6 @@ document.addEventListener('DOMContentLoaded', async function() {
                 industry: getVal('industry'),
                 trl: getVal('trl-level'),
                 
-                // --- SAVE INCUBATION STATUS ---
                 incubationStatus: getVal('incubation-status'),
 
                 shortDescription: getVal('short-description'),
@@ -170,10 +147,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             };
 
             try {
-                const debouncedUpdate = debounce(async (data) => {
-                    await db.collection('startups').doc(projectId).update(data);
-                }, 1000);
-                await debouncedUpdate(updatedData);
+                await db.collection('startups').doc(projectId).update(updatedData);
+                
                 alert("Saved successfully!");
                 if (window.opener && !window.opener.closed) {
                     window.opener.location.reload();
@@ -187,7 +162,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // --- Helpers ---
     function setVal(id, val) {
         const el = document.getElementById(id);
         if (el) el.value = val || '';

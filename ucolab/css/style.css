@@ -2143,3 +2143,107 @@ main {
         transform: translateY(0);
     }
 }
+
+.cropper-modal-content {
+    background-color: #ffffff;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    position: relative;
+    margin: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.cropper-body {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    min-height: 250px;
+    max-height: 60vh;
+    background-color: #f7f7f7;
+    margin: 15px 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cropper-body img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.cropper-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    padding-bottom: 5px;
+}
+
+.cropper-actions .btn {
+    min-width: 110px;
+    white-space: nowrap;
+}
+
+.close-modal-btn {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 0 10px;
+    transition: color 0.3s ease;
+}
+
+.close-modal-btn:hover {
+    color: #000;
+}
+
+@media (max-width: 768px) {
+    .cropper-modal-content {
+        width: 95%;
+        padding: 16px;
+        max-height: 85vh;
+    }
+
+    .modal-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .cropper-body {
+        min-height: 200px;
+        max-height: 50vh;
+        margin: 10px 0;
+    }
+
+    .cropper-actions {
+        gap: 8px;
+    }
+
+    .cropper-actions .btn {
+        flex: 1 1 45%; 
+        font-size: 0.9rem;
+        padding: 10px 5px;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .cropper-modal-content {
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .cropper-actions .btn {
+        flex: 1 1 100%; 
+        width: 100%;
+    }
+}

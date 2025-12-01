@@ -86,6 +86,165 @@
         .multi-select-dropdown {
             position: relative;
         }
+
+        #image-cropper-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .cropper-modal-content {
+            background-color: #ffffff;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            position: relative;
+            margin: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .cropper-body {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            min-height: 250px;
+            max-height: 60vh;
+            background-color: #f7f7f7;
+            margin: 15px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .cropper-body img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .cropper-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            width: 100%;
+            padding-bottom: 5px;
+        }
+
+        .cropper-actions .btn {
+            min-width: 110px;
+            white-space: nowrap;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #dde2e6;
+        }
+
+        .btn-primary {
+            background: #1a5d3d;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #14452f;
+        }
+
+        .close-modal-btn {
+            background: transparent;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            line-height: 1;
+            padding: 0 10px;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal-btn:hover {
+            color: #000;
+        }
+
+        @media (max-width: 768px) {
+            .cropper-modal-content {
+                width: 95%;
+                padding: 16px;
+                max-height: 85vh;
+            }
+
+            .modal-header h3 {
+                font-size: 1.2rem;
+            }
+
+            .cropper-body {
+                min-height: 200px;
+                max-height: 50vh;
+                margin: 10px 0;
+            }
+
+            .cropper-actions {
+                gap: 8px;
+            }
+
+            .cropper-actions .btn {
+                flex: 1 1 45%; 
+                font-size: 0.9rem;
+                padding: 10px 5px;
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cropper-modal-content {
+                border-radius: 16px;
+                padding: 14px;
+            }
+
+            .cropper-actions .btn {
+                flex: 1 1 100%; 
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body class="submit-page-body">
@@ -257,53 +416,106 @@
                 if (cropperModal) return;
                 cropperModal = document.createElement('div');
                 cropperModal.id = 'image-cropper-modal';
-                cropperModal.style.position = 'fixed'; cropperModal.style.left = '0'; cropperModal.style.top = '0'; cropperModal.style.width = '100%'; cropperModal.style.height = '100%'; cropperModal.style.background = 'rgba(0,0,0,0.6)'; cropperModal.style.zIndex = 9999; cropperModal.style.display = 'none';
+                
                 cropperModal.innerHTML = `
-                    <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:90%; max-width:900px; background:white; padding:18px; border-radius:8px;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                            <strong>Crop & Reposition</strong>
-                            <div>
-                                <button id="close-cropper-modal">Close</button>
-                                <button id="rotate-left-btn">⟲</button>
-                                <button id="rotate-right-btn">⟳</button>
-                                <button id="skip-crop-btn">Skip</button>
-                                <button id="apply-crop-btn">Apply</button>
-                            </div>
+                    <div class="cropper-modal-content">
+                        <div class="modal-header">
+                            <h3>Adjust Image</h3>
+                            <button class="close-modal-btn" id="close-cropper-modal">&times;</button>
                         </div>
-                        <div style="width:100%; height:60vh; display:flex; justify-content:center; align-items:center; overflow:hidden;">
-                            <img id="cropper-image" style="max-width:100%; max-height:100%; display:block;" />
+                        <div class="cropper-body">
+                            <img id="cropper-image" alt="Image to crop" />
+                        </div>
+                        <div class="cropper-actions">
+                            <button type="button" class="btn btn-secondary" id="rotate-left-btn">Rotate Left</button>
+                            <button type="button" class="btn btn-secondary" id="rotate-right-btn">Rotate Right</button>
+                            <button type="button" class="btn btn-secondary" id="skip-crop-btn">Skip</button>
+                            <button type="button" class="btn btn-primary" id="apply-crop-btn">Apply Crop</button>
                         </div>
                     </div>`;
+                
                 document.body.appendChild(cropperModal);
+                
                 cropperImageEl = document.getElementById('cropper-image');
+                
                 const closeCropBtn = document.getElementById('close-cropper-modal');
                 const applyCropBtn = document.getElementById('apply-crop-btn');
                 const skipCropBtn = document.getElementById('skip-crop-btn');
                 const rotateLeftBtn = document.getElementById('rotate-left-btn');
                 const rotateRightBtn = document.getElementById('rotate-right-btn');
-                if (closeCropBtn) closeCropBtn.addEventListener('click', async (e) => { e.preventDefault(); if (currentCropFile && currentCropPreview && currentCropIndex !== null) { closeCropperModal(); await continueUploadAfterCrop(currentCropFile, currentCropPreview, currentCropIndex); } });
-                if (skipCropBtn) skipCropBtn.addEventListener('click', async (e) => { e.preventDefault(); if (currentCropFile && currentCropPreview && currentCropIndex !== null) { closeCropperModal(); await continueUploadAfterCrop(currentCropFile, currentCropPreview, currentCropIndex); } });
-                if (applyCropBtn) applyCropBtn.addEventListener('click', async (e) => { e.preventDefault(); await applyCropAndUpload(); });
-                if (rotateLeftBtn) rotateLeftBtn.addEventListener('click', () => { if (cropperInstance) cropperInstance.rotate(-90); });
-                if (rotateRightBtn) rotateRightBtn.addEventListener('click', () => { if (cropperInstance) cropperInstance.rotate(90); });
-                cropperModal.addEventListener('click', async (e) => { if (e.target === cropperModal) { if (currentCropFile && currentCropPreview && currentCropIndex !== null) { closeCropperModal(); await continueUploadAfterCrop(currentCropFile, currentCropPreview, currentCropIndex); } } });
+                
+                if (closeCropBtn) closeCropBtn.addEventListener('click', async (e) => { 
+                    e.preventDefault(); 
+                    if (currentCropFile && currentCropPreview && currentCropIndex !== null) { 
+                        closeCropperModal(); 
+                        await continueUploadAfterCrop(currentCropFile, currentCropPreview, currentCropIndex); 
+                    } 
+                });
+                
+                if (skipCropBtn) skipCropBtn.addEventListener('click', async (e) => { 
+                    e.preventDefault(); 
+                    if (currentCropFile && currentCropPreview && currentCropIndex !== null) { 
+                        closeCropperModal(); 
+                        await continueUploadAfterCrop(currentCropFile, currentCropPreview, currentCropIndex); 
+                    } 
+                });
+                
+                if (applyCropBtn) applyCropBtn.addEventListener('click', async (e) => { 
+                    e.preventDefault(); 
+                    await applyCropAndUpload(); 
+                });
+                
+                if (rotateLeftBtn) rotateLeftBtn.addEventListener('click', () => { 
+                    if (cropperInstance) cropperInstance.rotate(-90); 
+                });
+                
+                if (rotateRightBtn) rotateRightBtn.addEventListener('click', () => { 
+                    if (cropperInstance) cropperInstance.rotate(90); 
+                });
+                
+                cropperModal.addEventListener('click', async (e) => { 
+                    if (e.target === cropperModal) { 
+                        if (currentCropFile && currentCropPreview && currentCropIndex !== null) { 
+                            closeCropperModal(); 
+                            await continueUploadAfterCrop(currentCropFile, currentCropPreview, currentCropIndex); 
+                        } 
+                    } 
+                });
             }
 
             async function openCropperModal(file, previewElement, index) {
                 if (!cropperModal) initCropperModal();
                 if (!cropperImageEl) return;
-                currentCropFile = file; currentCropIndex = index; currentCropPreview = previewElement;
+                
+                currentCropFile = file; 
+                currentCropIndex = index; 
+                currentCropPreview = previewElement;
+                
                 try {
                     const url = URL.createObjectURL(file);
                     cropperImageEl.src = url;
-                    cropperModal.style.display = 'block';
-                    if (cropperInstance) { try { cropperInstance.destroy(); } catch(e) {} cropperInstance = null; }
-                    const options = { viewMode: 1, autoCropArea: 0.8, movable: true, scalable: true, zoomable: true, responsive: true };
+                    
+                    cropperModal.style.display = 'flex';
+                    
+                    if (cropperInstance) { 
+                        try { cropperInstance.destroy(); } catch(e) {} 
+                        cropperInstance = null; 
+                    }
+                    
+                    const options = { 
+                        viewMode: 1, 
+                        autoCropArea: 0.8, 
+                        movable: true, 
+                        scalable: true, 
+                        zoomable: true, 
+                        responsive: true 
+                    };
+                    
                     if (index === 0) options.aspectRatio = 16/9;
+                    
                     cropperInstance = new Cropper(cropperImageEl, options);
                 } catch (e) {
                     console.warn('Could not open cropper', e);
-                    // fallback - upload original
                     await continueUploadAfterCrop(file, previewElement, index);
                 }
             }

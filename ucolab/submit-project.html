@@ -381,15 +381,15 @@
 
         <!-- Image Cropper Modal (moved out of success container so it can be used before submission) -->
         <div class="modal-overlay modal-hidden" id="image-cropper-modal">
-            <div class="modal-content" style="max-width: 900px; width: 90%;">
+            <div class="modal-content cropper-modal-content">
                 <div class="modal-header">
                     <h3>Crop & Reposition Image</h3>
                     <button class="close-modal-btn" id="close-cropper-modal">&times;</button>
                 </div>
-                <div class="modal-body" style="padding: 10px; text-align: center;">
-                    <img id="cropper-image" style="max-width: 100%; display: block; margin: 0 auto;">
+                <div class="modal-body cropper-body">
+                    <img id="cropper-image" src="" alt="Crop Preview">
                 </div>
-                <div class="modal-actions" style="display:flex; gap:12px; justify-content:center; padding-bottom: 16px;">
+                <div class="modal-actions cropper-actions">
                     <button id="rotate-left-btn" class="btn btn-secondary">Rotate Left</button>
                     <button id="rotate-right-btn" class="btn btn-secondary">Rotate Right</button>
                     <button id="apply-crop-btn" class="btn btn-primary">Apply Crop</button>

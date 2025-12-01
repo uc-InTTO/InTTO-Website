@@ -124,23 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                     } catch (e) { /* ignore migration errors */ }
-                    if (defaultIpData && defaultIpData.length > 0) {
-                        const applyDefault = confirm('No IP applications found in Firestore. Do you want to upload sample data?');
-                        if (applyDefault) {
-                            for (const ip of defaultIpData) {
-                                const { id, ...payload } = ip;
-                                payload.createdAt = firebase.firestore.Timestamp.now();
-                                payload.updatedAt = firebase.firestore.Timestamp.now();
-                                payload.keywords = Array.isArray(payload.keywords) ? payload.keywords : [];
-                                try {
-                                    await db.collection(IP_COLLECTION).add(payload);
-                                } catch (e) {
-                                    console.error('Seed failed: ', e);
-                                }
-                            }
-                            return; // onSnapshot will re-run after writes
-                        }
-                    }
                 }
                 renderIPs();
             }, (error) => {

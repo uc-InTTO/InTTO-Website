@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Load all bookings from Firebase
 async function loadBookings() {
   const CACHE_KEY = 'tbi_bookings';
-  const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+  const CACHE_EXPIRY = 5 * 60 * 500; // 5 minutes
   let cached = localStorage.getItem(CACHE_KEY);
   let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
   let now = Date.now();
@@ -642,7 +642,7 @@ window.completeBooking = async function(bookingId) {
     alert('Booking marked as completed!');
     loadBookings();
     // Auto-reload to reflect changes
-    setTimeout(() => location.reload(), 1000);
+    setTimeout(() => location.reload(), 500);
   } catch (error) {
     console.error('Error completing booking:', error);
     alert('Failed to complete booking.');
@@ -705,7 +705,7 @@ NEXT STEPS:
 We apologize for any inconvenience this may cause. You are welcome to submit a new booking request at your convenience.
 
 To book a new appointment:
-1. Visit our booking portal at: https://intto.uc-bcf.edu.ph/tbiAsses.html
+1. Visit our booking portal at: https://intto.uc-bcf.edu.ph/tbiassessment.html
 2. Select your preferred date and time slot
 3. Fill out the required information
 4. Submit your booking request

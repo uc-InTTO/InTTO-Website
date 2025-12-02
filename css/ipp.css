@@ -511,10 +511,12 @@ img {
 }
 
 .categories-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 25px;
     width: 100%;
+    margin: 0 auto;
 }
 
 .cat-card {
@@ -526,6 +528,8 @@ img {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    flex: 1 1 300px;
+    max-width: 350px;
 }
 
 .cat-card:hover {

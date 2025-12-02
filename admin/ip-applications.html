@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script type="module" src="js/auth-check.js"></script>
     <link rel="icon" href="/graphics/inttoFavicon.png" type="image/png">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
 </head>
 <body>
 
@@ -96,7 +101,7 @@
                     <button class="filter-btn" data-filter="Copyright">Copyright</button>
                     <button class="filter-btn" data-filter="Industrial Design">Industrial Design</button>
                     <button class="filter-btn" data-filter="Trademark">Trademark</button>
-                    <button class="filter-btn" data-filter="Other IP">Other IP</button>
+                    <button class="filter-btn" data-filter="Patent">Patent</button>
                 </div>
 
                 <div class="sort-container">
@@ -139,7 +144,6 @@
                             <option value="Utility Model">Utility Model</option>
                             <option value="Patent">Patent</option>
                             <option value="Industrial Design">Industrial Design</option>
-                            <option value="Other IP">Other IP</option>
                         </select>
                     </div>
 
@@ -149,11 +153,6 @@
                             <option value="filed">Filed</option>
                             <option value="granted">Granted</option>
                         </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ip-applicant">Applicant</label>
-                        <input type="text" id="ip-applicant" placeholder="Organization or primary applicant">
                     </div>
 
                     <div class="form-group">
@@ -175,21 +174,6 @@
                         <label for="ip-grant-date">Grant Date</label>
                         <input type="date" id="ip-grant-date" disabled>
                         <small>Only applicable if status is 'Granted'</small>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="ip-related-startup">Related Startup (optional)</label>
-                        <input type="text" id="ip-related-startup" placeholder="Optional - e.g. AgroTech Solutions">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="ip-description">Short Description (optional)</label>
-                        <textarea id="ip-description" rows="3" placeholder="Short summary of the IP (optional)"></textarea>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="ip-tags">Tags (comma-separated)</label>
-                        <input type="text" id="ip-tags" placeholder="IoT, Agriculture, Innovation">
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -218,7 +202,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
-        // Initialize compat Firebase and expose window.db for legacy non-module scripts
         const firebaseConfig = {
             apiKey: "AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE",
             authDomain: "uc-intto.firebaseapp.com",
@@ -232,8 +215,8 @@
             if (!firebase.apps || firebase.apps.length === 0) {
                 firebase.initializeApp(firebaseConfig);
             }
-        } catch (e) { /* ignore if already initialized */ }
-        try { window.db = window.db || firebase.firestore(); } catch (e) { /* ignore */ }
+        } catch (e) { }
+        try { window.db = window.db || firebase.firestore(); } catch (e) { }
     </script>
     <script src="js/ip-applications.js"></script>
 </body>

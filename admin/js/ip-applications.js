@@ -1,21 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Firestore collection for IP applications
     const IP_COLLECTION = 'ipApplications';
-    const defaultIpData = [
-        { id: 1, title: "Smart Irrigation Control System", status: "granted", type: "Utility Model", number: "UM-2023-001234", startup: "AgroTech Solutions", description: "An IoT-based automated irrigation control system using soil moisture sensors and weather data integration.", inventors: "Dr. Juan Dela Cruz, Eng. Maria Santos, Dr. Pedro Reyes", appDate: "2023-05-10", grantDate: "2024-08-20", keywords: ["Agriculture", "IoT", "Automation"] },
-        { id: 2, title: "UC InTTO Logo and Branding", status: "granted", type: "Trademark", number: "TM-2024-567890", startup: null, description: "Official Trademark registration for University of the Cordilleras Innovation and Technology Transfer Office logo and brand identity.", inventors: "UC Marketing Team", appDate: "2024-02-08", grantDate: "2024-07-15", keywords: ["Branding", "Logo"] },
-        { id: 3, title: "Telemedicine Mobile Application Interface", status: "filed", type: "Industrial Design", number: "ID-2024-912123", startup: "HealthHub PH", description: "Unique user interface design for a mobile telemedicine application focused on rural healthcare access.", inventors: "Sarah Bautista, HealthHub PH Team", appDate: "2024-03-22", grantDate: null, keywords: ["UI/UX", "Healthcare", "Mobile"] },
-        { id: 4, title: "Community Safety Algorithm and System", status: "filed", type: "Copyright", number: "CP-2024-445566", startup: "SafeCity Monitor", description: "Proprietary algorithm for real-time community safety monitoring and incident prediction.", inventors: "Prof. Anna Garcia, SafeCity Monitor Dev Team", appDate: "2024-06-04", grantDate: null, keywords: ["Software", "AI", "Safety"] },
-        { id: 5, title: "Cordillera Traditional Pattern Database", status: "granted", type: "Other IP", number: "CR-2023-778899", startup: "Cordillera Crafts", description: "Coordinated digital database and vectorization of traditional Cordilleran weaving patterns and designs with cultural protocols.", inventors: "Dr. Lirio Baguio, Cultural Heritage Team", appDate: "2023-10-12", grantDate: "2024-12-08", keywords: ["Cultural Heritage", "Database", "Traditional Knowledge"] }
-    ];
-
-    // Firestore listener unsubscribe
+    
     let unsubscribe = null;
-
     let ipData = [];
     let editingIpId = null;
 
-    // --- DOM Elements ---
     const ipList = document.querySelector('.ip-list');
     const searchInput = document.getElementById('search-input');
     const statusFilters = document.querySelector('.status-filters');
@@ -34,19 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitIpBtn = document.getElementById('submit-ip-btn');
     const ipTitleInput = document.getElementById('ip-title');
     const ipTypeSelect = document.getElementById('ip-type');
-    const ipApplicantInput = document.getElementById('ip-applicant');
     const ipNumberInput = document.getElementById('ip-number');
     const ipAppDateInput = document.getElementById('ip-app-date');
-    const ipRelatedStartupInput = document.getElementById('ip-related-startup');
-    const ipDescriptionTextarea = document.getElementById('ip-description');
     const ipInventorsInput = document.getElementById('ip-inventors');
-    const ipTagsInput = document.getElementById('ip-tags');
 
     const grantedCountEl = document.getElementById('granted-count');
     const filedCountEl = document.getElementById('filed-count');
     const totalIpCountEl = document.getElementById('total-ip-count');
 
-    // --- Function to Update Stat Cards ---
     const updateStats = () => {
         const grantedCount = ipData.filter(ip => ip.status === 'granted').length;
         const filedCount = ipData.filter(ip => ip.status === 'filed').length;
@@ -64,13 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
     }
 
-    /**
-     * Load IP applications from Firestore in real-time
-     */
     function loadIPs() {
-        // Remove existing listener
         if (typeof unsubscribe === 'function') {
-            try { unsubscribe(); } catch (e) { /* ignore */ }
+            try { unsubscribe(); } catch (e) { }
             unsubscribe = null;
         }
 
@@ -86,21 +66,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         id: doc.id,
                         title: raw.title || 'Untitled',
                         status: raw.status || 'filed',
-                        type: raw.type || 'Other IP',
+                        type: raw.type || 'Patent',
                         number: raw.number || '',
-                        startup: raw.startup || null,
-                        description: raw.description || '',
                         inventors: raw.inventors || '',
                         appDate: raw.appDate || '',
                         grantDate: raw.grantDate || null,
-                        keywords: Array.isArray(raw.keywords) ? raw.keywords : [],
                         createdAt: raw.createdAt || null,
                         updatedAt: raw.updatedAt || null
                     });
                 });
-                // If Firestore has no data, ask whether to seed it with default data
+                
                 if (ipData.length === 0) {
-                    // If there's localStorage data from previous versions, offer to migrate it
                     try {
                         const STORAGE_KEY = 'ucInttoIpData';
                         const localDataRaw = localStorage.getItem(STORAGE_KEY);
@@ -109,10 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             if (migrate) {
                                 const localData = JSON.parse(localDataRaw || '[]');
                                 for (const ip of localData) {
-                                    const { id, ...payload } = ip;
+                                    const { id, applicant, startup, description, keywords, ...payload } = ip;
                                     payload.createdAt = firebase.firestore.Timestamp.now();
                                     payload.updatedAt = firebase.firestore.Timestamp.now();
-                                    payload.keywords = Array.isArray(payload.keywords) ? payload.keywords : [];
                                     try {
                                         await db.collection(IP_COLLECTION).add(payload);
                                     } catch (e) {
@@ -120,10 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
                                 }
                                 localStorage.removeItem(STORAGE_KEY);
-                                return; // onSnapshot will re-run after writes
+                                return;
                             }
                         }
-                    } catch (e) { /* ignore migration errors */ }
+                    } catch (e) { }
                 }
                 renderIPs();
             }, (error) => {
@@ -131,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // --- Main Render Function ---
     const renderIPs = () => {
         updateStats();
 
@@ -142,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let filteredData = ipData.filter(ip => {
             const matchesStatus = activeStatus === 'all' || ip.status === activeStatus;
             const matchesType = activeType === 'all' || ip.type === activeType;
-            const matchesSearch = ip.title.toLowerCase().includes(searchTerm) || ip.description.toLowerCase().includes(searchTerm) || ip.inventors.toLowerCase().includes(searchTerm);
+            const matchesSearch = ip.title.toLowerCase().includes(searchTerm) || ip.inventors.toLowerCase().includes(searchTerm);
             return matchesStatus && matchesType && matchesSearch;
         });
 
@@ -171,20 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fa-regular fa-file-alt ip-icon"></i>
                 <div class="ip-details">
                     <h3>${ip.title}</h3>
-                    <p class="description">${ip.description}</p>
                     <div class="ip-tags">
                         <span class="tag tag-${ip.status}">${ip.status.charAt(0).toUpperCase() + ip.status.slice(1)}</span>
                         <span class="tag tag-type">${ip.type}</span>
                         <span class="tag tag-number">${ip.number}</span>
-                        ${ip.startup ? `<span class="tag tag-startup">${ip.startup}</span>` : ''}
                     </div>
                     <div class="ip-meta">
                         <p><strong>Inventors:</strong> ${ip.inventors}</p>
                         <p><strong>Application Date:</strong> ${ip.appDate}</p>
                         ${ip.grantDate ? `<p><strong>Grant Date:</strong> ${ip.grantDate}</p>` : ''}
-                    </div>
-                    <div class="ip-keywords">
-                        ${ip.keywords.map(kw => `<span class="tag">${kw}</span>`).join('')}
                     </div>
                 </div>
                 <div class="ip-actions">
@@ -227,13 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ipTitleInput.value = ip.title;
         ipStatusSelect.value = ip.status;
         ipTypeSelect.value = ip.type;
-        ipApplicantInput.value = ip.applicant || '';
         ipNumberInput.value = ip.number;
         ipAppDateInput.value = ip.appDate;
-        ipRelatedStartupInput.value = ip.startup || '';
-        ipDescriptionTextarea.value = ip.description;
         ipInventorsInput.value = ip.inventors;
-        ipTagsInput.value = ip.keywords.join(', ');
+        
         if (ip.status === 'granted') {
             ipGrantDateInput.disabled = false;
             ipGrantDateInput.value = ip.grantDate;
@@ -251,7 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!confirm('Are you sure you want to delete this IP application?')) return;
         try {
             await db.collection(IP_COLLECTION).doc(String(id)).delete();
-            // local snapshot will update automatically; optionally optimistically update
             ipData = ipData.filter(item => item.id !== id);
             renderIPs();
         } catch (error) {
@@ -281,14 +246,15 @@ document.addEventListener('DOMContentLoaded', () => {
     ipForm.addEventListener('submit', async e => {
         e.preventDefault();
         const formData = {
-            title: ipTitleInput.value, status: ipStatusSelect.value, type: ipTypeSelect.value,
-            applicant: ipApplicantInput.value || null, number: ipNumberInput.value, appDate: ipAppDateInput.value,
+            title: ipTitleInput.value,
+            status: ipStatusSelect.value,
+            type: ipTypeSelect.value,
+            number: ipNumberInput.value,
+            appDate: ipAppDateInput.value,
             grantDate: ipStatusSelect.value === 'granted' ? ipGrantDateInput.value : null,
-            startup: ipRelatedStartupInput.value || null, description: ipDescriptionTextarea.value,
-            inventors: ipInventorsInput.value || '', keywords: ipTagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
+            inventors: ipInventorsInput.value || ''
         };
         try {
-            // Prepare Firestore data
             formData.updatedAt = firebase.firestore.Timestamp.now();
             if (editingIpId !== null) {
                 await db.collection(IP_COLLECTION).doc(String(editingIpId)).update(formData);
@@ -319,10 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     sortDropdown.addEventListener('change', renderIPs);
 
-    // Load IPs from Firestore (will render via onSnapshot)
     loadIPs();
 
-    // Cleanup Firestore listener on unload
     window.addEventListener('beforeunload', () => {
         if (typeof unsubscribe === 'function') {
             try { unsubscribe(); } catch (e) { }

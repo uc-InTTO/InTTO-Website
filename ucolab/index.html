@@ -7,6 +7,27 @@
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" href="/graphics/inttoFavicon.png" type="image/png">
+    <style>
+        /* Apply Poppins to all text elements specifically */
+        body, h1, h2, h3, h4, h5, h6, p, a, span, input, button, select, div, label, li, td, th {
+            font-family: 'Poppins', sans-serif !important;
+        }
+        
+        /* Explicitly force Font Awesome fonts for icon classes to prevent Poppins override */
+        .fas, .fa-solid {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900;
+        }
+        .far, .fa-regular {
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 400;
+        }
+        .fab, .fa-brands {
+            font-family: "Font Awesome 6 Brands" !important;
+            font-weight: 400;
+        }
+    </style>
 </head>
 <body>
     
@@ -157,8 +178,16 @@
                 </div>
                 <div class="sort-by-container">
                     <div class="custom-dropdown" id="filter-sort" data-filter="sort">
-                        <button class="dropdown-toggle" id="sort-icon-btn" aria-label="Sort projects"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg> <span class="visually-hidden">Newest</span> </button>
+                        <button class="dropdown-toggle"> 
+                            <span>Newest</span> 
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg> 
+                        </button>
                         <ul class="dropdown-menu"> 
+                            <li data-value="all">All</li>
+                            <li data-value="incubated">Incubated</li>
+                            <li data-value="unincubated">Unincubated</li>
                             <li data-value="newest">Newest</li> 
                             <li data-value="oldest">Oldest</li> 
                         </ul>

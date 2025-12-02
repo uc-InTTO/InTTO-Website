@@ -413,7 +413,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     logo: data.logo,
                     userId: data.userId || data.founderEmail,
                     views: data.views || 0,
-                    inquiries: data.inquiries || 0
+                    inquiries: data.inquiries || 0,
+                    // UPDATED: Read incubationStatus from data, default to 'not-incubated'
+                    incubationStatus: data.incubationStatus || 'not-incubated',
+                    status: data.status || 'active'
                 });
             });
             filterProjects();
@@ -434,12 +437,23 @@ document.addEventListener('DOMContentLoaded', function() {
             type: typeFilter?.querySelector('span:not(.visually-hidden)').textContent || 'All Types'
         };
         
-        const sortByElement = sortFilter?.querySelector('span:not(.visually-hidden)');
-        const sortBy = sortByElement ? sortByElement.textContent : 'Newest';
+        // UPDATED: Simply look for a 'span', as we removed the visually-hidden class
+        const sortByElement = sortFilter?.querySelector('button span');
+        const sortBy = sortByElement ? sortByElement.textContent.trim() : 'Newest';
 
         currentFilteredProjects = allProjectsData.filter(project => {
             if (!project) return false;
             
+            // UPDATED Logic: Filtering based on incubationStatus
+            if (sortBy === 'Incubated') {
+                // Return FALSE to hide if status is NOT incubated
+                if ((project.incubationStatus || '').toLowerCase() !== 'incubated') return false;
+            }
+            if (sortBy === 'Unincubated') {
+                // Return FALSE to hide if status IS incubated
+                if ((project.incubationStatus || '').toLowerCase() === 'incubated') return false;
+            }
+
             const searchMatch = (project.title?.toLowerCase().includes(filters.search) || project.shortDescription?.toLowerCase().includes(filters.search));
             
             const filterInd = filters.industry.trim();
@@ -492,9 +506,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         currentFilteredProjects.sort((a, b) => {
             switch (sortBy) {
+                case 'Oldest': return 0; 
                 case 'Most Viewed': return (b.views || 0) - (a.views || 0);
                 case 'Most Inquiries': return (b.inquiries || 0) - (a.inquiries || 0);
-                case 'Newest': default: return 0;
+                case 'Incubated':
+                case 'Unincubated':
+                case 'All':
+                case 'Newest': 
+                default: return 0;
             }
         });
 
@@ -672,7 +691,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             menu.querySelectorAll('li').forEach(item => {
                 item.addEventListener('click', () => {
-                    const spanToUpdate = toggle.querySelector('span:not(.visually-hidden)');
+                    // UPDATED: Look for ANY span, as visually-hidden was removed
+                    const spanToUpdate = toggle.querySelector('span');
                     if (spanToUpdate) spanToUpdate.textContent = item.textContent;
                     menu.classList.remove('show');
                     filterProjects();

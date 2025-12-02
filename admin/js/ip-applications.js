@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ipTitleInput.value = ip.title;
         ipStatusSelect.value = ip.status;
         ipTypeSelect.value = ip.type;
-        ipApplicantInput.value = ip.inventors;
+        ipApplicantInput.value = ip.applicant || '';
         ipNumberInput.value = ip.number;
         ipAppDateInput.value = ip.appDate;
         ipRelatedStartupInput.value = ip.startup || '';
@@ -282,10 +282,10 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const formData = {
             title: ipTitleInput.value, status: ipStatusSelect.value, type: ipTypeSelect.value,
-            number: ipNumberInput.value, appDate: ipAppDateInput.value,
+            applicant: ipApplicantInput.value || null, number: ipNumberInput.value, appDate: ipAppDateInput.value,
             grantDate: ipStatusSelect.value === 'granted' ? ipGrantDateInput.value : null,
             startup: ipRelatedStartupInput.value || null, description: ipDescriptionTextarea.value,
-            inventors: ipInventorsInput.value, keywords: ipTagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
+            inventors: ipInventorsInput.value || '', keywords: ipTagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
         };
         try {
             // Prepare Firestore data

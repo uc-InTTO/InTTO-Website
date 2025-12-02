@@ -705,7 +705,7 @@ NEXT STEPS:
 We apologize for any inconvenience this may cause. You are welcome to submit a new booking request at your convenience.
 
 To book a new appointment:
-1. Visit our booking portal at: https://intto.uc-bcf.edu.ph/tbiassessment.html
+1. Visit our booking portal at: https://intto.uc-bcf.edu.ph/tbi-assessment.html
 2. Select your preferred date and time slot
 3. Fill out the required information
 4. Submit your booking request

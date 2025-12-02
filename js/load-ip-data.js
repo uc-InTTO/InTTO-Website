@@ -48,12 +48,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Update category cards
         updateCategoryCards(copyrightData.length, trademarkData.length, utilityData.length, patentData.length, industrialData.length);
 
-        // Update modal record counts
-        document.querySelector('#copyright-modal .modal-title p').textContent = `${copyrightData.length} records found in database`;
-        document.querySelector('#trademark-modal .modal-title p').textContent = `${trademarkData.length} records found in database`;
-        document.querySelector('#utility-modal .modal-title p').textContent = `${utilityData.length} records found in database`;
-        document.querySelector('#patent-modal .modal-title p').textContent = `${patentData.length} records found in database`;
-        document.querySelector('#industrial-modal .modal-title p').textContent = `${industrialData.length} records found in database`;
+        // Update modal titles and subtitles
+        document.querySelector('#copyright-modal .modal-title h2').textContent = `Copyright Registrations (${copyrightData.length} of ${copyrightData.length} Items)`;
+        document.querySelector('#trademark-modal .modal-title h2').textContent = `Trademark Registrations (${trademarkData.length} of ${trademarkData.length} Items)`;
+        document.querySelector('#utility-modal .modal-title h2').textContent = `Utility Model Registrations (${utilityData.length} of ${utilityData.length} Items)`;
+        document.querySelector('#patent-modal .modal-title h2').textContent = `Patent Registrations (${patentData.length} of ${patentData.length} Items)`;
+        document.querySelector('#industrial-modal .modal-title h2').textContent = `Industrial Design Registrations (${industrialData.length} of ${industrialData.length} Items)`;
 
         // Populate tables
         populateCopyrightTable(copyrightData);

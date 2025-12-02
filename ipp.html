@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="/graphics/inttoFavicon.png" type="image/png">
 </head>
 <body>
     <div class="main-wrapper">
@@ -228,18 +229,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
-                    <div class="modal-icon-title">
-                        <i class="fa-regular fa-copyright"></i>
-                        <h2>Copyright Registrations</h2>
-                    </div>
-                    <p>12 records found in database</p>
+                    <h2>Copyright Registrations (12 of 12 Items)</h2>
+                    <p>Complete list of copyright registrations</p>
                 </div>
                 <button class="close-modal" onclick="closeModal('copyright-modal')">×</button>
             </div>
             <div class="modal-body">
                 <div class="modal-search">
                     <i class="fa fa-search"></i>
-                    <input type="text" id="copyrightSearch" placeholder="Search by title or author..." onkeyup="filterTable('copyrightSearch', 'copyrightTable')">
+                    <input type="text" id="copyrightSearch" placeholder="Search by certificate, title, authors, or date..." onkeyup="filterTable('copyrightSearch', 'copyrightTable')">
                 </div>
                 
                 <div class="table-responsive">
@@ -247,25 +245,14 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%">#</th>
-                                <th style="width: 20%">Certificate #</th>
+                                <th style="width: 20%">IPOPHIL CERTIFICATE #</th>
                                 <th style="width: 35%">Title</th>
                                 <th style="width: 25%">Authors</th>
-                                <th style="width: 15%">Reg. Date</th>
+                                <th style="width: 15%">Registration Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>1</td><td>N-2021-01689</td><td>TARAKI: A TOURIST ATTRACTION REIMAGINED APPLICATION</td><td>Ryan Christian M. Anyayahan et al. (CITCS)</td><td>10/19/2021</td></tr>
-                            <tr><td>2</td><td>I-2021-01696</td><td>TATAK UC</td><td>Glency R. Braga, Perlie O. Natividad (UC-CCP)</td><td>10/19/2021</td></tr>
-                            <tr><td>3</td><td>N-2021-01701</td><td>FERVENTION: A DIGITALIZED PLATFORM FOR INVENTORS</td><td>Arianne Nicole D. Labioto, Kose Bryce S. Laranio (CITCS)</td><td>10/19/2021</td></tr>
-                            <tr><td>4</td><td>2022-19 2166-N</td><td>FORENSIC HUB ONLINE LEARNING</td><td>Joshua Basa, Bethany D. Balaso, Thea G. Pamenda</td><td>06/06/2022</td></tr>
-                            <tr><td>5</td><td>2022-19 2167-F</td><td>KINAKA THEME</td><td>Wyll Charles L. Olivera (CITCS)</td><td>06/13/2022</td></tr>
-                            <tr><td>6</td><td>2022-19 2168-H</td><td>KINAKA</td><td>Earl Janssen G. Abad et al. (CITCS)</td><td>06/13/2022</td></tr>
-                            <tr><td>7</td><td>2022-1127</td><td>DADDY BEN: THE STORY OF THE FOUNDER</td><td>Benjamin C. Salvosa III (UC)</td><td>10/19/2022</td></tr>
-                            <tr><td>8</td><td>2023-11 1891-N</td><td>KINAKA VIRTUAL REALITY (VR)</td><td>Earl Janssen G. Abad et al. (CITCS)</td><td>05/16/2023</td></tr>
-                            <tr><td>9</td><td>2023-1143</td><td>MEDALERT: A Medical Assistance Application</td><td>Margie C. Nardo, Jheric M. Rosado (CITCS)</td><td>06/29/2023</td></tr>
-                            <tr><td>10</td><td>2024-067</td><td>POLYTECH: A DIGITALIZED POLYGRAPH TOOL</td><td>Eljane May P. Aban (CCJE)</td><td>03/18/2024</td></tr>
-                            <tr><td>11</td><td>Transfer Cert</td><td>FEEDMIX: A MOBILE APPLICATION</td><td>Sharencor D. Bombajada, Agnes Navarro</td><td>June 26, 2024</td></tr>
-                            <tr><td>12</td><td>2024-1128</td><td>LapiDAP: Augmented Reality for Instruments</td><td>Lei Arlen Jil P. Cague et al. (CITCS)</td><td>June 26, 2024</td></tr>
+                            <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading copyright registrations...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -277,18 +264,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
-                    <div class="modal-icon-title">
-                        <i class="fa-solid fa-tag"></i>
-                        <h2>Trademark Registrations</h2>
-                    </div>
-                    <p>4 records found in database</p>
+                    <h2>Trademark Registrations (4 of 4 Items)</h2>
+                    <p>Complete list of trademark registrations</p>
                 </div>
                 <button class="close-modal" onclick="closeModal('trademark-modal')">×</button>
             </div>
             <div class="modal-body">
                 <div class="modal-search">
                     <i class="fa fa-search"></i>
-                    <input type="text" id="trademarkSearch" placeholder="Search..." onkeyup="filterTable('trademarkSearch', 'trademarkTable')">
+                    <input type="text" id="trademarkSearch" placeholder="Search by registration number, title, or date..." onkeyup="filterTable('trademarkSearch', 'trademarkTable')">
                 </div>
                 
                 <div class="table-responsive">
@@ -298,14 +282,11 @@
                                 <th style="width: 10%">#</th>
                                 <th style="width: 30%">IPOPHIL Reg #</th>
                                 <th style="width: 40%">Title</th>
-                                <th style="width: 20%">Reg. Date</th>
+                                <th style="width: 20%">Registration Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>1</td><td>4/2022/520445</td><td>IMAHE LABS</td><td>11/07/2022</td></tr>
-                            <tr><td>2</td><td>4/2023/00513699</td><td>SUNSHARE</td><td>8/10/2023</td></tr>
-                            <tr><td>3</td><td>4/2023/00520276</td><td>UNIVERSITY OF THE CORDILLERAS</td><td>02/22/2024</td></tr>
-                            <tr><td>4</td><td>4/2023/00520285</td><td>YESUCANI</td><td>10/8/2023</td></tr>
+                            <tr><td colspan="4" style="text-align: center; padding: 20px;">Loading trademark registrations...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -317,18 +298,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
-                    <div class="modal-icon-title">
-                        <i class="fa-regular fa-lightbulb"></i>
-                        <h2>Utility Model Registrations</h2>
-                    </div>
-                    <p>3 records found in database</p>
+                    <h2>Utility Model Registrations (3 of 3 Items)</h2>
+                    <p>Complete list of utility model registrations</p>
                 </div>
                 <button class="close-modal" onclick="closeModal('utility-modal')">×</button>
             </div>
             <div class="modal-body">
                 <div class="modal-search">
                     <i class="fa fa-search"></i>
-                    <input type="text" id="utilitySearch" placeholder="Search..." onkeyup="filterTable('utilitySearch', 'utilityTable')">
+                    <input type="text" id="utilitySearch" placeholder="Search by registration number, title, maker, or date..." onkeyup="filterTable('utilitySearch', 'utilityTable')">
                 </div>
                 
                 <div class="table-responsive">
@@ -336,16 +314,14 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%">#</th>
-                                <th style="width: 20%">IPOPHIL Reg</th>
+                                <th style="width: 20%">IPOPHIL Reg #</th>
                                 <th style="width: 30%">Title</th>
                                 <th style="width: 30%">Maker</th>
-                                <th style="width: 15%">Reg. Date</th>
+                                <th style="width: 15%">Registration Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr><td>1</td><td>2017/050329</td><td>Fingerprint Running Box</td><td>Depasua, Xenianda Martinez (CCJE)</td><td>9/16/2020</td></tr>
-                            <tr><td>2</td><td>2018/050052</td><td>Portable Traffic Light</td><td>Opiano, Marlon Ortega, Judith</td><td>3/10/2021</td></tr>
-                            <tr><td>3</td><td>2018/050333</td><td>Mobile and Fluorescent Detector</td><td>Palcalawa, Ariel Nimo Martinez (CCJE)</td><td>8/3/2020</td></tr>
+                            <tr><td colspan="5" style="text-align: center; padding: 20px;">Loading utility model registrations...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -357,18 +333,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
-                    <div class="modal-icon-title">
-                        <i class="fa-solid fa-scroll"></i>
-                        <h2>Patent Registrations</h2>
-                    </div>
-                    <p>0 records found in database</p>
+                    <h2>Patent Registrations (0 of 0 Items)</h2>
+                    <p>Complete list of patent registrations</p>
                 </div>
                 <button class="close-modal" onclick="closeModal('patent-modal')">×</button>
             </div>
             <div class="modal-body">
                 <div class="modal-search">
                     <i class="fa fa-search"></i>
-                    <input type="text" id="patentSearch" placeholder="Search..." onkeyup="filterTable('patentSearch', 'patentTable')">
+                    <input type="text" id="patentSearch" placeholder="Search by registration number, title, inventor, or date..." onkeyup="filterTable('patentSearch', 'patentTable')">
                 </div>
                 
                 <div class="table-responsive">
@@ -376,10 +349,10 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%">#</th>
-                                <th style="width: 20%">IPOPHIL Reg</th>
+                                <th style="width: 20%">IPOPHIL Reg #</th>
                                 <th style="width: 30%">Title</th>
                                 <th style="width: 30%">Inventor</th>
-                                <th style="width: 15%">Reg. Date</th>
+                                <th style="width: 15%">Registration Date</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -395,18 +368,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
-                    <div class="modal-icon-title">
-                        <i class="fa-solid fa-pen-ruler"></i>
-                        <h2>Industrial Design Registrations</h2>
-                    </div>
-                    <p>0 records found in database</p>
+                    <h2>Industrial Design Registrations (0 of 0 Items)</h2>
+                    <p>Complete list of industrial design registrations</p>
                 </div>
                 <button class="close-modal" onclick="closeModal('industrial-modal')">×</button>
             </div>
             <div class="modal-body">
                 <div class="modal-search">
                     <i class="fa fa-search"></i>
-                    <input type="text" id="industrialSearch" placeholder="Search..." onkeyup="filterTable('industrialSearch', 'industrialTable')">
+                    <input type="text" id="industrialSearch" placeholder="Search by registration number, title, designer, or date..." onkeyup="filterTable('industrialSearch', 'industrialTable')">
                 </div>
                 
                 <div class="table-responsive">
@@ -414,10 +384,10 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%">#</th>
-                                <th style="width: 20%">IPOPHIL Reg</th>
+                                <th style="width: 20%">IPOPHIL Reg #</th>
                                 <th style="width: 30%">Title</th>
                                 <th style="width: 30%">Designer</th>
-                                <th style="width: 15%">Reg. Date</th>
+                                <th style="width: 15%">Registration Date</th>
                             </tr>
                         </thead>
                         <tbody>

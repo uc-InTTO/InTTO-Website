@@ -892,6 +892,7 @@ body {
   margin: 0 0 12px 0;
   line-height: 1.4;
   flex-shrink: 0;
+  color: black;
 }
 
 .news-desc {

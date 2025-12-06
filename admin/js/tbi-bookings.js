@@ -22,6 +22,13 @@ let allBookings = [];
 let filteredBookings = [];
 let currentBookingId = null;
 let closedSchedules = [];
+let affectedBookingsForReschedule = [];
+let pendingClosureData = null;
+let rescheduleCalendarDate = new Date();
+let selectedRescheduleDate = null;
+let selectedRescheduleTime = null;
+let currentRescheduleBookingIndex = null;
+let temporaryAssignments = []; // Track slots assigned during current reschedule session
 
 // Time slot display mapping
 const timeSlotDisplay = {
@@ -44,21 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load all bookings from Firebase
 async function loadBookings() {
-  const CACHE_KEY = 'tbi_bookings';
-  const CACHE_EXPIRY = 5 * 60 * 500; // 5 minutes
-  let cached = localStorage.getItem(CACHE_KEY);
-  let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
-  let now = Date.now();
-
-  if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-    // Use cached value
-    allBookings = JSON.parse(cached);
-    filteredBookings = [...allBookings];
-    renderBookings();
-    updateStats();
-    return;
-  }
-
   try {
     const bookingsRef = collection(db, 'tbiBookings');
     const q = query(bookingsRef, orderBy('createdAt', 'desc'));
@@ -71,10 +63,18 @@ async function loadBookings() {
         ...doc.data()
       });
     });
-    
-    // Cache result
-    localStorage.setItem(CACHE_KEY, JSON.stringify(allBookings));
-    localStorage.setItem(CACHE_KEY + '_time', now);
+
+    // Sort by date (descending - newest dates first) then by created date
+    allBookings.sort((a, b) => {
+      // First sort by date (descending)
+      const dateCompare = new Date(b.date) - new Date(a.date);
+      if (dateCompare !== 0) return dateCompare;
+      
+      // If dates are the same, sort by created date (oldest first for same day)
+      const aCreated = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+      const bCreated = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+      return aCreated - bCreated;
+    });
 
     filteredBookings = [...allBookings];
     renderBookings();
@@ -198,6 +198,21 @@ function setupEventListeners() {
   // Close Day form
   document.getElementById('closeDayForm').addEventListener('submit', handleCloseDay);
   
+  // Manual Reschedule Modal
+  document.getElementById('closeManualRescheduleModal')?.addEventListener('click', closeManualRescheduleModal);
+  document.getElementById('cancelManualReschedule')?.addEventListener('click', closeManualRescheduleModal);
+  document.getElementById('confirmAllReschedules')?.addEventListener('click', confirmAllReschedules);
+  
+  // Reschedule Calendar Navigation
+  document.getElementById('prevMonthReschedule')?.addEventListener('click', () => {
+    rescheduleCalendarDate.setMonth(rescheduleCalendarDate.getMonth() - 1);
+    renderRescheduleCalendar();
+  });
+  document.getElementById('nextMonthReschedule')?.addEventListener('click', () => {
+    rescheduleCalendarDate.setMonth(rescheduleCalendarDate.getMonth() + 1);
+    renderRescheduleCalendar();
+  });
+  
   // Close modals on outside click
   document.getElementById('rescheduleModal').addEventListener('click', (e) => {
     if (e.target.id === 'rescheduleModal') closeRescheduleModal();
@@ -207,6 +222,9 @@ function setupEventListeners() {
   });
   document.getElementById('closeDayModal').addEventListener('click', (e) => {
     if (e.target.id === 'closeDayModal') closeCloseDayModal();
+  });
+  document.getElementById('manualRescheduleModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'manualRescheduleModal') closeManualRescheduleModal();
   });
   
   // Set minimum date for reschedule to tomorrow
@@ -246,6 +264,18 @@ function applyFilters() {
     }
     
     return true;
+  });
+
+  // Sort filtered bookings by date (descending - newest dates first) then by created date
+  filteredBookings.sort((a, b) => {
+    // First sort by date (descending)
+    const dateCompare = new Date(b.date) - new Date(a.date);
+    if (dateCompare !== 0) return dateCompare;
+    
+    // If dates are the same, sort by created date (oldest first for same day)
+    const aCreated = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+    const bCreated = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+    return aCreated - bCreated;
   });
   
   renderBookings();
@@ -509,15 +539,44 @@ async function handleCloseDay(e) {
   submitBtn.textContent = 'Processing...';
   
   try {
-    // Save to Firebase
-    const closedRef = collection(db, 'closedSchedules');
-    await addDoc(closedRef, {
-      type: closeType,
-      date: closeDate,
-      timeSlots: timeSlots,
-      reason: closeReason,
-      createdAt: Timestamp.now()
+    // Check for existing bookings on this date/time
+    const affectedBookings = allBookings.filter(booking => {
+      if (booking.date !== closeDate) return false;
+      if (booking.status === 'cancelled' || booking.status === 'completed') return false;
+      
+      // For full-day closure
+      if (closeType === 'full-day') return true;
+      
+      // For specific hours closure
+      if (closeType === 'specific-hours' && timeSlots.includes(booking.timeSlot)) return true;
+      
+      return false;
     });
+    
+    // If there are affected bookings, show manual reschedule modal
+    if (affectedBookings.length > 0) {
+      pendingClosureData = {
+        type: closeType,
+        date: closeDate,
+        timeSlots: timeSlots,
+        reason: closeReason
+      };
+      
+      affectedBookingsForReschedule = affectedBookings;
+      
+      // Close current modal
+      closeCloseDayModal();
+      
+      // Open manual reschedule modal
+      openManualRescheduleModal();
+      
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Confirm Closure';
+      return;
+    }
+    
+    // No affected bookings - proceed with closure
+    await saveScheduleClosure(closeType, closeDate, timeSlots, closeReason);
     
     alert('Schedule closed successfully!');
     loadClosedSchedules();
@@ -530,6 +589,437 @@ async function handleCloseDay(e) {
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Confirm Closure';
+  }
+}
+
+// Save schedule closure to Firebase
+async function saveScheduleClosure(type, date, timeSlots, reason) {
+  const closedRef = collection(db, 'closedSchedules');
+  await addDoc(closedRef, {
+    type: type,
+    date: date,
+    timeSlots: timeSlots,
+    reason: reason,
+    createdAt: Timestamp.now()
+  });
+}
+
+// Open manual reschedule modal
+function openManualRescheduleModal() {
+  const modal = document.getElementById('manualRescheduleModal');
+  const container = document.getElementById('affectedBookingsList');
+  
+  // Reset calendar to current month
+  rescheduleCalendarDate = new Date();
+  selectedRescheduleDate = null;
+  selectedRescheduleTime = null;
+  temporaryAssignments = []; // Clear temporary assignments when opening modal
+  
+  // Render calendar
+  renderRescheduleCalendar();
+  
+  // Render affected bookings
+  container.innerHTML = affectedBookingsForReschedule.map((booking, index) => `
+    <div class="affected-booking-item" data-booking-id="${booking.id}" data-index="${index}">
+      <div class="booking-current-info">
+        <h4>${booking.fullName}</h4>
+        <div class="booking-info-grid">
+          <div class="booking-info-item">
+            <strong>Service:</strong>
+            <span>${booking.serviceType || 'TBI Assessment'}</span>
+          </div>
+          <div class="booking-info-item">
+            <strong>Current:</strong>
+            <span>${formatDate(booking.date)} at ${timeSlotDisplay[booking.timeSlot]}</span>
+          </div>
+          <div class="booking-info-item">
+            <strong>Project:</strong>
+            <span>${booking.projectName || '-'}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div id="assignedSchedule_${index}" class="booking-assigned-schedule" style="display: none;">
+        <h5><i class="fa-solid fa-calendar-check"></i> New Schedule Assigned</h5>
+        <div class="assigned-info">
+          <div><strong>Date:</strong> <span id="assignedDate_${index}"></span></div>
+          <div><strong>Time:</strong> <span id="assignedTime_${index}"></span></div>
+        </div>
+        <button type="button" class="btn-reassign" onclick="reassignBooking(${index})">
+          <i class="fa-solid fa-repeat"></i> Change Schedule
+        </button>
+      </div>
+      
+      <button type="button" class="btn-primary" style="width: 100%; margin-top: 10px;" 
+              id="assignBtn_${index}" onclick="startAssigning(${index})">
+        <i class="fa-solid fa-calendar-plus"></i> Assign New Schedule
+      </button>
+    </div>
+  `).join('');
+  
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+// Render reschedule calendar
+function renderRescheduleCalendar() {
+  const year = rescheduleCalendarDate.getFullYear();
+  const month = rescheduleCalendarDate.getMonth();
+  
+  // Update month display
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  document.getElementById('rescheduleMonthDisplay').textContent = `${monthNames[month]} ${year}`;
+  
+  // Get first day of month (adjusted for Mon-Sat week)
+  const firstDay = new Date(year, month, 1).getDay();
+  const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0, Sunday = 6
+  
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const calendarDays = document.getElementById('rescheduleCalendarDays');
+  calendarDays.innerHTML = '';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Add empty cells for days before month starts (Mon-Sat only)
+  for (let i = 0; i < adjustedFirstDay; i++) {
+    const emptyDay = document.createElement('div');
+    emptyDay.classList.add('mini-calendar-day', 'empty');
+    calendarDays.appendChild(emptyDay);
+  }
+  
+  // Add days of the month (Mon-Sat only, skip Sundays)
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayDate = new Date(year, month, day);
+    const dayOfWeek = dayDate.getDay();
+    const dateString = formatDateForComparison(dayDate);
+    
+    const dayElement = document.createElement('div');
+    dayElement.classList.add('mini-calendar-day');
+    dayElement.textContent = day;
+    
+    // Skip Sundays
+    if (dayOfWeek === 0) {
+      dayElement.classList.add('disabled');
+      dayElement.style.display = 'none';
+      calendarDays.appendChild(dayElement);
+      continue;
+    }
+    
+    // Check if day is in the past
+    if (dayDate < today) {
+      dayElement.classList.add('disabled');
+    }
+    // Check if day is fully closed
+    else if (closedSchedules.some(cs => cs.date === dateString && cs.type === 'full-day')) {
+      dayElement.classList.add('closed-day');
+    }
+    // Available day
+    else {
+      dayElement.addEventListener('click', () => selectRescheduleDate(dayDate, dayElement));
+      
+      // Check if day has available slots
+      const hasAvailableSlots = checkDayHasAvailableSlots(dateString);
+      if (hasAvailableSlots) {
+        dayElement.classList.add('has-slots');
+      }
+    }
+    
+    // Highlight selected date
+    if (selectedRescheduleDate && formatDateForComparison(selectedRescheduleDate) === dateString) {
+      dayElement.classList.add('selected-reschedule');
+    }
+    
+    calendarDays.appendChild(dayElement);
+  }
+}
+
+// Check if a day has any available slots
+function checkDayHasAvailableSlots(dateString) {
+  const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+  
+  for (const slot of timeSlots) {
+    const isClosed = closedSchedules.some(cs => {
+      if (cs.date !== dateString) return false;
+      if (cs.type === 'full-day') return true;
+      if (cs.type === 'specific-hours' && cs.timeSlots?.includes(slot)) return true;
+      return false;
+    });
+    
+    if (isClosed) continue;
+    
+    const isBooked = allBookings.some(b => 
+      b.date === dateString && 
+      b.timeSlot === slot && 
+      (b.status === 'pending' || b.status === 'confirmed')
+    );
+    
+    if (!isBooked) return true; // At least one slot available
+  }
+  
+  return false;
+}
+
+// Select a date in reschedule calendar
+function selectRescheduleDate(date, element) {
+  selectedRescheduleDate = date;
+  selectedRescheduleTime = null;
+  
+  // Update calendar day selection
+  document.querySelectorAll('.mini-calendar-day').forEach(day => {
+    day.classList.remove('selected-reschedule');
+  });
+  element.classList.add('selected-reschedule');
+  
+  // Show time slots for selected date
+  showRescheduleTimeSlots(date);
+}
+
+// Show available time slots for selected date
+function showRescheduleTimeSlots(date) {
+  const dateString = formatDateForComparison(date);
+  const container = document.getElementById('timeSlotsReschedule');
+  const grid = document.getElementById('timeSlotsGridReschedule');
+  const dateDisplay = document.getElementById('selectedDateReschedule');
+  
+  dateDisplay.textContent = formatDate(dateString);
+  
+  const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+  
+  grid.innerHTML = timeSlots.map(slot => {
+    // Check if closed
+    const isClosed = closedSchedules.some(cs => {
+      if (cs.date !== dateString) return false;
+      if (cs.type === 'full-day') return true;
+      if (cs.type === 'specific-hours' && cs.timeSlots?.includes(slot)) return true;
+      return false;
+    });
+    
+    if (isClosed) {
+      return `<div class="time-slot-reschedule closed">${timeSlotDisplay[slot]}<br><small>Closed</small></div>`;
+    }
+    
+    // Check if booked
+    const isBooked = allBookings.some(b => 
+      b.date === dateString && 
+      b.timeSlot === slot && 
+      (b.status === 'pending' || b.status === 'confirmed')
+    );
+    
+    // Check if temporarily assigned in this reschedule session
+    const isTemporarilyAssigned = temporaryAssignments.some(ta => 
+      ta.date === dateString && ta.timeSlot === slot
+    );
+    
+    if (isBooked || isTemporarilyAssigned) {
+      return `<div class="time-slot-reschedule booked">${timeSlotDisplay[slot]}<br><small>Booked</small></div>`;
+    }
+    
+    // Available
+    const selectedClass = (selectedRescheduleTime === slot) ? 'selected-time' : '';
+    return `<div class="time-slot-reschedule ${selectedClass}" onclick="selectRescheduleTime('${slot}', this)">
+      ${timeSlotDisplay[slot]}<br><small>Available</small>
+    </div>`;
+  }).join('');
+  
+  container.style.display = 'block';
+}
+
+// Select a time slot
+window.selectRescheduleTime = function(timeSlot, element) {
+  if (!selectedRescheduleDate) {
+    alert('Please select a date first.');
+    return;
+  }
+  
+  selectedRescheduleTime = timeSlot;
+  
+  // Update time slot selection
+  document.querySelectorAll('.time-slot-reschedule').forEach(slot => {
+    slot.classList.remove('selected-time');
+  });
+  element.classList.add('selected-time');
+  
+  // If we're in assignment mode, assign to current booking
+  if (currentRescheduleBookingIndex !== null) {
+    assignSelectedSlot();
+  }
+};
+
+// Start assigning a schedule to a booking
+window.startAssigning = function(index) {
+  currentRescheduleBookingIndex = index;
+  
+  // Highlight the booking being assigned
+  document.querySelectorAll('.affected-booking-item').forEach((item, i) => {
+    if (i === index) {
+      item.style.border = '3px solid #166647';
+      item.style.background = '#f0f9f0';
+    } else {
+      item.style.border = '1px solid #dee2e6';
+      item.style.background = '#f8f9fa';
+    }
+  });
+  
+  // Scroll calendar into view
+  document.querySelector('.reschedule-calendar-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// Reassign a booking (change previously assigned schedule)
+window.reassignBooking = function(index) {
+  startAssigning(index);
+};
+
+// Assign selected slot to current booking
+function assignSelectedSlot() {
+  if (currentRescheduleBookingIndex === null || !selectedRescheduleDate || !selectedRescheduleTime) {
+    return;
+  }
+  
+  const index = currentRescheduleBookingIndex;
+  const dateString = formatDateForComparison(selectedRescheduleDate);
+  
+  // Remove previous assignment from temporary assignments if exists
+  const previousAssignment = temporaryAssignments.findIndex(ta => ta.bookingIndex === index);
+  if (previousAssignment !== -1) {
+    temporaryAssignments.splice(previousAssignment, 1);
+  }
+  
+  // Add new assignment to temporary assignments
+  temporaryAssignments.push({
+    bookingIndex: index,
+    date: dateString,
+    timeSlot: selectedRescheduleTime
+  });
+  
+  // Update UI to show assigned schedule
+  document.getElementById(`assignedSchedule_${index}`).style.display = 'block';
+  document.getElementById(`assignedDate_${index}`).textContent = formatDate(dateString);
+  document.getElementById(`assignedTime_${index}`).textContent = timeSlotDisplay[selectedRescheduleTime];
+  document.getElementById(`assignBtn_${index}`).style.display = 'none';
+  
+  // Store assignment
+  affectedBookingsForReschedule[index].newDate = dateString;
+  affectedBookingsForReschedule[index].newTime = selectedRescheduleTime;
+  
+  // Reset highlight
+  document.querySelectorAll('.affected-booking-item').forEach(item => {
+    item.style.border = '1px solid #dee2e6';
+    item.style.background = '#f8f9fa';
+  });
+  
+  currentRescheduleBookingIndex = null;
+  selectedRescheduleDate = null;
+  selectedRescheduleTime = null;
+  
+  // Hide time slots
+  document.getElementById('timeSlotsReschedule').style.display = 'none';
+  
+  // Re-render calendar to clear selection
+  renderRescheduleCalendar();
+  
+  // Scroll to next unassigned booking
+  const nextUnassigned = affectedBookingsForReschedule.findIndex((b, i) => i > index && !b.newDate);
+  if (nextUnassigned !== -1) {
+    startAssigning(nextUnassigned);
+  } else {
+    // All assigned, scroll to bookings section
+    document.querySelector('.reschedule-bookings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// Format date for comparison (YYYY-MM-DD)
+function formatDateForComparison(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Close manual reschedule modal
+function closeManualRescheduleModal() {
+  const modal = document.getElementById('manualRescheduleModal');
+  modal.classList.remove('active');
+  document.body.style.overflow = 'auto';
+  
+  // Reset state
+  affectedBookingsForReschedule = [];
+  pendingClosureData = null;
+  selectedRescheduleDate = null;
+  selectedRescheduleTime = null;
+  currentRescheduleBookingIndex = null;
+  temporaryAssignments = []; // Clear temporary assignments
+  
+  // Re-open close day modal if user wants to try again
+  document.getElementById('closeDayForm').reset();
+  document.getElementById('timeSlotGroup').style.display = 'none';
+}
+
+// Confirm all reschedules
+async function confirmAllReschedules() {
+  const btn = document.getElementById('confirmAllReschedules');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+  
+  try {
+    // Check all bookings have assignments
+    for (let i = 0; i < affectedBookingsForReschedule.length; i++) {
+      const booking = affectedBookingsForReschedule[i];
+      if (!booking.newDate || !booking.newTime) {
+        alert(`Please assign a new schedule for ${booking.fullName} before confirming.`);
+        btn.disabled = false;
+        btn.textContent = 'Save All Reschedules & Send Emails';
+        
+        // Scroll to unassigned booking
+        const bookingElement = document.querySelector(`[data-index="${i}"]`);
+        bookingElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+    }
+    
+    // Save schedule closure first
+    await saveScheduleClosure(
+      pendingClosureData.type,
+      pendingClosureData.date,
+      pendingClosureData.timeSlots,
+      pendingClosureData.reason
+    );
+    
+    // Update all bookings
+    for (const booking of affectedBookingsForReschedule) {
+      const bookingRef = doc(db, 'tbiBookings', booking.id);
+      await updateDoc(bookingRef, {
+        oldDate: booking.date,
+        oldTimeSlot: booking.timeSlot,
+        date: booking.newDate,
+        timeSlot: booking.newTime,
+        timeSlotDisplay: timeSlotDisplay[booking.newTime],
+        status: 'rescheduled',
+        rescheduleReason: `Admin closed schedule: ${pendingClosureData.reason}`,
+        rescheduledAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+      
+      // Send reschedule email
+      sendRescheduleEmail(booking, booking.newDate, booking.newTime, `Admin closed schedule: ${pendingClosureData.reason}`);
+    }
+    
+    alert(`Schedule closed and ${affectedBookingsForReschedule.length} booking(s) rescheduled successfully! Gmail compose windows opened for email notifications.`);
+    
+    closeManualRescheduleModal();
+    loadClosedSchedules();
+    loadBookings();
+    
+    // Reload page to reflect changes
+    setTimeout(() => location.reload(), 2000);
+    
+  } catch (error) {
+    console.error('Error confirming reschedules:', error);
+    alert('Failed to process reschedules. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save All Reschedules & Send Emails';
   }
 }
 
@@ -755,3 +1245,131 @@ function formatTimestamp(timestamp) {
 function showError(message) {
   alert(message);
 }
+// Calendar View Modal Management
+let currentWeekStart = new Date();
+currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1); // Start from Monday
+
+document.getElementById('openCalendarViewModal')?.addEventListener('click', () => {
+  openCalendarView();
+});
+
+document.getElementById('closeCalendarViewModal')?.addEventListener('click', () => {
+  closeCalendarView();
+});
+
+document.getElementById('prevWeek')?.addEventListener('click', () => {
+  currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+  renderCalendarView();
+});
+
+document.getElementById('nextWeek')?.addEventListener('click', () => {
+  currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+  renderCalendarView();
+});
+
+function openCalendarView() {
+  document.getElementById('calendarViewModal').style.display = 'flex';
+  renderCalendarView();
+}
+
+function closeCalendarView() {
+  document.getElementById('calendarViewModal').style.display = 'none';
+}
+
+async function renderCalendarView() {
+  const calendarBody = document.getElementById('calendarViewBody');
+  const weekDisplay = document.getElementById('calendarWeekDisplay');
+  
+  // Calculate week end date
+  const weekEnd = new Date(currentWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 5); // 6 days for Mon-Sat
+  
+  // Update week display
+  const weekStartStr = currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const weekEndStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  weekDisplay.textContent = `Week of ${weekStartStr} - ${weekEndStr}`;
+  
+  // Get week dates
+  const weekDates = [];
+  for (let i = 0; i < 6; i++) {
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + i);
+    weekDates.push(date);
+  }
+  
+  // Time slots
+  const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+  
+  // Build calendar HTML
+  let html = '';
+  timeSlots.forEach(timeSlot => {
+    html += `<tr>`;
+    html += `<td class="time-slot-cell">${timeSlotDisplay[timeSlot]}</td>`;
+    
+    weekDates.forEach(date => {
+      const dateStr = date.toISOString().split('T')[0];
+      const cellData = getCalendarCellData(dateStr, timeSlot);
+      html += `<td>${cellData}</td>`;
+    });
+    
+    html += `</tr>`;
+  });
+  
+  calendarBody.innerHTML = html;
+}
+
+function getCalendarCellData(dateStr, timeSlot) {
+  // Check if this slot is closed
+  const closedSlot = closedSchedules.find(cs => {
+    const closedDate = cs.date;
+    if (closedDate !== dateStr) return false;
+    
+    if (cs.type === 'full-day') return true;
+    if (cs.type === 'specific-hours' && cs.timeSlots?.includes(timeSlot)) return true;
+    return false;
+  });
+  
+  if (closedSlot) {
+    return `
+      <div class="calendar-slot closed">
+        <div class="closed-info">
+          <i class="fa-solid fa-ban"></i> CLOSED
+          <div class="closed-reason">${closedSlot.reason || 'No reason provided'}</div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Check if there's a booking for this slot
+  const booking = allBookings.find(b => 
+    b.date === dateStr && 
+    b.timeSlot === timeSlot &&
+    b.status !== 'cancelled'
+  );
+  
+  if (booking) {
+    return `
+      <div class="calendar-slot booked" onclick="viewBooking('${booking.id}')">
+        <div class="booking-info">
+          <div class="booking-name">${booking.fullName}</div>
+          <div class="booking-service">${booking.serviceType}</div>
+          <span class="booking-status ${booking.status}">${booking.status.toUpperCase()}</span>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Available slot
+  return `
+    <div class="calendar-slot available">
+      <div style="color: #999; font-size: 12px;">Available</div>
+    </div>
+  `;
+}
+
+// Close modal when clicking outside
+document.getElementById('calendarViewModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'calendarViewModal') {
+    closeCalendarView();
+  }
+});

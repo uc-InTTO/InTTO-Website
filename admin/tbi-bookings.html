@@ -51,6 +51,9 @@
                     <p class="section-subtitle">Manage all assessment and service bookings</p>
                 </div>
                 <div class="header-actions">
+                    <button class="btn-view-calendar" id="openCalendarViewModal">
+                        <i class="fa-solid fa-calendar-days"></i> View Calendar
+                    </button>
                     <button class="btn-close-schedule" id="openCloseDayModal">
                         <i class="fa-solid fa-calendar-xmark"></i> Close Day/Time
                     </button>
@@ -330,6 +333,125 @@
                     <div id="closedScheduleItems">
                         <p class="loading-text">Loading...</p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal modal-large" id="calendarViewModal">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <h2>TBI Schedule Calendar</h2>
+                <button class="modal-close" id="closeCalendarViewModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="calendar-controls">
+                    <button class="btn-nav" id="prevWeek">
+                        <i class="fa-solid fa-chevron-left"></i> Previous Week
+                    </button>
+                    <h3 id="calendarWeekDisplay">Week of Dec 2-8, 2025</h3>
+                    <button class="btn-nav" id="nextWeek">
+                        Next Week <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+                
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <span class="legend-color available"></span> Available
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color booked"></span> Booked
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color closed"></span> Closed
+                    </div>
+                </div>
+
+                <div class="calendar-view-container">
+                    <table class="calendar-table">
+                        <thead>
+                            <tr>
+                                <th class="time-column">Time</th>
+                                <th class="day-column">Monday</th>
+                                <th class="day-column">Tuesday</th>
+                                <th class="day-column">Wednesday</th>
+                                <th class="day-column">Thursday</th>
+                                <th class="day-column">Friday</th>
+                                <th class="day-column">Saturday</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calendarViewBody">
+                            <tr>
+                                <td colspan="7" class="loading-row">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> Loading calendar...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Reschedule Modal for Affected Bookings -->
+    <div class="modal modal-large" id="manualRescheduleModal">
+        <div class="modal-content modal-content-large">
+            <div class="modal-header">
+                <h2>Reschedule Affected Bookings</h2>
+                <button class="modal-close" id="closeManualRescheduleModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <strong>Action Required:</strong> The following bookings are affected by the schedule closure. Please assign new dates and times for each booking.
+                </div>
+
+                <div class="reschedule-layout">
+                    <div class="reschedule-calendar-section">
+                        <h3>Available Slots Calendar</h3>
+                        <div class="mini-calendar-controls">
+                            <button class="btn-nav-mini" id="prevMonthReschedule">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <h4 id="rescheduleMonthDisplay">December 2025</h4>
+                            <button class="btn-nav-mini" id="nextMonthReschedule">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mini-calendar-container">
+                            <div class="mini-calendar-weekdays">
+                                <div>Mon</div>
+                                <div>Tue</div>
+                                <div>Wed</div>
+                                <div>Thu</div>
+                                <div>Fri</div>
+                                <div>Sat</div>
+                            </div>
+                            <div class="mini-calendar-days" id="rescheduleCalendarDays">
+                                <!-- Days will be populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="time-slots-reschedule" id="timeSlotsReschedule" style="display: none;">
+                            <h4>Available Time Slots for <span id="selectedDateReschedule"></span></h4>
+                            <div class="time-slots-grid-reschedule" id="timeSlotsGridReschedule">
+                                <!-- Time slots will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="reschedule-bookings-section">
+                        <h3>Affected Bookings</h3>
+                        <div id="affectedBookingsList" class="affected-bookings-list">
+                            <!-- Dynamic content will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelManualReschedule">Cancel</button>
+                    <button type="button" class="btn-primary" id="confirmAllReschedules">Save All Reschedules & Send Emails</button>
                 </div>
             </div>
         </div>

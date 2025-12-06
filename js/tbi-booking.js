@@ -1,6 +1,6 @@
 // Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -31,6 +31,7 @@ let currentDate = new Date();
 let selectedDate = null;
 let selectedTimeSlot = null;
 let bookingsData = {};
+let closedSchedules = [];
 
 // Time slots available (8AM to 5PM in 1-hour intervals)
 const timeSlots = [
@@ -48,6 +49,7 @@ const timeSlots = [
 function initCalendar() {
   renderCalendar();
   setupEventListeners();
+  loadClosedSchedules();
   loadBookings();
 }
 
@@ -90,6 +92,9 @@ function renderCalendar() {
     dayElement.textContent = day;
     dayElement.dataset.date = dateString;
     
+    // Check if entire day is closed
+    const isFullDayClosed = closedSchedules.some(cs => cs.date === dateString && cs.type === 'full-day');
+    
     // Check if day is in the past
     if (dayDate < today) {
       dayElement.classList.add('disabled');
@@ -97,6 +102,11 @@ function renderCalendar() {
     // Check if day is Sunday (0) - disabled
     else if (dayOfWeek === 0) {
       dayElement.classList.add('disabled');
+    }
+    // Check if day is fully closed by admin
+    else if (isFullDayClosed) {
+      dayElement.classList.add('closed-day');
+      dayElement.title = 'This day is closed';
     }
     // Available days (Monday to Saturday)
     else {
@@ -106,6 +116,13 @@ function renderCalendar() {
       // Check if this date has bookings
       if (bookingsData[dateString] && bookingsData[dateString].length > 0) {
         dayElement.classList.add('has-bookings');
+      }
+      
+      // Check if day has partial closures
+      const hasPartialClosure = closedSchedules.some(cs => cs.date === dateString && cs.type === 'specific-hours');
+      if (hasPartialClosure) {
+        dayElement.classList.add('partial-closed');
+        dayElement.title = 'Some time slots are closed';
       }
     }
     
@@ -159,6 +176,10 @@ function showTimeSlots(date) {
   // Get bookings for this date
   const bookedSlots = bookingsData[dateString] || [];
   
+  // Get closed schedules for this date
+  const closedSlotsForDate = closedSchedules.filter(cs => cs.date === dateString);
+  const isFullDayClosed = closedSlotsForDate.some(cs => cs.type === 'full-day');
+  
   // Create time slot elements
   timeSlots.forEach(slot => {
     const slotElement = document.createElement('div');
@@ -166,13 +187,24 @@ function showTimeSlots(date) {
     slotElement.textContent = `${slot.start}-${slot.end}`;
     slotElement.dataset.time = slot.value;
     
-    // Check if slot is already booked
-    const isBooked = bookedSlots.some(booking => booking.timeSlot === slot.value);
+    // Check if slot is closed by admin
+    const isClosed = isFullDayClosed || closedSlotsForDate.some(cs => 
+      cs.type === 'specific-hours' && cs.timeSlots?.includes(slot.value)
+    );
     
-    if (isBooked) {
-      slotElement.classList.add('booked');
-    } else {
-      slotElement.addEventListener('click', () => selectTimeSlot(slot, slotElement));
+    if (isClosed) {
+      slotElement.classList.add('closed');
+      slotElement.title = 'This time slot is closed';
+    }
+    // Check if slot is already booked
+    else {
+      const isBooked = bookedSlots.some(booking => booking.timeSlot === slot.value);
+      
+      if (isBooked) {
+        slotElement.classList.add('booked');
+      } else {
+        slotElement.addEventListener('click', () => selectTimeSlot(slot, slotElement));
+      }
     }
     
     grid.appendChild(slotElement);
@@ -256,18 +288,6 @@ function setupEventListeners() {
 // Load bookings from Firebase
 async function loadBookings() {
   try {
-    const CACHE_KEY = 'tbi_bookings';
-    const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-    let cached = localStorage.getItem(CACHE_KEY);
-    let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
-    let now = Date.now();
-
-    if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-      bookingsData = JSON.parse(cached);
-      renderCalendar();
-      return;
-    }
-
     const bookingsRef = collection(db, 'tbiBookings');
     const snapshot = await getDocs(bookingsRef);
     
@@ -286,15 +306,33 @@ async function loadBookings() {
         ...booking
       });
     });
-
-    // Cache the result
-    localStorage.setItem(CACHE_KEY, JSON.stringify(bookingsData));
-    localStorage.setItem(CACHE_KEY + '_time', now);
     
     // Re-render calendar to show bookings
     renderCalendar();
   } catch (error) {
     console.error('Error loading bookings:', error);
+  }
+}
+
+// Load closed schedules from Firebase
+async function loadClosedSchedules() {
+  try {
+    const closedRef = collection(db, 'closedSchedules');
+    const q = query(closedRef, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    
+    closedSchedules = [];
+    snapshot.forEach(doc => {
+      closedSchedules.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    // Re-render calendar to show closed days
+    renderCalendar();
+  } catch (error) {
+    console.error('Error loading closed schedules:', error);
   }
 }
 

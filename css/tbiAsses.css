@@ -1147,6 +1147,43 @@ iframe {
   border-color: #e0e0e0;
 }
 
+.time-slot.closed {
+  background: #ffe0e0;
+  border: 2px solid #ff4444;
+  color: #cc0000;
+  cursor: not-allowed;
+  opacity: 0.8;
+  font-weight: 600;
+}
+
+.time-slot.closed:hover {
+  background: #ffe0e0;
+  border-color: #ff4444;
+}
+
+.calendar-day.closed-day {
+  background: #ffe0e0 !important;
+  border: 2px solid #ff4444 !important;
+  color: #cc0000 !important;
+  cursor: not-allowed !important;
+  font-weight: 700;
+}
+
+.calendar-day.closed-day:hover {
+  background: #ffcccc !important;
+  border-color: #ff2222 !important;
+  transform: none !important;
+}
+
+.calendar-day.partial-closed {
+  border: 2px solid #ff9944;
+  background: linear-gradient(135deg, #fff 50%, #ffe8d0 50%);
+}
+
+.calendar-day.partial-closed:hover {
+  border-color: #ff7722;
+}
+
 .booking-right {
   position: sticky;
   top: 20px;

@@ -11,8 +11,8 @@
   <script src="https://www.google.com/recaptcha/api.js?render=6LcfuRMsAAAAAGP--lIdDS3_olzVmXNiEJ6Wh3Fw"></script>
   <link rel="icon" href="/graphics/inttoFavicon.png" type="image/png">
   <style>
-      body {
-          font-family: 'Poppins', sans-serif;
+      body, html, h1, h2, h3, h4, h5, h6, p, a, span, button, input, textarea, select, li {
+          font-family: 'Poppins', sans-serif !important;
       }
   </style>
 </head>
@@ -21,9 +21,7 @@
     <script type="module" src="./Contact-Us-DB/scriptC.js"></script>
     <script type="module" src="./Contact-Us-DB/infoC.js"></script>
     <script type="module" src="./Contact-Us-DB/saveInfoC.js"></script>
-    <script type="text/javascript"
-    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
-    </script>
+    
     <script type="text/javascript">
     (function(){
         emailjs.init({
@@ -358,7 +356,7 @@
         if (!cardsGrid) return;
 
         try {
-            const snapshot = await db.collection('startups').get();
+            const snapshot = await window.db.collection('startups').get();
 
             if (snapshot.empty) {
                 cardsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #fff;">No startups found.</p>';
@@ -377,8 +375,12 @@
                 cardsGrid.innerHTML = '';
                 
                 let filtered = incubatedStartups.filter(data => {
-                    return filterCategory === 'all' || 
-                           (data.category || '').toLowerCase() === filterCategory.toLowerCase();
+                    // FIX: Safely handle if category is an array or missing
+                    let rawCat = data.category;
+                    if (Array.isArray(rawCat)) rawCat = rawCat[0]; // Use first tag if array
+                    const safeCat = String(rawCat || '').toLowerCase();
+                    
+                    return filterCategory === 'all' || safeCat === filterCategory.toLowerCase();
                 });
 
                 const displayList = filtered.slice(0, 6);
@@ -395,11 +397,19 @@
                         : '';
                     
                     const imgUrl = (data.imageUrls && data.imageUrls.length > 0) ? data.imageUrls[0] : 'ucolab/Logo/No image.png';
-                    const category = data.category || 'Innovation';
+                    
+                    // FIX: Force category to string to prevent .toLowerCase() crash
+                    let rawCat = data.category;
+                    if (Array.isArray(rawCat)) rawCat = rawCat.join(', '); // Join arrays for display
+                    const displayCategory = rawCat || 'Innovation';
+                    
+                    // For the data-attribute, we need a simple string
+                    const safeDataCategory = String(displayCategory).toLowerCase();
+
                     const trl = data.trl || 'TRL ?';
 
                     html += `
-                        <div class="startup-card" data-category="${category.toLowerCase()}">
+                        <div class="startup-card" data-category="${safeDataCategory}">
                             ${badgeHTML}
                             
                             <div class="card-head">
@@ -407,7 +417,7 @@
                                 <div class="card-meta">
                                     <h3 class="startup-name">${data.name}</h3>
                                     <div class="tags">
-                                        <span class="tag">${category}</span>
+                                        <span class="tag">${displayCategory}</span>
                                         <span class="tag small">${trl}</span>
                                     </div>
                                 </div>
@@ -435,8 +445,8 @@
             }
 
         } catch (error) {
-            console.error("Error loading startups:", error);
-            cardsGrid.innerHTML = '<p style="color:white;">Error loading content.</p>';
+            console.error("FIREBASE ERROR:", error);
+            cardsGrid.innerHTML = '<p style="color:white; text-align:center;">Error loading content. Check console.</p>';
         }
     });
     </script>

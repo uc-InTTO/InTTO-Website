@@ -857,6 +857,10 @@ body {
   .sdg-filter-bar::-webkit-scrollbar {
     display: block;
   }
+
+  .sdg-title {
+    font-size: 2.5em;
+  }
 }
 
 @media (max-width: 480px) {

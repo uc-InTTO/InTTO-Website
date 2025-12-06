@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let sdgChart = null;
     let hiddenLegendIds = new Set(); 
     let currentFilteredData = []; 
+    let currentExportData = []; 
+    let currentFilterState = 'all';
 
     const tabs = document.querySelectorAll('.tab-btn');
     const totalUsageEl = document.getElementById('total-sdg-usage');
@@ -14,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const chartCanvas = document.getElementById('sdgPieChart');
     const breakdownListEl = document.getElementById('sdg-breakdown-list'); 
     const customLegendEl = document.getElementById('custom-chart-legend');
+    const exportBtn = document.getElementById('export-btn');
 
     const SDG_CONSTANTS = [
         { id: 1,  code: "SDG 1",  name: "No Poverty", color: "#E5243B" },
@@ -36,14 +39,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     ];
 
     const loadStartupsFromFirestore = async () => {
-        const CACHE_KEY = 'sdg_startups';
+        const CACHE_KEY = 'sdg_startups_v2'; 
         const CACHE_EXPIRY = 5 * 60 * 1000; 
         let cached = localStorage.getItem(CACHE_KEY);
         let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
         let now = Date.now();
 
         if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            return JSON.parse(cached);
+            const data = JSON.parse(cached);
+            return data.map(item => ({ ...item, sourceType: 'Startup' }));
         }
 
         try {
@@ -57,21 +61,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             localStorage.setItem(CACHE_KEY, JSON.stringify(startups));
             localStorage.setItem(CACHE_KEY + '_time', now);
-            return startups;
+            
+            return startups.map(item => ({ ...item, sourceType: 'Startup' }));
         } catch (error) {
             return [];
         }
     };
 
     const loadNewsEventsFromFirestore = async () => {
-        const CACHE_KEY = 'sdg_newsEvents';
+        const CACHE_KEY = 'sdg_newsEvents_v2'; 
         const CACHE_EXPIRY = 5 * 60 * 1000;
         let cached = localStorage.getItem(CACHE_KEY);
         let cachedTime = localStorage.getItem(CACHE_KEY + '_time');
         let now = Date.now();
 
         if (cached && cachedTime && (now - cachedTime < CACHE_EXPIRY)) {
-            return JSON.parse(cached);
+            const data = JSON.parse(cached);
+            return data.map(item => ({ ...item, sourceType: 'News & Event' }));
         }
 
         try {
@@ -82,7 +88,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             localStorage.setItem(CACHE_KEY, JSON.stringify(newsEvents));
             localStorage.setItem(CACHE_KEY + '_time', now);
-            return newsEvents;
+            
+            return newsEvents.map(item => ({ ...item, sourceType: 'News & Event' }));
         } catch (error) {
             return [];
         }
@@ -91,6 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const updateDashboard = async (filter) => {
         
         hiddenLegendIds.clear();
+        currentFilterState = filter;
 
         totalUsageEl.textContent = '...';
         uniqueSdgsEl.textContent = '...';
@@ -114,6 +122,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             itemsToProcess = newsEvents;
             itemCountLabel = 'News & Events';
         }
+
+        currentExportData = itemsToProcess;
 
         let totalUsage = 0;
         let itemCount = 0;
@@ -293,6 +303,61 @@ document.addEventListener('DOMContentLoaded', async () => {
             breakdownListEl.appendChild(card);
         });
     };
+
+    const exportToExcel = () => {
+        if (!currentExportData || currentExportData.length === 0) {
+            alert("No data available to export.");
+            return;
+        }
+
+        const dataToExport = currentExportData.map(item => {
+            let itemSDGs = item.sdgs || [];
+            if (Array.isArray(itemSDGs)) {
+                itemSDGs = itemSDGs.map(sdg => {
+                    let num = sdg;
+                    if (typeof sdg === 'string') {
+                        const match = sdg.match(/\d+/);
+                        num = match ? parseInt(match[0], 10) : NaN;
+                    }
+                    return (isNaN(num) || num === null) ? '' : num;
+                }).filter(n => n !== '').join(', ');
+            } else {
+                itemSDGs = '';
+            }
+
+            return {
+                ID: item.firestoreId || 'N/A',
+                Name_Title: item.name || item.title || 'Untitled',
+                Category: item.sourceType || 'Unknown', 
+                SDG_Tags: itemSDGs
+            };
+        });
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(dataToExport);
+
+        const wscols = [
+            {wch: 20},
+            {wch: 40},
+            {wch: 15},
+            {wch: 30}
+        ];
+        ws['!cols'] = wscols;
+
+        let fileName = "SDG_All_Data.xlsx";
+        if (currentFilterState === 'startup') {
+            fileName = "SDG_Startups.xlsx";
+        } else if (currentFilterState === 'news_event') {
+            fileName = "SDG_NewsEvents.xlsx";
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, "SDG Data");
+        XLSX.writeFile(wb, fileName);
+    };
+
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportToExcel);
+    }
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {

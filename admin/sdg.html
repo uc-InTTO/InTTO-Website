@@ -11,7 +11,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" href="/graphics/inttoFavicon.png" type="image/png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="module" src="js/auth-check.js"></script>
+    <style>
+        body, button, input, select, textarea {
+            font-family: 'Poppins', sans-serif;
+        }
+        .sdg-tabs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .export-btn {
+            margin-left: auto;
+            background-color: #107c41;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+        .export-btn:hover {
+            background-color: #0b5c30;
+        }
+    </style>
 </head>
 <body>
 
@@ -52,6 +81,9 @@
                 <button class="tab-btn active" data-filter="all">All</button>
                 <button class="tab-btn" data-filter="startup">Startup</button>
                 <button class="tab-btn" data-filter="news_event">News & Event</button>
+                <button id="export-btn" class="export-btn">
+                    <i class="fa-solid fa-file-excel"></i> Export to Excel
+                </button>
             </div>
 
             <div class="sdg-stats-grid">

@@ -32,6 +32,8 @@ let selectedDate = null;
 let selectedTimeSlot = null;
 let bookingsData = {};
 let closedSchedules = [];
+let allBookings = [];
+let currentWeekStart = new Date();
 
 // Time slots available (8AM to 5PM in 1-hour intervals)
 const timeSlots = [
@@ -51,6 +53,9 @@ function initCalendar() {
   setupEventListeners();
   loadClosedSchedules();
   loadBookings();
+  
+  // Set current week start to Monday
+  currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1);
 }
 
 // Render calendar days
@@ -283,6 +288,25 @@ function setupEventListeners() {
   
   // Form submission
   document.getElementById('bookingForm').addEventListener('submit', handleBookingSubmit);
+  
+  // View Calendar button
+  document.getElementById('viewCalendarBtn').addEventListener('click', openCalendarView);
+  document.getElementById('calendarViewClose').addEventListener('click', closeCalendarView);
+  document.getElementById('prevWeekView').addEventListener('click', () => {
+    currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+    renderCalendarView();
+  });
+  document.getElementById('nextWeekView').addEventListener('click', () => {
+    currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+    renderCalendarView();
+  });
+  
+  // Close calendar view modal on outside click
+  document.getElementById('calendarViewModal').addEventListener('click', (e) => {
+    if (e.target.id === 'calendarViewModal') {
+      closeCalendarView();
+    }
+  });
 }
 
 // Load bookings from Firebase
@@ -292,10 +316,16 @@ async function loadBookings() {
     const snapshot = await getDocs(bookingsRef);
     
     bookingsData = {};
+    allBookings = [];
     
     snapshot.forEach(doc => {
       const booking = doc.data();
       const dateString = booking.date;
+      
+      allBookings.push({
+        id: doc.id,
+        ...booking
+      });
       
       if (!bookingsData[dateString]) {
         bookingsData[dateString] = [];
@@ -406,6 +436,120 @@ async function handleBookingSubmit(e) {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Book Assessment';
   }
+}
+
+// Open calendar view modal
+function openCalendarView() {
+  document.getElementById('calendarViewModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  renderCalendarView();
+}
+
+// Close calendar view modal
+function closeCalendarView() {
+  document.getElementById('calendarViewModal').classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+
+// Render calendar view
+function renderCalendarView() {
+  const header = document.getElementById('calendarViewHeader');
+  const body = document.getElementById('calendarViewBody');
+  const weekDisplay = document.getElementById('calendarViewWeekDisplay');
+  
+  // Calculate week end date (Monday to Saturday, 6 days)
+  const weekEnd = new Date(currentWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 5);
+  
+  // Update week display
+  const weekStartStr = currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const weekEndStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  weekDisplay.textContent = `Week of ${weekStartStr} - ${weekEndStr}`;
+  
+  // Get week dates (Monday to Saturday)
+  const weekDates = [];
+  const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  for (let i = 0; i < 6; i++) {
+    const date = new Date(currentWeekStart);
+    date.setDate(date.getDate() + i);
+    weekDates.push(date);
+  }
+  
+  // Build header row
+  let headerHTML = '<th class="time-slot-header">Time Slot</th>';
+  weekDates.forEach((date, index) => {
+    const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    headerHTML += `<th>${dayNames[index]}<br><small>${dateStr}</small></th>`;
+  });
+  header.innerHTML = headerHTML;
+  
+  // Build body rows
+  let bodyHTML = '';
+  timeSlots.forEach(slot => {
+    bodyHTML += '<tr>';
+    bodyHTML += `<td class="time-slot-cell"><strong>${slot.start} - ${slot.end}</strong></td>`;
+    
+    weekDates.forEach(date => {
+      const dateString = formatDate(date);
+      const cellData = getCalendarCellData(dateString, slot.value);
+      bodyHTML += cellData;
+    });
+    
+    bodyHTML += '</tr>';
+  });
+  
+  body.innerHTML = bodyHTML;
+}
+
+// Get cell data for calendar view
+function getCalendarCellData(dateStr, timeSlot) {
+  // Check if this slot is closed
+  const closedSlot = closedSchedules.find(cs => {
+    if (cs.date !== dateStr) return false;
+    if (cs.type === 'full-day') return true;
+    if (cs.type === 'specific-hours' && cs.timeSlots?.includes(timeSlot)) return true;
+    return false;
+  });
+  
+  if (closedSlot) {
+    return `
+      <td class="calendar-cell closed">
+        <div class="cell-content">
+          <span class="status-badge">Closed</span>
+          <small>${closedSlot.reason || ''}</small>
+        </div>
+      </td>
+    `;
+  }
+  
+  // Check if there's a booking for this slot
+  const booking = allBookings.find(b => 
+    b.date === dateStr && 
+    b.timeSlot === timeSlot &&
+    (b.status === 'pending' || b.status === 'confirmed')
+  );
+  
+  if (booking) {
+    return `
+      <td class="calendar-cell booked">
+        <div class="cell-content">
+          <span class="status-badge ${booking.status}">${booking.status}</span>
+          <small>${booking.fullName || ''}</small>
+          <small>${booking.serviceType || 'TBI Assessment'}</small>
+        </div>
+      </td>
+    `;
+  }
+  
+  // Available slot
+  return `
+    <td class="calendar-cell available">
+      <div class="cell-content">
+        <span class="status-text">Available</span>
+      </div>
+    </td>
+  `;
 }
 
 // Initialize when DOM is loaded

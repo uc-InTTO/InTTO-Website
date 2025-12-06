@@ -88,6 +88,10 @@
           </div>
         </div>
 
+        <button class="view-calendar-btn" id="viewCalendarBtn">
+          <i class="fas fa-calendar-alt"></i> View Calendar
+        </button>
+
         <div class="time-slots-container" id="timeSlotsContainer" style="display: none;">
           <h3>Select a Time Slot</h3>
           <p class="selected-date-display">Selected Date: <span id="selectedDateDisplay">-</span></p>
@@ -200,6 +204,50 @@
 
         <button type="submit" class="submit-btn">Book Assessment</button>
       </form>
+    </div>
+  </div>
+
+  <div class="calendar-view-modal" id="calendarViewModal">
+    <div class="calendar-view-modal-content">
+      <button class="modal-close" id="calendarViewClose">×</button>
+      <h2>Booking Calendar View</h2>
+      
+      <div class="calendar-view-controls">
+        <button class="calendar-nav-btn" id="prevWeekView">
+          <i class="fas fa-chevron-left"></i> Previous Week
+        </button>
+        <h3 id="calendarViewWeekDisplay">Week View</h3>
+        <button class="calendar-nav-btn" id="nextWeekView">
+          Next Week <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <div class="calendar-view-table-wrapper">
+        <table class="calendar-view-table">
+          <thead>
+            <tr id="calendarViewHeader">
+              <th>Time Slot</th>
+            </tr>
+          </thead>
+          <tbody id="calendarViewBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="calendar-view-legend">
+        <div class="legend-item">
+          <span class="legend-color available"></span>
+          <span>Available</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color booked"></span>
+          <span>Booked</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color closed"></span>
+          <span>Closed</span>
+        </div>
+      </div>
     </div>
   </div>
 

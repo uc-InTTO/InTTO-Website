@@ -535,7 +535,7 @@ We look forward to working with you and supporting your innovation journey!
 
 Best regards,
 UC InTTO Team
-University of Cebu - Innovation, Technology Transfer Office`
+University of the Cordilleras - Innovation Technology and Transfer Office`
         );
         
         // Open Gmail compose with pre-filled content
@@ -578,7 +578,7 @@ We appreciate your interest in UC InTTO and encourage you to keep innovating.
 
 Best regards,
 UC InTTO Team
-University of Cebu - Innovation, Technology Transfer Office`
+University of the Cordilleras - Innovation, Technology Transfer Office`
         );
 
         const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipientEmail}&su=${subject}&body=${body}`;

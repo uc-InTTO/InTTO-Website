@@ -104,19 +104,19 @@ function updateCategoryCards(copyrightCount, trademarkCount, utilityCount, paten
     
     // Update Copyright card
     const copyrightCard = categoryCards[0];
-    copyrightCard.querySelector('.count-badge').textContent = `${copyrightCount} Records`;
+    copyrightCard.querySelector('.count-badge').textContent = `${copyrightCount} Registered`;
     
     // Update Trademark card
     const trademarkCard = categoryCards[1];
-    trademarkCard.querySelector('.count-badge').textContent = `${trademarkCount} Records`;
+    trademarkCard.querySelector('.count-badge').textContent = `${trademarkCount} Registered`;
     
     // Update Utility Model card
     const utilityCard = categoryCards[2];
-    utilityCard.querySelector('.count-badge').textContent = `${utilityCount} Records`;
+    utilityCard.querySelector('.count-badge').textContent = `${utilityCount} Registered`;
     
     // Update Patent card
     const patentCard = categoryCards[3];
-    patentCard.querySelector('.count-badge').textContent = `${patentCount} Records`;
+    patentCard.querySelector('.count-badge').textContent = `${patentCount} Registered`;
     if (patentCount > 0) {
         patentCard.classList.remove('disabled');
         patentCard.querySelector('.count-badge').classList.remove('gray');
@@ -125,7 +125,7 @@ function updateCategoryCards(copyrightCount, trademarkCount, utilityCount, paten
     
     // Update Industrial Design card
     const industrialCard = categoryCards[4];
-    industrialCard.querySelector('.count-badge').textContent = `${industrialCount} Records`;
+    industrialCard.querySelector('.count-badge').textContent = `${industrialCount} Registered`;
     if (industrialCount > 0) {
         industrialCard.classList.remove('disabled');
         industrialCard.querySelector('.count-badge').classList.remove('gray');

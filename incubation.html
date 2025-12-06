@@ -212,13 +212,21 @@
                 <div class="nav-links" id="navLinks">
                     <a href="index.html">Home</a>
                     <a href="aboutUs.html">About</a>
-                    <a href="services.html">Services</a>
+                    
+                    <div class="dropdown-container">
+                        <a href="services.html">Services</a>
+                        <div class="dropdown-menu">
+                            <a href="tbi-assessment.html">TBI Assessment</a>
+                            <a href="ipp.html">IP Protection</a>
+                        </div>
+                    </div>
+
                     <a href="startups.html">Startups</a>
                     <a href="events.html">Events</a>
                     <a href="ucolab/index.html">UColab</a>
                     <a href="sdgPage.html">SDG</a>
                     
-                    <a href="#form-card-main" class="mobile-btn">Apply for Incubation</a>
+                    <a href="incubation.html" class="mobile-btn">Apply for Incubation</a>
                 </div>
             </div>
             
@@ -711,7 +719,12 @@
             </p>
         </div>
     </div>
+
+    <div class="back-btn-container">
+            <a href="services.html" class="back-btn">Back to Services</a>
+        </div>
 </section>
+
 <script>
     document.getElementById('hamburger').addEventListener('click', function() {
             const navLinks = document.getElementById('navLinks');

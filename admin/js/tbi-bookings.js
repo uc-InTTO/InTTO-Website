@@ -30,16 +30,32 @@ let selectedRescheduleTime = null;
 let currentRescheduleBookingIndex = null;
 let temporaryAssignments = []; // Track slots assigned during current reschedule session
 
-// Time slot display mapping
+// Single booking reschedule state
+let singleRescheduleCalendarDate = new Date();
+let selectedSingleRescheduleDate = null;
+let selectedSingleRescheduleTime = null;
+let singleRescheduleAssigned = false;
+
+// Time slot display mapping (30-minute intervals)
 const timeSlotDisplay = {
-  '08:00': '8AM - 9AM',
-  '09:00': '9AM - 10AM',
-  '10:00': '10AM - 11AM',
-  '11:00': '11AM - 12NN',
-  '13:00': '1PM - 2PM',
-  '14:00': '2PM - 3PM',
-  '15:00': '3PM - 4PM',
-  '16:00': '4PM - 5PM'
+  '08:00': '8:00AM - 8:30AM',
+  '08:30': '8:30AM - 9:00AM',
+  '09:00': '9:00AM - 9:30AM',
+  '09:30': '9:30AM - 10:00AM',
+  '10:00': '10:00AM - 10:30AM',
+  '10:30': '10:30AM - 11:00AM',
+  '11:00': '11:00AM - 11:30AM',
+  '11:30': '11:30AM - 12:00PM',
+  '12:00': '12:00PM - 12:30PM',
+  '12:30': '12:30PM - 1:00PM',
+  '13:00': '1:00PM - 1:30PM',
+  '13:30': '1:30PM - 2:00PM',
+  '14:00': '2:00PM - 2:30PM',
+  '14:30': '2:30PM - 3:00PM',
+  '15:00': '3:00PM - 3:30PM',
+  '15:30': '3:30PM - 4:00PM',
+  '16:00': '4:00PM - 4:30PM',
+  '16:30': '4:30PM - 5:00PM'
 };
 
 // Initialize
@@ -192,9 +208,6 @@ function setupEventListeners() {
     }
   });
   
-  // Reschedule form
-  document.getElementById('rescheduleForm').addEventListener('submit', handleReschedule);
-  
   // Close Day form
   document.getElementById('closeDayForm').addEventListener('submit', handleCloseDay);
   
@@ -212,6 +225,19 @@ function setupEventListeners() {
     rescheduleCalendarDate.setMonth(rescheduleCalendarDate.getMonth() + 1);
     renderRescheduleCalendar();
   });
+  
+  // Single Reschedule Calendar Navigation
+  document.getElementById('prevMonthSingleReschedule')?.addEventListener('click', () => {
+    singleRescheduleCalendarDate.setMonth(singleRescheduleCalendarDate.getMonth() - 1);
+    renderSingleRescheduleCalendar();
+  });
+  document.getElementById('nextMonthSingleReschedule')?.addEventListener('click', () => {
+    singleRescheduleCalendarDate.setMonth(singleRescheduleCalendarDate.getMonth() + 1);
+    renderSingleRescheduleCalendar();
+  });
+  
+  // Single Reschedule Confirm
+  document.getElementById('confirmSingleReschedule')?.addEventListener('click', handleSingleReschedule);
   
   // Close modals on outside click
   document.getElementById('rescheduleModal').addEventListener('click', (e) => {
@@ -315,7 +341,7 @@ window.viewBooking = function(bookingId) {
   document.body.style.overflow = 'hidden';
 };
 
-// Open reschedule modal
+// Open reschedule modal with calendar view
 window.openRescheduleModal = function(bookingId) {
   currentBookingId = bookingId;
   const booking = allBookings.find(b => b.id === bookingId);
@@ -326,7 +352,21 @@ window.openRescheduleModal = function(bookingId) {
   document.getElementById('rescheduleCurrentDate').textContent = formatDate(booking.date);
   document.getElementById('rescheduleCurrentTime').textContent = timeSlotDisplay[booking.timeSlot] || booking.timeSlotDisplay;
   
-  document.getElementById('rescheduleForm').reset();
+  // Reset calendar state
+  singleRescheduleCalendarDate = new Date();
+  selectedSingleRescheduleDate = null;
+  selectedSingleRescheduleTime = null;
+  singleRescheduleAssigned = false;
+  
+  // Reset UI
+  document.getElementById('assignedScheduleSingle').style.display = 'none';
+  document.getElementById('assignBtnSingle').style.display = 'block';
+  document.getElementById('timeSlotsReschedule').style.display = 'none';
+  document.getElementById('rescheduleReason').value = '';
+  
+  // Render calendar
+  renderSingleRescheduleCalendar();
+  
   document.getElementById('rescheduleModal').classList.add('active');
   document.body.style.overflow = 'hidden';
 };
@@ -336,6 +376,9 @@ function closeRescheduleModal() {
   document.getElementById('rescheduleModal').classList.remove('active');
   document.body.style.overflow = 'auto';
   currentBookingId = null;
+  selectedSingleRescheduleDate = null;
+  selectedSingleRescheduleTime = null;
+  singleRescheduleAssigned = false;
 }
 
 function closeViewModal() {
@@ -343,37 +386,29 @@ function closeViewModal() {
   document.body.style.overflow = 'auto';
 }
 
-// Handle reschedule
-async function handleReschedule(e) {
-  e.preventDefault();
-  
+// Handle single booking reschedule
+async function handleSingleReschedule() {
   if (!currentBookingId) return;
   
-  const newDate = document.getElementById('newDate').value;
-  const newTimeSlot = document.getElementById('newTimeSlot').value;
-  const reason = document.getElementById('rescheduleReason').value;
+  if (!singleRescheduleAssigned || !selectedSingleRescheduleDate || !selectedSingleRescheduleTime) {
+    alert('Please select a new date and time slot first.');
+    return;
+  }
   
-  const submitBtn = e.target.querySelector('.btn-primary');
+  const reason = document.getElementById('rescheduleReason').value.trim();
+  if (!reason) {
+    alert('Please enter a reason for rescheduling.');
+    return;
+  }
+  
+  const submitBtn = document.getElementById('confirmSingleReschedule');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Rescheduling...';
   
   try {
     const booking = allBookings.find(b => b.id === currentBookingId);
-    
-    // Check if new slot is available
-    const conflictingBookings = allBookings.filter(b => 
-      b.date === newDate && 
-      b.timeSlot === newTimeSlot && 
-      b.id !== currentBookingId &&
-      (b.status === 'pending' || b.status === 'confirmed')
-    );
-    
-    if (conflictingBookings.length > 0) {
-      alert('This time slot is already booked. Please select another time.');
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirm Reschedule & Send Email';
-      return;
-    }
+    const newDate = formatDateForComparison(selectedSingleRescheduleDate);
+    const newTimeSlot = selectedSingleRescheduleTime;
     
     // Update booking in Firebase
     const bookingRef = doc(db, 'tbiBookings', currentBookingId);
@@ -405,6 +440,204 @@ async function handleReschedule(e) {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Confirm Reschedule & Send Email';
   }
+}
+
+// Render single reschedule calendar
+function renderSingleRescheduleCalendar() {
+  const year = singleRescheduleCalendarDate.getFullYear();
+  const month = singleRescheduleCalendarDate.getMonth();
+  
+  // Update month display
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December'];
+  document.getElementById('singleRescheduleMonthDisplay').textContent = `${monthNames[month]} ${year}`;
+  
+  // Get first day of month (adjusted for Mon-Sat week)
+  const firstDay = new Date(year, month, 1).getDay();
+  const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0, Sunday = 6
+  
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const calendarDays = document.getElementById('singleRescheduleCalendarDays');
+  calendarDays.innerHTML = '';
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // Add empty cells for days before month starts (Mon-Sat only)
+  for (let i = 0; i < adjustedFirstDay; i++) {
+    const emptyDay = document.createElement('div');
+    emptyDay.classList.add('mini-calendar-day', 'empty');
+    calendarDays.appendChild(emptyDay);
+  }
+  
+  // Add days of the month (Mon-Sat only, skip Sundays)
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayDate = new Date(year, month, day);
+    const dayOfWeek = dayDate.getDay();
+    const dateString = formatDateForComparison(dayDate);
+    
+    const dayElement = document.createElement('div');
+    dayElement.classList.add('mini-calendar-day');
+    dayElement.textContent = day;
+    
+    // Skip Sundays
+    if (dayOfWeek === 0) {
+      dayElement.classList.add('disabled');
+      dayElement.style.display = 'none';
+      calendarDays.appendChild(dayElement);
+      continue;
+    }
+    
+    // Check if day is in the past
+    if (dayDate < today) {
+      dayElement.classList.add('disabled');
+    }
+    // Check if day is fully closed
+    else if (closedSchedules.some(cs => cs.date === dateString && cs.type === 'full-day')) {
+      dayElement.classList.add('closed-day');
+    }
+    // Available day
+    else {
+      dayElement.addEventListener('click', () => selectSingleRescheduleDate(dayDate, dayElement));
+      
+      // Check if day has available slots
+      const hasAvailableSlots = checkDayHasAvailableSlots(dateString);
+      if (hasAvailableSlots) {
+        dayElement.classList.add('has-slots');
+      }
+    }
+    
+    // Highlight selected date
+    if (selectedSingleRescheduleDate && formatDateForComparison(selectedSingleRescheduleDate) === dateString) {
+      dayElement.classList.add('selected-reschedule');
+    }
+    
+    calendarDays.appendChild(dayElement);
+  }
+}
+
+// Select a date in single reschedule calendar
+function selectSingleRescheduleDate(date, element) {
+  selectedSingleRescheduleDate = date;
+  selectedSingleRescheduleTime = null;
+  
+  // Update calendar day selection
+  document.querySelectorAll('#singleRescheduleCalendarDays .mini-calendar-day').forEach(day => {
+    day.classList.remove('selected-reschedule');
+  });
+  element.classList.add('selected-reschedule');
+  
+  // Show time slots for selected date
+  showSingleRescheduleTimeSlots(date);
+}
+
+// Show available time slots for single reschedule
+function showSingleRescheduleTimeSlots(date) {
+  const dateString = formatDateForComparison(date);
+  const container = document.getElementById('timeSlotsReschedule');
+  const grid = document.getElementById('timeSlotsGridReschedule');
+  const dateDisplay = document.getElementById('selectedDateReschedule');
+  
+  dateDisplay.textContent = formatDate(dateString);
+  
+  const timeSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', 
+                      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', 
+                      '16:00', '16:30'];
+  
+  grid.innerHTML = timeSlots.map(slot => {
+    // Check if closed
+    const isClosed = closedSchedules.some(cs => {
+      if (cs.date !== dateString) return false;
+      if (cs.type === 'full-day') return true;
+      if (cs.type === 'specific-hours' && cs.timeSlots?.includes(slot)) return true;
+      return false;
+    });
+    
+    if (isClosed) {
+      return `<div class="time-slot-reschedule closed">${timeSlotDisplay[slot]}<br><small>Closed</small></div>`;
+    }
+    
+    // Check if booked (excluding current booking being rescheduled)
+    const isBooked = allBookings.some(b => 
+      b.date === dateString && 
+      b.timeSlot === slot && 
+      b.id !== currentBookingId &&
+      (b.status === 'pending' || b.status === 'confirmed')
+    );
+    
+    if (isBooked) {
+      return `<div class="time-slot-reschedule booked">${timeSlotDisplay[slot]}<br><small>Booked</small></div>`;
+    }
+    
+    // Available
+    const selectedClass = (selectedSingleRescheduleTime === slot) ? 'selected-time' : '';
+    return `<div class="time-slot-reschedule ${selectedClass}" onclick="selectSingleRescheduleTime('${slot}', this)">
+      ${timeSlotDisplay[slot]}<br><small>Available</small>
+    </div>`;
+  }).join('');
+  
+  container.style.display = 'block';
+}
+
+// Select a time slot for single reschedule
+window.selectSingleRescheduleTime = function(timeSlot, element) {
+  if (!selectedSingleRescheduleDate) {
+    alert('Please select a date first.');
+    return;
+  }
+  
+  selectedSingleRescheduleTime = timeSlot;
+  
+  // Update time slot selection
+  document.querySelectorAll('.time-slot-reschedule').forEach(slot => {
+    slot.classList.remove('selected-time');
+  });
+  element.classList.add('selected-time');
+  
+  // Auto-assign to the single booking
+  assignSingleReschedule();
+};
+
+// Start assigning for single booking
+window.startAssigningSingle = function() {
+  // Reset state
+  selectedSingleRescheduleDate = null;
+  selectedSingleRescheduleTime = null;
+  document.getElementById('timeSlotsReschedule').style.display = 'none';
+  
+  // Re-render calendar
+  renderSingleRescheduleCalendar();
+  
+  // Scroll calendar into view
+  document.querySelector('.reschedule-calendar-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// Reassign single booking
+window.reassignSingleBooking = function() {
+  startAssigningSingle();
+};
+
+// Assign selected slot to single booking
+function assignSingleReschedule() {
+  if (!selectedSingleRescheduleDate || !selectedSingleRescheduleTime) {
+    return;
+  }
+  
+  const dateString = formatDateForComparison(selectedSingleRescheduleDate);
+  
+  // Update UI to show assigned schedule
+  document.getElementById('assignedScheduleSingle').style.display = 'block';
+  document.getElementById('assignedDateSingle').textContent = formatDate(dateString);
+  document.getElementById('assignedTimeSingle').textContent = timeSlotDisplay[selectedSingleRescheduleTime];
+  document.getElementById('assignBtnSingle').style.display = 'none';
+  
+  singleRescheduleAssigned = true;
+  
+  // Hide time slots
+  document.getElementById('timeSlotsReschedule').style.display = 'none';
+  
+  // Scroll to reason field
+  document.querySelector('#rescheduleReason')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 // Send reschedule email via Gmail
@@ -785,7 +1018,9 @@ function showRescheduleTimeSlots(date) {
   
   dateDisplay.textContent = formatDate(dateString);
   
-  const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+  const timeSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', 
+                      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', 
+                      '16:00', '16:30'];
   
   grid.innerHTML = timeSlots.map(slot => {
     // Check if closed
@@ -1297,8 +1532,10 @@ async function renderCalendarView() {
     weekDates.push(date);
   }
   
-  // Time slots
-  const timeSlots = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+  // Time slots (30-minute intervals)
+  const timeSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', 
+                      '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', 
+                      '16:00', '16:30'];
   
   // Build calendar HTML
   let html = '';

@@ -42,8 +42,28 @@
             <button class="menu-toggle">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <div class="header-actions">
+                <button class="notification-btn" id="notificationBtn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
         </header>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <div class="notification-actions">
+                    <button class="mark-all-read" id="markAllRead">Mark all as read</button>
+                    <button class="clear-all-btn" id="clearAllNotifications">Clear all</button>
+                </div>
+            </div>
+            <div class="notification-list" id="notificationList">
+                <div class="notification-loading">Loading notifications...</div>
+            </div>
+        </div>
 
         <section class="dashboard-overview">
             <h1>Dashboard Overview</h1>

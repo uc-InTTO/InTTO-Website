@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Management - UC InTTO Admin</title>
     <link rel="stylesheet" href="css/team-style.css">
+    <link rel="stylesheet" href="css/notifications-shared.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -42,8 +43,28 @@
             <button class="menu-toggle">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <div class="header-actions">
+                <button class="notification-btn" id="notificationBtn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                <a href="index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
         </header>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <div class="notification-actions">
+                    <button class="mark-all-read" id="markAllRead">Mark all as read</button>
+                    <button class="clear-all-btn" id="clearAllNotifications">Clear all</button>
+                </div>
+            </div>
+            <div class="notification-list" id="notificationList">
+                <div class="notification-loading">Loading notifications...</div>
+            </div>
+        </div>
 
         <section class="page-content">
             <div class="page-header">
@@ -222,6 +243,7 @@
             overlay.classList.remove('active');
         });
     </script>
+    <script src="js/notifications-shared.js"></script>
     <script src="js/team.js"></script>
 </body>
 </html>

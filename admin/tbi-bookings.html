@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TBI Bookings - UC InTTO Admin</title>
     <link rel="stylesheet" href="css/tbi-bookings-style.css">
+    <link rel="stylesheet" href="css/notifications-shared.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -41,8 +42,28 @@
             <button class="menu-toggle">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            <div class="header-actions">
+                <button class="notification-btn" id="notificationBtn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </button>
+                <a href="/ucolab/index.html" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
         </header>
+
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <div class="notification-actions">
+                    <button class="mark-all-read" id="markAllRead">Mark all as read</button>
+                    <button class="clear-all-btn" id="clearAllNotifications">Clear all</button>
+                </div>
+            </div>
+            <div class="notification-list" id="notificationList">
+                <div class="notification-loading">Loading notifications...</div>
+            </div>
+        </div>
 
         <section class="bookings-section">
             <div class="section-header">
@@ -162,8 +183,8 @@
         </section>
     </main>
 
-    <div class="modal" id="rescheduleModal">
-        <div class="modal-content">
+    <div class="modal modal-large" id="rescheduleModal">
+        <div class="modal-content modal-content-large">
             <div class="modal-header">
                 <h2>Reschedule Booking</h2>
                 <button class="modal-close" id="closeRescheduleModal">&times;</button>
@@ -176,34 +197,74 @@
                     <p><strong>Current Time:</strong> <span id="rescheduleCurrentTime">-</span></p>
                 </div>
 
-                <form id="rescheduleForm">
-                    <div class="form-group">
-                        <label for="newDate">New Date <span class="required">*</span></label>
-                        <input type="date" id="newDate" required>
+                <div class="reschedule-layout">
+                    <div class="reschedule-calendar-section">
+                        <h3>Available Slots Calendar</h3>
+                        <div class="mini-calendar-controls">
+                            <button class="btn-nav-mini" id="prevMonthSingleReschedule">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <h4 id="singleRescheduleMonthDisplay">December 2025</h4>
+                            <button class="btn-nav-mini" id="nextMonthSingleReschedule">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="mini-calendar-container">
+                            <div class="mini-calendar-weekdays">
+                                <div>Mon</div>
+                                <div>Tue</div>
+                                <div>Wed</div>
+                                <div>Thu</div>
+                                <div>Fri</div>
+                                <div>Sat</div>
+                            </div>
+                            <div class="mini-calendar-days" id="singleRescheduleCalendarDays">
+                                <!-- Days will be populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="time-slots-reschedule" id="timeSlotsReschedule" style="display: none;">
+                            <h4>Available Time Slots for <span id="selectedDateReschedule"></span></h4>
+                            <div class="time-slots-grid-reschedule" id="timeSlotsGridReschedule">
+                                <!-- Time slots will be populated by JS -->
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="newTimeSlot">New Time Slot <span class="required">*</span></label>
-                        <select id="newTimeSlot" required>
-                            <option value="">Select time slot</option>
-                            <option value="08:00">8AM - 9AM</option>
-                            <option value="09:00">9AM - 10AM</option>
-                            <option value="10:00">10AM - 11AM</option>
-                            <option value="11:00">11AM - 12NN</option>
-                            <option value="13:00">1PM - 2PM</option>
-                            <option value="14:00">2PM - 3PM</option>
-                            <option value="15:00">3PM - 4PM</option>
-                            <option value="16:00">4PM - 5PM</option>
-                        </select>
+                    
+                    <div class="reschedule-bookings-section">
+                        <h3>New Schedule</h3>
+                        <div id="singleRescheduleAssignment" class="affected-bookings-list">
+                            <div class="affected-booking-item">
+                                <div id="assignedScheduleSingle" class="booking-assigned-schedule" style="display: none;">
+                                    <h5><i class="fa-solid fa-calendar-check"></i> New Schedule Assigned</h5>
+                                    <div class="assigned-info">
+                                        <div><strong>Date:</strong> <span id="assignedDateSingle"></span></div>
+                                        <div><strong>Time:</strong> <span id="assignedTimeSingle"></span></div>
+                                    </div>
+                                    <button type="button" class="btn-reassign" onclick="reassignSingleBooking()">
+                                        <i class="fa-solid fa-repeat"></i> Change Schedule
+                                    </button>
+                                </div>
+                                
+                                <button type="button" class="btn-primary" style="width: 100%; margin-top: 10px;" 
+                                        id="assignBtnSingle" onclick="startAssigningSingle()">
+                                    <i class="fa-solid fa-calendar-plus"></i> Select New Schedule
+                                </button>
+                            </div>
+                            
+                            <div class="form-group" style="margin-top: 20px;">
+                                <label for="rescheduleReason">Reason for Rescheduling <span class="required">*</span></label>
+                                <textarea id="rescheduleReason" rows="3" placeholder="Enter reason for rescheduling..." required></textarea>
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="rescheduleReason">Reason for Rescheduling <span class="required">*</span></label>
-                        <textarea id="rescheduleReason" rows="3" placeholder="Enter reason for rescheduling..." required></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-secondary" id="cancelReschedule">Cancel</button>
-                        <button type="submit" class="btn-primary">Confirm Reschedule & Send Email</button>
-                    </div>
-                </form>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelReschedule">Cancel</button>
+                    <button type="button" class="btn-primary" id="confirmSingleReschedule">Confirm Reschedule & Send Email</button>
+                </div>
             </div>
         </div>
     </div>
@@ -291,28 +352,58 @@
                         <label>Select Time Slots to Close <span class="required">*</span></label>
                         <div class="checkbox-group">
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="08:00"> 8AM - 9AM
+                                <input type="checkbox" name="closeTimeSlot" value="08:00"> 8:00AM - 8:30AM
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="09:00"> 9AM - 10AM
+                                <input type="checkbox" name="closeTimeSlot" value="08:30"> 8:30AM - 9:00AM
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="10:00"> 10AM - 11AM
+                                <input type="checkbox" name="closeTimeSlot" value="09:00"> 9:00AM - 9:30AM
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="11:00"> 11AM - 12NN
+                                <input type="checkbox" name="closeTimeSlot" value="09:30"> 9:30AM - 10:00AM
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="13:00"> 1PM - 2PM
+                                <input type="checkbox" name="closeTimeSlot" value="10:00"> 10:00AM - 10:30AM
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="14:00"> 2PM - 3PM
+                                <input type="checkbox" name="closeTimeSlot" value="10:30"> 10:30AM - 11:00AM
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="15:00"> 3PM - 4PM
+                                <input type="checkbox" name="closeTimeSlot" value="11:00"> 11:00AM - 11:30AM
                             </label>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="closeTimeSlot" value="16:00"> 4PM - 5PM
+                                <input type="checkbox" name="closeTimeSlot" value="11:30"> 11:30AM - 12:00PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="12:00"> 12:00PM - 12:30PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="12:30"> 12:30PM - 1:00PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="13:00"> 1:00PM - 1:30PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="13:30"> 1:30PM - 2:00PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="14:00"> 2:00PM - 2:30PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="14:30"> 2:30PM - 3:00PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="15:00"> 3:00PM - 3:30PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="15:30"> 3:30PM - 4:00PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="16:00"> 4:00PM - 4:30PM
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="closeTimeSlot" value="16:30"> 4:30PM - 5:00PM
                             </label>
                         </div>
                     </div>
@@ -488,6 +579,7 @@
         });
     </script>
 
+    <script src="js/notifications-shared.js"></script>
     <script type="module" src="js/tbi-bookings.js"></script>
 </body>
 </html>

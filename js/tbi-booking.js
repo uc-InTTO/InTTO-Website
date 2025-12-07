@@ -35,16 +35,26 @@ let closedSchedules = [];
 let allBookings = [];
 let currentWeekStart = new Date();
 
-// Time slots available (8AM to 5PM in 1-hour intervals)
+// Time slots available (8AM to 5PM in 30-minute intervals)
 const timeSlots = [
-  { start: '8AM', end: '9AM', value: '08:00' },
-  { start: '9AM', end: '10AM', value: '09:00' },
-  { start: '10AM', end: '11AM', value: '10:00' },
-  { start: '11AM', end: '12NN', value: '11:00' },
-  { start: '1PM', end: '2PM', value: '13:00' },
-  { start: '2PM', end: '3PM', value: '14:00' },
-  { start: '3PM', end: '4PM', value: '15:00' },
-  { start: '4PM', end: '5PM', value: '16:00' }
+  { start: '8:00AM', end: '8:30AM', value: '08:00' },
+  { start: '8:30AM', end: '9:00AM', value: '08:30' },
+  { start: '9:00AM', end: '9:30AM', value: '09:00' },
+  { start: '9:30AM', end: '10:00AM', value: '09:30' },
+  { start: '10:00AM', end: '10:30AM', value: '10:00' },
+  { start: '10:30AM', end: '11:00AM', value: '10:30' },
+  { start: '11:00AM', end: '11:30AM', value: '11:00' },
+  { start: '11:30AM', end: '12:00PM', value: '11:30' },
+  { start: '12:00PM', end: '12:30PM', value: '12:00' },
+  { start: '12:30PM', end: '1:00PM', value: '12:30' },
+  { start: '1:00PM', end: '1:30PM', value: '13:00' },
+  { start: '1:30PM', end: '2:00PM', value: '13:30' },
+  { start: '2:00PM', end: '2:30PM', value: '14:00' },
+  { start: '2:30PM', end: '3:00PM', value: '14:30' },
+  { start: '3:00PM', end: '3:30PM', value: '15:00' },
+  { start: '3:30PM', end: '4:00PM', value: '15:30' },
+  { start: '4:00PM', end: '4:30PM', value: '16:00' },
+  { start: '4:30PM', end: '5:00PM', value: '16:30' }
 ];
 
 // Initialize the calendar

@@ -214,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirm('Are you sure you want to remove this team member?')) {
             db.collection('team').doc(id).delete()
                 .then(() => {
-                    console.log('Team member deleted successfully');
                     // Auto-reload to reflect changes
                     setTimeout(() => location.reload(), 1000);
                 })
@@ -528,12 +527,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editingMemberId !== null) {
                 // Update existing member
                 await db.collection('team').doc(editingMemberId).update(formData);
-                console.log('Team member updated successfully');
             } else {
                 // Add new member
                 formData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 await db.collection('team').add(formData);
-                console.log('Team member added successfully');
             }
 
             closeModal();
@@ -720,8 +717,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update in Firestore
             await db.collection('team').doc(id1).update({ displayOrder: order2 });
             await db.collection('team').doc(id2).update({ displayOrder: order1 });
-
-            console.log('Display orders swapped successfully');
         } catch (error) {
             console.error('Error swapping display orders:', error);
             alert('Error reordering team members. Please try again.');

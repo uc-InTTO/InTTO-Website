@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadIPs();
 
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('pagehide', () => {
         if (typeof unsubscribe === 'function') {
             try { unsubscribe(); } catch (e) { }
         }

@@ -337,8 +337,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadIPsFromFirestore();
     showLoading();
 
-    // Cleanup listener on unload
-    window.addEventListener('beforeunload', () => {
+    // Cleanup listener on page hide
+    window.addEventListener('pagehide', () => {
         if (typeof unsubscribe === 'function') {
             try { unsubscribe(); } catch (e) { }
         }

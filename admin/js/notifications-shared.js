@@ -114,19 +114,10 @@ function listenToNotifications() {
     const projectListener = db.collection('startups')
         .where('status', '==', 'pending')
         .onSnapshot((snapshot) => {
-            console.log('📦 Project listener triggered, changes:', snapshot.docChanges().length);
             snapshot.docChanges().forEach((change) => {
                 if (change.type === 'added') {
                     const data = change.doc.data();
                     const createdAt = data.createdAt?.toDate() || new Date();
-                    
-                    console.log('📦 New project detected:', {
-                        id: change.doc.id,
-                        name: data.projectName || data.name,
-                        founder: data.founderName,
-                        createdAt: createdAt,
-                        isRecent: createdAt >= oneDayAgo
-                    });
                     
                     // Only notify for recent submissions (last 24 hours)
                     if (createdAt >= oneDayAgo) {
@@ -140,10 +131,7 @@ function listenToNotifications() {
                             link: 'startups.html',
                             data: data
                         };
-                        console.log('✅ Adding project notification:', notification);
                         addNotification(notification);
-                    } else {
-                        console.log('⏰ Project too old, skipping notification');
                     }
                 }
             });

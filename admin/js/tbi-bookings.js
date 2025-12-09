@@ -253,11 +253,11 @@ function setupEventListeners() {
     if (e.target.id === 'manualRescheduleModal') closeManualRescheduleModal();
   });
   
-  // Set minimum date for reschedule to tomorrow
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  document.getElementById('newDate').min = tomorrow.toISOString().split('T')[0];
-  document.getElementById('closeDateStart').min = new Date().toISOString().split('T')[0];
+  // Set minimum date for close day form to today
+  const closeDateInput = document.getElementById('closeDateStart');
+  if (closeDateInput) {
+    closeDateInput.min = new Date().toISOString().split('T')[0];
+  }
 }
 
 // Apply filters
@@ -1598,8 +1598,8 @@ function getCalendarCellData(dateStr, timeSlot) {
   
   // Available slot
   return `
-    <div class="calendar-slot available">
-      <div style="color: #999; font-size: 12px;">Available</div>
+    <div class="calendar-slot available" style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
+      <div style="color: #28a745; font-size: 13px; font-weight: 500; font-family: 'Poppins', sans-serif;">Available</div>
     </div>
   `;
 }

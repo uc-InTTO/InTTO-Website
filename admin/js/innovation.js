@@ -667,8 +667,8 @@ University of the Cordilleras - Innovation, Technology Transfer Office`
             }
         });
 
-        // Unsubscribe Firestore listeners on unload
-        window.addEventListener('beforeunload', () => {
+        // Unsubscribe Firestore listeners on page hide
+        window.addEventListener('pagehide', () => {
             if (typeof unsubscribe === 'function') {
                 try { unsubscribe(); } catch (e) { /* ignore */ }
             }

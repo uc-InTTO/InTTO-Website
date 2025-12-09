@@ -1053,6 +1053,7 @@ body {
     vertical-align: top;
     min-height: 80px;
     height: 80px;
+    background: #f0f9f5;;
 }
 
 .calendar-table tbody tr:nth-child(even) {
@@ -1061,8 +1062,8 @@ body {
 
 .time-slot-cell {
     font-weight: 500;
-    color: var(--text-dark);
-    background-color: var(--light-green);
+    color: black;
+    
 }
 
 .calendar-slot {
@@ -1073,7 +1074,7 @@ body {
 }
 
 .calendar-slot.available {
-    background-color: #fff;
+  background: #f0f9f5;
 }
 
 .calendar-slot.available:hover {

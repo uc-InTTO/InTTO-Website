@@ -1,5 +1,4 @@
 
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, deleteDoc, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
@@ -169,30 +168,32 @@ function updateStats() {
 }
 
 function setupEventListeners() {
-  document.getElementById('statusFilter').addEventListener('change', applyFilters);
-  document.getElementById('serviceFilter').addEventListener('change', applyFilters);
-  document.getElementById('dateFilter').addEventListener('change', applyFilters);
-  document.getElementById('searchFilter').addEventListener('input', applyFilters);
-  document.getElementById('resetFilters').addEventListener('click', resetFilters);
+  document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
+  document.getElementById('serviceFilter')?.addEventListener('change', applyFilters);
+  document.getElementById('dateFilter')?.addEventListener('change', applyFilters);
+  document.getElementById('searchFilter')?.addEventListener('input', applyFilters);
+  document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
   
-  document.getElementById('closeRescheduleModal').addEventListener('click', closeRescheduleModal);
-  document.getElementById('cancelReschedule').addEventListener('click', closeRescheduleModal);
-  document.getElementById('closeViewModal').addEventListener('click', closeViewModal);
+  document.getElementById('closeRescheduleModal')?.addEventListener('click', closeRescheduleModal);
+  document.getElementById('cancelReschedule')?.addEventListener('click', closeRescheduleModal);
+  document.getElementById('closeViewModal')?.addEventListener('click', closeViewModal);
   
-  document.getElementById('openCloseDayModal').addEventListener('click', openCloseDayModal);
-  document.getElementById('closeCloseDayModal').addEventListener('click', closeCloseDayModal);
-  document.getElementById('cancelCloseDay').addEventListener('click', closeCloseDayModal);
+  document.getElementById('openCloseDayModal')?.addEventListener('click', openCloseDayModal);
+  document.getElementById('closeCloseDayModal')?.addEventListener('click', closeCloseDayModal);
+  document.getElementById('cancelCloseDay')?.addEventListener('click', closeCloseDayModal);
   
-  document.getElementById('closeType').addEventListener('change', (e) => {
+  document.getElementById('closeType')?.addEventListener('change', (e) => {
     const timeSlotGroup = document.getElementById('timeSlotGroup');
-    if (e.target.value === 'specific-hours') {
-      timeSlotGroup.style.display = 'block';
-    } else {
-      timeSlotGroup.style.display = 'none';
+    if (timeSlotGroup) {
+      if (e.target.value === 'specific-hours') {
+        timeSlotGroup.style.display = 'block';
+      } else {
+        timeSlotGroup.style.display = 'none';
+      }
     }
   });
   
-  document.getElementById('closeDayForm').addEventListener('submit', handleCloseDay);
+  document.getElementById('closeDayForm')?.addEventListener('submit', handleCloseDay);
   
   document.getElementById('closeManualRescheduleModal')?.addEventListener('click', closeManualRescheduleModal);
   document.getElementById('cancelManualReschedule')?.addEventListener('click', closeManualRescheduleModal);
@@ -218,13 +219,13 @@ function setupEventListeners() {
   
   document.getElementById('confirmSingleReschedule')?.addEventListener('click', handleSingleReschedule);
   
-  document.getElementById('rescheduleModal').addEventListener('click', (e) => {
+  document.getElementById('rescheduleModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'rescheduleModal') closeRescheduleModal();
   });
-  document.getElementById('viewModal').addEventListener('click', (e) => {
+  document.getElementById('viewModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'viewModal') closeViewModal();
   });
-  document.getElementById('closeDayModal').addEventListener('click', (e) => {
+  document.getElementById('closeDayModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'closeDayModal') closeCloseDayModal();
   });
   document.getElementById('manualRescheduleModal')?.addEventListener('click', (e) => {
@@ -624,8 +625,10 @@ function closeManualRescheduleModal() {
   currentRescheduleBookingIndex = null;
   temporaryAssignments = []; 
   
-  document.getElementById('closeDayForm').reset();
-  document.getElementById('timeSlotGroup').style.display = 'none';
+  const form = document.getElementById('closeDayForm');
+  if(form) form.reset();
+  const timeSlotGroup = document.getElementById('timeSlotGroup');
+  if (timeSlotGroup) timeSlotGroup.style.display = 'none';
 }
 
 async function confirmAllReschedules() {
@@ -898,6 +901,8 @@ function formatTimestamp(timestamp) {
 function showError(message) {
   alert(message);
 }
+
+// Calendar View Modal Management
 let currentWeekStart = new Date();
 currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() + 1); 
 
@@ -920,18 +925,26 @@ document.getElementById('nextWeek')?.addEventListener('click', () => {
 });
 
 function openCalendarView() {
-  document.getElementById('calendarViewModal').style.display = 'flex';
-  renderCalendarView();
+  const modal = document.getElementById('calendarViewModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    renderCalendarView();
+  }
 }
 
 function closeCalendarView() {
-  document.getElementById('calendarViewModal').style.display = 'none';
+  const modal = document.getElementById('calendarViewModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
 }
 
 async function renderCalendarView() {
   const calendarBody = document.getElementById('calendarViewBody');
   const weekDisplay = document.getElementById('calendarWeekDisplay');
   
+  if (!calendarBody || !weekDisplay) return;
+
   const weekEnd = new Date(currentWeekStart);
   weekEnd.setDate(weekEnd.getDate() + 5); 
   
@@ -988,15 +1001,15 @@ function getCalendarCellData(dateStr, timeSlot) {
     `;
   }
   
-  // PRIORITY CHECK:
-  // If an ACTIVE booking exists, show it.
+  // PRIORITY LOGIC:
+  // 1. Look for ACTIVE bookings first.
   const activeBooking = allBookings.find(b => 
     b.date === dateStr && 
     b.timeSlot === timeSlot &&
     ['pending', 'confirmed', 'rescheduled', 'completed'].includes(b.status)
   );
 
-  // If we find an active booking, we return that.
+  // 2. If active booking found, return it.
   if (activeBooking) {
     return `
       <div class="calendar-slot booked" onclick="viewBooking('${activeBooking.id}')">
@@ -1009,9 +1022,8 @@ function getCalendarCellData(dateStr, timeSlot) {
     `;
   } 
   
-  // If NO active booking is found, we fall through here.
-  // We explicitly DO NOT check for or render 'cancelled' bookings.
-  // This effectively hides cancelled bookings and shows the slot as Available.
+  // 3. If NO active booking found (even if there is a 'cancelled' one), return empty/available.
+  // This means cancelled bookings are effectively invisible on the calendar.
   
   return `
     <div class="calendar-slot available">
@@ -1025,3 +1037,182 @@ document.getElementById('calendarViewModal')?.addEventListener('click', (e) => {
     closeCalendarView();
   }
 });
+
+async function loadClosedSchedules() {
+  try {
+    const closedRef = collection(db, 'closedSchedules');
+    const q = query(closedRef, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    
+    closedSchedules = [];
+    snapshot.forEach(doc => {
+      closedSchedules.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    renderClosedSchedules();
+  } catch (error) {
+    console.error('Error loading closed schedules:', error);
+  }
+}
+
+function renderClosedSchedules() {
+  const container = document.getElementById('closedScheduleItems');
+  
+  if (!container) return; // Guard clause
+
+  if (closedSchedules.length === 0) {
+    container.innerHTML = '<p class="loading-text">No closed schedules</p>';
+    return;
+  }
+  
+  container.innerHTML = closedSchedules.map(schedule => `
+    <div class="closed-schedule-item">
+      <div class="schedule-header">
+        <span class="schedule-date">${formatDate(schedule.date)}</span>
+        <button class="btn-remove-closure" onclick="removeClosure('${schedule.id}')">
+          <i class="fa-solid fa-trash"></i> Remove
+        </button>
+      </div>
+      <div class="schedule-time">
+        ${schedule.type === 'full-day' ? 'Full Day Closed' : `Time Slots: ${schedule.timeSlots.map(t => timeSlotDisplay[t]).join(', ')}`}
+      </div>
+      <div class="schedule-reason">
+        Reason: ${schedule.reason}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openCloseDayModal() {
+  const form = document.getElementById('closeDayForm');
+  if (form) form.reset();
+  
+  const timeSlotGroup = document.getElementById('timeSlotGroup');
+  if (timeSlotGroup) timeSlotGroup.style.display = 'none';
+  
+  loadClosedSchedules();
+  
+  const modal = document.getElementById('closeDayModal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeCloseDayModal() {
+  const modal = document.getElementById('closeDayModal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+}
+
+async function handleCloseDay(e) {
+  e.preventDefault();
+  
+  // Use e.target directly to reference the form, avoiding reference errors.
+  const form = e.target;
+  
+  const closeTypeInput = document.getElementById('closeType');
+  const closeDateInput = document.getElementById('closeDateStart');
+  const closeReasonInput = document.getElementById('closeReason');
+  
+  if (!closeTypeInput || !closeDateInput || !closeReasonInput) {
+    console.error("Missing form elements");
+    return;
+  }
+
+  const closeType = closeTypeInput.value;
+  const closeDate = closeDateInput.value;
+  const closeReason = closeReasonInput.value;
+  
+  let timeSlots = [];
+  if (closeType === 'specific-hours') {
+    const checkedBoxes = document.querySelectorAll('input[name="closeTimeSlot"]:checked');
+    timeSlots = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (timeSlots.length === 0) {
+      alert('Please select at least one time slot to close.');
+      return;
+    }
+  }
+  
+  const submitBtn = form.querySelector('.btn-primary');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Processing...';
+  }
+  
+  try {
+    const affectedBookings = allBookings.filter(booking => {
+      if (booking.date !== closeDate) return false;
+      if (booking.status === 'cancelled' || booking.status === 'completed') return false;
+      
+      if (closeType === 'full-day') return true;
+      
+      if (closeType === 'specific-hours' && timeSlots.includes(booking.timeSlot)) return true;
+      
+      return false;
+    });
+    
+    if (affectedBookings.length > 0) {
+      pendingClosureData = {
+        type: closeType,
+        date: closeDate,
+        timeSlots: timeSlots,
+        reason: closeReason
+      };
+      
+      affectedBookingsForReschedule = affectedBookings;
+      
+      closeCloseDayModal();
+      
+      openManualRescheduleModal();
+      
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Confirm Closure';
+      }
+      return;
+    }
+    
+    await saveScheduleClosure(closeType, closeDate, timeSlots, closeReason);
+    
+    // Success: Alert first
+    alert('Schedule closed successfully!');
+    
+    // UI Cleanup logic separated into safe blocks
+    try {
+        if(typeof loadClosedSchedules === 'function') loadClosedSchedules();
+        if(form && typeof form.reset === 'function') form.reset();
+        const tsGroup = document.getElementById('timeSlotGroup');
+        if (tsGroup) tsGroup.style.display = 'none';
+    } catch(uiError) {
+        console.warn('UI update failed after successful save:', uiError);
+        // Do NOT alert failure here, as the save worked.
+    }
+    
+  } catch (error) {
+    console.error('Error closing schedule:', error);
+    alert('Failed to close schedule. Please try again.');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Confirm Closure';
+    }
+  }
+}
+
+async function saveScheduleClosure(type, date, timeSlots, reason) {
+  const closedRef = collection(db, 'closedSchedules');
+  await addDoc(closedRef, {
+    type: type,
+    date: date,
+    timeSlots: timeSlots,
+    reason: reason,
+    createdAt: Timestamp.now()
+  });
+}

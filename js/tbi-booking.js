@@ -110,8 +110,9 @@ function renderCalendar() {
       dayElement.classList.add('available');
       dayElement.addEventListener('click', () => selectDate(dayDate, dayElement));
       
+      // Removed 'cancelled' from this check so the day doesn't look busy if slots are free
       const hasActiveBookings = bookingsData[dateString] && bookingsData[dateString].some(b => 
-        ['pending', 'confirmed', 'rescheduled'].includes(b.status)
+        ['pending', 'confirmed', 'rescheduled', 'completed'].includes(b.status)
       );
 
       if (hasActiveBookings) {
@@ -183,14 +184,18 @@ function showTimeSlots(date) {
       slotElement.title = 'This time slot is closed';
     }
     else {
-      const isBooked = bookedSlots.some(booking => 
+      // PRIORITY: Only check for ACTIVE bookings. Cancelled bookings are ignored here.
+      const activeBooking = bookedSlots.find(booking => 
         booking.timeSlot === slot.value && 
-        ['pending', 'confirmed', 'rescheduled'].includes(booking.status)
+        ['pending', 'confirmed', 'rescheduled', 'completed'].includes(booking.status)
       );
       
-      if (isBooked) {
+      if (activeBooking) {
         slotElement.classList.add('booked');
-      } else {
+        // No click listener = unclickable
+      } 
+      else {
+        // Available slot (even if it was cancelled previously)
         slotElement.addEventListener('click', () => selectTimeSlot(slot, slotElement));
       }
     }
@@ -199,7 +204,6 @@ function showTimeSlots(date) {
   });
   
   container.style.display = 'block';
-  
   container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -359,9 +363,10 @@ async function handleBookingSubmit(e) {
     
     const existingBookings = await getDocs(q);
     
+    // Only fail if there is an ACTIVE booking. Cancelled does NOT block.
     const isSlotTaken = !existingBookings.empty && existingBookings.docs.some(doc => {
       const data = doc.data();
-      return ['pending', 'confirmed', 'rescheduled'].includes(data.status);
+      return ['pending', 'confirmed', 'rescheduled', 'completed'].includes(data.status);
     });
 
     if (isSlotTaken) {
@@ -472,19 +477,20 @@ function getCalendarCellData(dateStr, timeSlot) {
     `;
   }
   
-  const booking = allBookings.find(b => 
+  // Only show ACTIVE bookings. Cancelled are invisible/available.
+  const activeBooking = allBookings.find(b => 
     b.date === dateStr && 
     b.timeSlot === timeSlot &&
-    (b.status === 'pending' || b.status === 'confirmed' || b.status === 'rescheduled')
+    ['pending', 'confirmed', 'rescheduled', 'completed'].includes(b.status)
   );
   
-  if (booking) {
+  if (activeBooking) {
     return `
       <td class="calendar-cell booked">
         <div class="cell-content">
-          <span class="status-badge ${booking.status}">${booking.status}</span>
-          <small>${booking.fullName || ''}</small>
-          <small>${booking.serviceType || 'TBI Assessment'}</small>
+          <span class="status-badge ${activeBooking.status}">${activeBooking.status}</span>
+          <small>${activeBooking.fullName || ''}</small>
+          <small>${activeBooking.serviceType || 'TBI Assessment'}</small>
         </div>
       </td>
     `;

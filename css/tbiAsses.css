@@ -1630,10 +1630,12 @@ iframe {
 
 .calendar-cell.booked {
   background: #e3f2fd;
+  border-left: 4px solid #2196f3;
 }
 
 .calendar-cell.closed {
   background: #ffe0e0;
+  border-left: 4px solid #f44336;
 }
 
 .cell-content {
@@ -1671,9 +1673,15 @@ iframe {
   color: #0c5460;
 }
 
+.status-badge.completed {
+  background-color: #d4edda;
+    color: #155724;
+}
+
 .calendar-cell.closed .status-badge {
   background: #f8d7da;
   color: #721c24;
+  
 }
 
 .status-text {

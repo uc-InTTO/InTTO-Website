@@ -12,12 +12,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const sortDropdown = document.getElementById('sort-ips');
 
     const addIpBtn = document.getElementById('add-ip-btn');
-    const exportExcelBtn = document.getElementById('export-excel-btn');
     const ipModalOverlay = document.getElementById('ip-modal-overlay');
     const closeIpModalBtn = document.getElementById('close-ip-modal-btn');
     const cancelIpBtn = document.getElementById('cancel-ip-btn');
     const ipForm = document.getElementById('ip-form');
     const ipStatusSelect = document.getElementById('ip-status');
+    const ipGrantDateInput = document.getElementById('ip-grant-date');
     const ipModalTitle = document.getElementById('ip-modal-title');
     const ipModalSubtitle = document.getElementById('ip-modal-subtitle');
     const submitIpBtn = document.getElementById('submit-ip-btn');
@@ -70,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         number: raw.number || '',
                         inventors: raw.inventors || '',
                         appDate: raw.appDate || '',
+                        grantDate: raw.grantDate || null,
                         createdAt: raw.createdAt || null,
                         updatedAt: raw.updatedAt || null
                     });
@@ -151,7 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="ip-meta">
                         <p><strong>Inventors:</strong> ${ip.inventors}</p>
-                        <p><strong>Registration Date:</strong> ${ip.appDate}</p>
+                        <p><strong>Application Date:</strong> ${ip.appDate}</p>
+                        ${ip.grantDate ? `<p><strong>Grant Date:</strong> ${ip.grantDate}</p>` : ''}
                     </div>
                 </div>
                 <div class="ip-actions">
@@ -184,20 +186,27 @@ document.addEventListener('DOMContentLoaded', () => {
         ipModalOverlay.classList.remove('active');
         ipForm.reset();
         editingIpId = null;
+        ipGrantDateInput.disabled = true;
     };
 
     const editIP = (id) => {
         const ip = ipData.find(item => item.id === id);
         if (!ip) return;
         editingIpId = id;
-        
         ipTitleInput.value = ip.title;
+        ipStatusSelect.value = ip.status;
         ipTypeSelect.value = ip.type;
         ipNumberInput.value = ip.number;
         ipAppDateInput.value = ip.appDate;
         ipInventorsInput.value = ip.inventors;
-        ipStatusSelect.value = ip.status.toLowerCase(); 
         
+        if (ip.status === 'granted') {
+            ipGrantDateInput.disabled = false;
+            ipGrantDateInput.value = ip.grantDate;
+        } else {
+            ipGrantDateInput.disabled = true;
+            ipGrantDateInput.value = '';
+        }
         ipModalTitle.textContent = 'Edit IP Application';
         ipModalSubtitle.textContent = 'Update intellectual property information';
         submitIpBtn.textContent = 'Update IP Application';
@@ -221,41 +230,18 @@ document.addEventListener('DOMContentLoaded', () => {
         ipModalTitle.textContent = 'Add New IP Application';
         ipModalSubtitle.textContent = 'Add a new intellectual property application';
         submitIpBtn.textContent = 'Create IP Application';
+        ipGrantDateInput.disabled = true;
         openModal();
     });
-
-    if (exportExcelBtn) {
-        exportExcelBtn.addEventListener('click', () => {
-            if (ipData.length === 0) {
-                alert('No data to export.');
-                return;
-            }
-
-            const dataToExport = ipData.map(item => ({
-                'Title': item.title,
-                'Type': item.type,
-                'Status': item.status,
-                'IP Number': item.number,
-                'Inventors': item.inventors,
-                'Registration Date': item.appDate
-            }));
-
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(dataToExport);
-
-            const wscols = [
-                {wch: 40}, {wch: 15}, {wch: 10}, {wch: 20}, {wch: 30}, {wch: 15}
-            ];
-            ws['!cols'] = wscols;
-
-            XLSX.utils.book_append_sheet(wb, ws, "IP Applications");
-            XLSX.writeFile(wb, "UC_InTTO_IP_Applications.xlsx");
-        });
-    }
 
     closeIpModalBtn.addEventListener('click', closeModal);
     cancelIpBtn.addEventListener('click', closeModal);
     ipModalOverlay.addEventListener('click', e => { if (e.target === ipModalOverlay) closeModal(); });
+
+    ipStatusSelect.addEventListener('change', () => {
+        ipGrantDateInput.disabled = ipStatusSelect.value !== 'granted';
+        if (ipStatusSelect.value !== 'granted') ipGrantDateInput.value = '';
+    });
 
     ipForm.addEventListener('submit', async e => {
         e.preventDefault();
@@ -265,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
             type: ipTypeSelect.value,
             number: ipNumberInput.value,
             appDate: ipAppDateInput.value,
+            grantDate: ipStatusSelect.value === 'granted' ? ipGrantDateInput.value : null,
             inventors: ipInventorsInput.value || ''
         };
         try {

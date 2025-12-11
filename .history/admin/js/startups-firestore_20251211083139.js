@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tagsHTML = `
                 <span class="tag ${statusClass}" style="font-family: 'Poppins', sans-serif;">${statusText}</span>
                 ${incubationTagHTML}
-                <span class="tag" style="font-family: 'Poppins', sans-serif;">${String(startup.category || startup.industry || 'Uncategorized').trim()}</span>
+                <span class="tag" style="font-family: 'Poppins', sans-serif;">${startup.category || 'Uncategorized'}</span>
                 <span class="tag" style="font-family: 'Poppins', sans-serif;">${startup.trl || '?'}</span>
                 ${startup.collab ? `<span class="tag tag-collab" style="font-family: 'Poppins', sans-serif;">Open for Collab</span>` : ''}
                 ${tagsHTMLFromList(tagsArray)}
@@ -243,28 +243,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const formattedData = startupsData.map(s => {
-                const cleanCategory = String(s.category || s.Category || s.industry || s.Industry || '').trim();
-
-                return {
-                    "Project Name": s.name || '',
-                    "Category": cleanCategory,
-                    "Status": s.status || '',
-                    "TRL Level": s.trl || '',
-                    "Description": s.description || '',
-                    "Problem Statement": s.problemStatement || '',
-                    "Solution": s.solution || '',
-                    "Founder Name": s.founderName || '',
-                    "Founder Email": s.founderEmail || '',
-                    "Founder Phone": s.founderPhone || '',
-                    "Team Size": s.teamSize || '',
-                    "Website": s.website || '',
-                    "SDGs": Array.isArray(s.sdgs) ? s.sdgs.join(', ') : (s.sdgs || ''),
-                    "Start Date": s.startDate || '',
-                    "Open for Collab": s.collab ? 'Yes' : 'No',
-                    "Created At": s.createdAt && s.createdAt.toDate ? s.createdAt.toDate().toLocaleDateString() : ''
-                };
-            });
+            const formattedData = startupsData.map(s => ({
+                "Project Name": s.name || '',
+                "Category": s.category || s.industry || '',
+                "Status": s.status || '',
+                "TRL Level": s.trl || '',
+                "Description": s.description || '',
+                "Problem Statement": s.problemStatement || '',
+                "Solution": s.solution || '',
+                "Founder Name": s.founderName || '',
+                "Founder Email": s.founderEmail || '',
+                "Founder Phone": s.founderPhone || '',
+                "Team Size": s.teamSize || '',
+                "Website": s.website || '',
+                "SDGs": Array.isArray(s.sdgs) ? s.sdgs.join(', ') : (s.sdgs || ''),
+                "Start Date": s.startDate || '',
+                "Open for Collab": s.collab ? 'Yes' : 'No',
+                "Created At": s.createdAt && s.createdAt.toDate ? s.createdAt.toDate().toLocaleDateString() : ''
+            }));
 
             const ws = XLSX.utils.json_to_sheet(formattedData);
             const wb = XLSX.utils.book_new();

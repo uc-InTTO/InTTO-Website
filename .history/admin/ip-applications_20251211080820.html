@@ -16,28 +16,6 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
-        .header-actions-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .btn-success {
-            background-color: #107c41;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.9rem;
-            transition: background 0.3s;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-        }
     </style>
 </head>
 <body>
@@ -55,7 +33,7 @@
                 <li><a href="metrics.html"><i class="fa-solid fa-chart-line"></i> Metrics</a></li>
                 <li><a href="news-events.html"><i class="fa-solid fa-newspaper"></i> News & Events</a></li>
                 <li><a href="team.html"><i class="fa-solid fa-users"></i> Team</a></li>
-                <li><a href="innovation.html"><i class="fa-solid fa-person"></i> Incubation Applications</a></li> 
+                <li><a href="innovation.html"><i class="fa-solid fa-person"></i> Innovation</a></li> 
                 <li><a href="sdg.html"><i class="fa-solid fa-bullseye"></i> SDG</a></li>
                 <li><a href="tbi-bookings.html"><i class="fa-solid fa-calendar-check"></i> TBI Bookings</a></li>
             </ul>
@@ -78,6 +56,7 @@
             </div>
         </header>
 
+        <!-- Notification Dropdown -->
         <div class="notification-dropdown" id="notificationDropdown">
             <div class="notification-header">
                 <h3>Notifications</h3>
@@ -97,10 +76,7 @@
                     <h1>Intellectual Property Management</h1>
                     <p class="subtitle">Manage IP applications and granted intellectual properties</p>
                 </div>
-                <div class="header-actions-container">
-                    <button class="btn btn-success" id="export-excel-btn"><i class="fa-solid fa-file-excel"></i> Export to Excel</button>
-                    <button class="btn btn-primary" id="add-ip-btn"><i class="fa-solid fa-plus"></i> Add IP Application</button>
-                </div>
+                <button class="btn btn-primary" id="add-ip-btn"><i class="fa-solid fa-plus"></i> Add IP Application</button>
             </div>
 
             <div class="stats-grid">
@@ -214,6 +190,12 @@
                         <label for="ip-app-date">Registration Date</label>
                         <input type="date" id="ip-app-date" required>
                     </div>
+
+                    <div class="form-group">
+                        <label for="ip-grant-date">Grant Date</label>
+                        <input type="date" id="ip-grant-date" disabled>
+                        <small>Only applicable if status is 'Granted'</small>
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" id="cancel-ip-btn">Cancel</button>
@@ -257,7 +239,6 @@
         } catch (e) { }
         try { window.db = window.db || firebase.firestore(); } catch (e) { }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="js/notifications-shared.js"></script>
     <script src="js/ip-applications.js"></script>
 </body>

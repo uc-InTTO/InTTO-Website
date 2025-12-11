@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="ip-meta">
                         <p><strong>Inventors:</strong> ${ip.inventors}</p>
-                        <p><strong>Registration Date:</strong> ${ip.appDate}</p>
+                        <p><strong>Application Date:</strong> ${ip.appDate}</p>
                     </div>
                 </div>
                 <div class="ip-actions">

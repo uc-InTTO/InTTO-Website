@@ -936,6 +936,27 @@ body {
     transition: all 0.3s ease;
 }
 
+.btn-download-data {
+    padding: 12px 24px;
+    background: #0056b3;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-download-data:hover {
+    background: #004494;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 86, 179, 0.3);
+}
+
 .btn-view-calendar:hover {
     background-color: #0e4d32;
     transform: translateY(-2px);
@@ -1185,6 +1206,7 @@ body {
         width: 100%;
     }
     
+    .btn-download-data,
     .btn-view-calendar,
     .btn-close-schedule {
         width: 100%;

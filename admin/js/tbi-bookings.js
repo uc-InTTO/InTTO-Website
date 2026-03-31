@@ -173,6 +173,7 @@ function setupEventListeners() {
   document.getElementById('dateFilter')?.addEventListener('change', applyFilters);
   document.getElementById('searchFilter')?.addEventListener('input', applyFilters);
   document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
+  document.getElementById('downloadBookingsBtn')?.addEventListener('click', downloadBookingsData);
   
   document.getElementById('closeRescheduleModal')?.addEventListener('click', closeRescheduleModal);
   document.getElementById('cancelReschedule')?.addEventListener('click', closeRescheduleModal);
@@ -283,6 +284,109 @@ function resetFilters() {
   document.getElementById('dateFilter').value = '';
   document.getElementById('searchFilter').value = '';
   applyFilters();
+}
+
+function downloadBookingsData() {
+  const baseData = filteredBookings.length > 0 ? filteredBookings : allBookings;
+  const sourceData = baseData.filter((booking) => booking.status === 'completed');
+
+  if (sourceData.length === 0) {
+    alert('No completed booking data available to download.');
+    return;
+  }
+
+  const headers = [
+    'Booking ID',
+    'Short ID',
+    'Service Type',
+    'Client Name',
+    'Email',
+    'Project Name',
+    'Team Members',
+    'Project Description',
+    'Date (Raw)',
+    'Date (Formatted)',
+    'Time Slot Code',
+    'Time Slot Display',
+    'Status',
+    'Created At',
+    'Updated At',
+    'Confirmed At',
+    'Completed At',
+    'Cancelled At',
+    'Rescheduled At',
+    'Reschedule Reason',
+    'Cancellation Reason',
+    'Old Date',
+    'Old Time Slot'
+  ];
+
+  const rows = sourceData.map((booking) => {
+    const timeDisplay = timeSlotDisplay[booking.timeSlot] || booking.timeSlotDisplay || '-';
+
+    return [
+      booking.id || '-',
+      booking.id ? `#${booking.id.substring(0, 8)}` : '-',
+      booking.serviceType || 'TBI Assessment',
+      booking.fullName || '-',
+      booking.email || '-',
+      booking.projectName || '-',
+      booking.teamMembers || '-',
+      booking.projectDescription || '-',
+      booking.date || '-',
+      booking.date ? formatDate(booking.date) : '-',
+      booking.timeSlot || '-',
+      timeDisplay,
+      booking.status || '-',
+      formatTimestampValue(booking.createdAt),
+      formatTimestampValue(booking.updatedAt),
+      formatTimestampValue(booking.confirmedAt),
+      formatTimestampValue(booking.completedAt),
+      formatTimestampValue(booking.cancelledAt),
+      formatTimestampValue(booking.rescheduledAt),
+      booking.rescheduleReason || '-',
+      booking.cancellationReason || '-',
+      booking.oldDate || '-',
+      booking.oldTimeSlot || '-'
+    ];
+  });
+
+  const csvContent = [headers, ...rows]
+    .map((row) => row.map((cell) => escapeCsvCell(cell)).join(','))
+    .join('\n');
+
+  const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const today = new Date().toISOString().split('T')[0];
+
+  link.href = url;
+  link.download = `tbi-bookings-completed-${today}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function escapeCsvCell(value) {
+  const normalizedValue = String(value ?? '').replace(/\r?\n|\r/g, ' ').trim();
+  const escaped = normalizedValue.replace(/"/g, '""');
+  return `"${escaped}"`;
+}
+
+function formatTimestampValue(timestamp) {
+  if (!timestamp) return '-';
+
+  const parsedDate = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  if (Number.isNaN(parsedDate.getTime())) return '-';
+
+  return parsedDate.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 }
 
 window.viewBooking = function(bookingId) {

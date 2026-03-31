@@ -368,6 +368,8 @@ function downloadBookingsData() {
   URL.revokeObjectURL(url);
 }
 
+window.downloadBookingsData = downloadBookingsData;
+
 function escapeCsvCell(value) {
   const normalizedValue = String(value ?? '').replace(/\r?\n|\r/g, ' ').trim();
   const escaped = normalizedValue.replace(/"/g, '""');

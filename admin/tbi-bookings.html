@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TBI Bookings - UC InTTO Admin</title>
-    <link rel="stylesheet" href="css/tbi-bookings-style.css">
+    <link rel="stylesheet" href="css/tbi-bookings-style.css?v=20260331">
     <link rel="stylesheet" href="css/notifications-shared.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,7 +72,7 @@
                     <p class="section-subtitle">Manage all assessment and service bookings</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-download-data" id="downloadBookingsBtn">
+                    <button class="btn-view-calendar btn-download-data" id="downloadBookingsBtn" onclick="window.downloadBookingsData && window.downloadBookingsData()">
                         <i class="fa-solid fa-file-arrow-down"></i> Download Data
                     </button>
                     <button class="btn-view-calendar" id="openCalendarViewModal">
@@ -583,6 +583,6 @@
     </script>
 
     <script src="js/notifications-shared.js"></script>
-    <script type="module" src="js/tbi-bookings.js"></script>
+    <script type="module" src="js/tbi-bookings.js?v=20260331"></script>
 </body>
 </html>

@@ -856,10 +856,12 @@ BOOKING DETAILS:
 • Booking ID: #${booking.id.substring(0, 8)}
 
 WHAT TO BRING:
-• Valid ID
-• Project documentation (if applicable)
-• Notebook and pen for taking notes
-• Any materials related to your project
+• Presentation
+• One Pager
+
+WHAT TO WEAR:
+• Business Casual
+(Non-Compliance will be subjected to rescheduling and/or cancellation of schedule)
 
 LOCATION:
 UC InTTO Office

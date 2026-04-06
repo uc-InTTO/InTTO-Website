@@ -40,8 +40,6 @@ const timeSlots = [
   { start: '10:30AM', end: '11:00AM', value: '10:30' },
   { start: '11:00AM', end: '11:30AM', value: '11:00' },
   { start: '11:30AM', end: '12:00PM', value: '11:30' },
-  { start: '12:00PM', end: '12:30PM', value: '12:00' },
-  { start: '12:30PM', end: '1:00PM', value: '12:30' },
   { start: '1:00PM', end: '1:30PM', value: '13:00' },
   { start: '1:30PM', end: '2:00PM', value: '13:30' },
   { start: '2:00PM', end: '2:30PM', value: '14:00' },

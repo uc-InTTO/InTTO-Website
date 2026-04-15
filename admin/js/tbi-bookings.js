@@ -31,6 +31,7 @@ let singleRescheduleCalendarDate = new Date();
 let selectedSingleRescheduleDate = null;
 let selectedSingleRescheduleTime = null;
 let singleRescheduleAssigned = false;
+let downloadDropdownOpen = false;
 
 const timeSlotDisplay = {
   '08:00': '8:00AM - 8:30AM',
@@ -173,7 +174,34 @@ function setupEventListeners() {
   document.getElementById('dateFilter')?.addEventListener('change', applyFilters);
   document.getElementById('searchFilter')?.addEventListener('input', applyFilters);
   document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
-  document.getElementById('downloadBookingsBtn')?.addEventListener('click', downloadBookingsData);
+  const downloadDropdown = document.getElementById('downloadDropdown');
+  const downloadButton = document.getElementById('downloadBookingsBtn');
+  const downloadMenu = document.getElementById('downloadDropdownMenu');
+
+  downloadButton?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    toggleDownloadDropdown();
+  });
+
+  downloadMenu?.addEventListener('click', (event) => {
+    const option = event.target.closest('.download-option');
+    if (!option) return;
+
+    downloadBookingsData(option.dataset.downloadScope);
+    closeDownloadDropdown();
+  });
+
+  document.addEventListener('click', (event) => {
+    if (downloadDropdown && !downloadDropdown.contains(event.target)) {
+      closeDownloadDropdown();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeDownloadDropdown();
+    }
+  });
   
   document.getElementById('closeRescheduleModal')?.addEventListener('click', closeRescheduleModal);
   document.getElementById('cancelReschedule')?.addEventListener('click', closeRescheduleModal);
@@ -286,12 +314,43 @@ function resetFilters() {
   applyFilters();
 }
 
-function downloadBookingsData() {
-  const baseData = filteredBookings.length > 0 ? filteredBookings : allBookings;
-  const sourceData = baseData.filter((booking) => booking.status === 'completed');
+function toggleDownloadDropdown(forceState) {
+  const dropdown = document.getElementById('downloadDropdown');
+  const button = document.getElementById('downloadBookingsBtn');
+  const nextState = typeof forceState === 'boolean' ? forceState : !downloadDropdownOpen;
+
+  downloadDropdownOpen = nextState;
+  dropdown?.classList.toggle('open', nextState);
+  button?.setAttribute('aria-expanded', String(nextState));
+}
+
+function closeDownloadDropdown() {
+  toggleDownloadDropdown(false);
+}
+
+function getDownloadSourceData(scope) {
+  const currentViewData = filteredBookings.length > 0 ? filteredBookings : allBookings;
+
+  switch (scope) {
+    case 'all':
+      return allBookings;
+    case 'pending':
+    case 'confirmed':
+    case 'completed':
+    case 'cancelled':
+    case 'rescheduled':
+      return currentViewData.filter((booking) => booking.status === scope);
+    case 'current':
+    default:
+      return currentViewData;
+  }
+}
+
+function downloadBookingsData(scope = 'current') {
+  const sourceData = getDownloadSourceData(scope);
 
   if (sourceData.length === 0) {
-    alert('No completed booking data available to download.');
+    alert('No booking data available to download for the selected option.');
     return;
   }
 
@@ -359,9 +418,18 @@ function downloadBookingsData() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   const today = new Date().toISOString().split('T')[0];
+  const scopeLabel = {
+    current: 'current-view',
+    all: 'all-bookings',
+    pending: 'pending',
+    confirmed: 'confirmed',
+    completed: 'completed',
+    cancelled: 'cancelled',
+    rescheduled: 'rescheduled'
+  }[scope] || 'current-view';
 
   link.href = url;
-  link.download = `tbi-bookings-completed-${today}.csv`;
+  link.download = `tbi-bookings-${scopeLabel}-${today}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

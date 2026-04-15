@@ -72,9 +72,20 @@
                     <p class="section-subtitle">Manage all assessment and service bookings</p>
                 </div>
                 <div class="header-actions">
-                    <button class="btn-view-calendar btn-download-data" id="downloadBookingsBtn" onclick="window.downloadBookingsData && window.downloadBookingsData()">
-                        <i class="fa-solid fa-file-arrow-down"></i> Download Data
-                    </button>
+                    <div class="download-dropdown" id="downloadDropdown">
+                        <button class="btn-view-calendar btn-download-data" id="downloadBookingsBtn" type="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="fa-solid fa-file-arrow-down"></i> Download Data <i class="fa-solid fa-chevron-down download-caret"></i>
+                        </button>
+                        <div class="download-dropdown-menu" id="downloadDropdownMenu" role="menu" aria-label="Download booking data">
+                            <button type="button" class="download-option" data-download-scope="current">Current View</button>
+                            <button type="button" class="download-option" data-download-scope="all">All Bookings</button>
+                            <button type="button" class="download-option" data-download-scope="pending">Pending Only</button>
+                            <button type="button" class="download-option" data-download-scope="confirmed">Confirmed Only</button>
+                            <button type="button" class="download-option" data-download-scope="completed">Completed Only</button>
+                            <button type="button" class="download-option" data-download-scope="cancelled">Cancelled Only</button>
+                            <button type="button" class="download-option" data-download-scope="rescheduled">Rescheduled Only</button>
+                        </div>
+                    </div>
                     <button class="btn-view-calendar" id="openCalendarViewModal">
                         <i class="fa-solid fa-calendar-days"></i> View Calendar
                     </button>

@@ -856,8 +856,8 @@ BOOKING DETAILS:
 • Booking ID: #${booking.id.substring(0, 8)}
 
 WHAT TO BRING:
-• Presentation
-• One Pager
+• Short Presentation
+• Hard Copy-One Pager/Tech Brief (at least 3 copies)
 
 WHAT TO WEAR:
 • Business Casual

@@ -540,6 +540,8 @@ async function handleSingleReschedule() {
   const submitBtn = document.getElementById('confirmSingleReschedule');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Rescheduling...';
+
+  const composeWindow = openEmailComposerPlaceholder('Preparing Reschedule Email');
   
   try {
     const booking = allBookings.find(b => b.id === currentBookingId);
@@ -559,9 +561,13 @@ async function handleSingleReschedule() {
       updatedAt: Timestamp.now()
     });
     
-    sendRescheduleEmail(booking, newDate, newTimeSlot, reason);
-    
-    alert('Booking rescheduled successfully! Gmail compose window opened for email notification.');
+    const emailOpened = sendRescheduleEmail(booking, newDate, newTimeSlot, reason, composeWindow);
+
+    if (emailOpened) {
+      alert('Booking rescheduled successfully! Gmail compose window opened for email notification.');
+    } else {
+      alert('Booking rescheduled, but your browser blocked the email window. Please allow popups for this site.');
+    }
     closeRescheduleModal();
     loadBookings();
     setTimeout(() => location.reload(), 1500);
@@ -805,6 +811,41 @@ function closeManualRescheduleModal() {
   if (timeSlotGroup) timeSlotGroup.style.display = 'none';
 }
 
+function openEmailComposerPlaceholder(title) {
+  const composeWindow = window.open('', '_blank');
+  if (!composeWindow) return null;
+
+  try {
+    composeWindow.document.write(`
+      <html>
+        <head><title>${title}</title></head>
+        <body style="font-family: Arial, sans-serif; padding: 16px;">
+          <p>Preparing email draft...</p>
+        </body>
+      </html>
+    `);
+    composeWindow.document.close();
+  } catch (error) {
+    console.warn('Could not write placeholder content to compose window:', error);
+  }
+
+  return composeWindow;
+}
+
+function openGmailComposeInWindow(gmailUrl, composeWindow) {
+  try {
+    if (composeWindow && !composeWindow.closed) {
+      composeWindow.location.href = gmailUrl;
+      return true;
+    }
+  } catch (error) {
+    console.warn('Could not reuse compose window, trying fallback open:', error);
+  }
+
+  const fallbackWindow = window.open(gmailUrl, '_blank');
+  return Boolean(fallbackWindow);
+}
+
 async function confirmAllReschedules() {
   const btn = document.getElementById('confirmAllReschedules');
   btn.disabled = true;
@@ -823,6 +864,9 @@ async function confirmAllReschedules() {
         return;
       }
     }
+
+    const composeWindows = affectedBookingsForReschedule.map(() => openEmailComposerPlaceholder('Preparing Reschedule Email'));
+    let blockedEmails = composeWindows.filter(win => !win).length;
     
     await saveScheduleClosure(
       pendingClosureData.type,
@@ -831,7 +875,8 @@ async function confirmAllReschedules() {
       pendingClosureData.reason
     );
     
-    for (const booking of affectedBookingsForReschedule) {
+    for (let i = 0; i < affectedBookingsForReschedule.length; i++) {
+      const booking = affectedBookingsForReschedule[i];
       const bookingRef = doc(db, 'tbiBookings', booking.id);
       await updateDoc(bookingRef, {
         oldDate: booking.date,
@@ -845,10 +890,21 @@ async function confirmAllReschedules() {
         updatedAt: Timestamp.now()
       });
       
-      sendRescheduleEmail(booking, booking.newDate, booking.newTime, `Admin closed schedule: ${pendingClosureData.reason}`);
+      const opened = sendRescheduleEmail(
+        booking,
+        booking.newDate,
+        booking.newTime,
+        `Admin closed schedule: ${pendingClosureData.reason}`,
+        composeWindows[i]
+      );
+      if (!opened) blockedEmails++;
     }
     
-    alert(`Schedule closed and ${affectedBookingsForReschedule.length} booking(s) rescheduled successfully! Gmail compose windows opened for email notifications.`);
+    if (blockedEmails > 0) {
+      alert(`Schedule closed and ${affectedBookingsForReschedule.length} booking(s) rescheduled successfully, but ${blockedEmails} email window(s) were blocked. Please allow popups for this site.`);
+    } else {
+      alert(`Schedule closed and ${affectedBookingsForReschedule.length} booking(s) rescheduled successfully! Gmail compose windows opened for email notifications.`);
+    }
     
     closeManualRescheduleModal();
     loadClosedSchedules();
@@ -885,6 +941,12 @@ window.confirmBooking = async function(bookingId) {
   
   try {
     const booking = allBookings.find(b => b.id === bookingId);
+    if (!booking) {
+      alert('Booking not found. Please refresh and try again.');
+      return;
+    }
+
+    const composeWindow = openEmailComposerPlaceholder('Preparing Confirmation Email');
     
     const bookingRef = doc(db, 'tbiBookings', bookingId);
     await updateDoc(bookingRef, {
@@ -893,9 +955,13 @@ window.confirmBooking = async function(bookingId) {
       updatedAt: Timestamp.now()
     });
     
-    sendApprovalEmail(booking);
-    
-    alert('Booking confirmed successfully! Gmail compose window opened for confirmation email.');
+    const emailOpened = sendApprovalEmail(booking, composeWindow);
+
+    if (emailOpened) {
+      alert('Booking confirmed successfully! Gmail compose window opened for confirmation email.');
+    } else {
+      alert('Booking confirmed, but your browser blocked the email window. Please allow popups for this site.');
+    }
     loadBookings();
     setTimeout(() => location.reload(), 1500);
   } catch (error) {
@@ -904,7 +970,7 @@ window.confirmBooking = async function(bookingId) {
   }
 };
 
-function sendApprovalEmail(booking) {
+function sendApprovalEmail(booking, composeWindow = null) {
   const recipientEmail = booking.email;
   const clientName = booking.fullName || 'Client';
   const serviceName = booking.serviceType || 'TBI Assessment';
@@ -953,7 +1019,43 @@ Contact: intto@uc-bcf.edu.ph`
   );
   
   const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipientEmail}&su=${subject}&body=${body}`;
-  window.open(gmailUrl, '_blank');
+  return openGmailComposeInWindow(gmailUrl, composeWindow);
+}
+
+function sendRescheduleEmail(booking, newDate, newTimeSlot, reason, composeWindow = null) {
+  const recipientEmail = booking.email;
+  const clientName = booking.fullName || 'Client';
+  const serviceName = booking.serviceType || 'TBI Assessment';
+  const projectName = booking.projectName || 'your project';
+
+  const subject = encodeURIComponent(`Booking Rescheduled: ${serviceName} at UC InTTO`);
+  const body = encodeURIComponent(
+`Dear ${clientName},
+
+Your booking at UC InTTO has been RESCHEDULED.
+
+UPDATED BOOKING DETAILS:
+• Service: ${serviceName}
+• New Date: ${formatDate(newDate)}
+• New Time: ${timeSlotDisplay[newTimeSlot]}
+• Project: ${projectName}
+• Booking ID: #${booking.id.substring(0, 8)}
+
+Reason for reschedule:
+${reason}
+
+Please arrive 5-10 minutes before your scheduled time.
+
+Best regards,
+UC InTTO Team
+University of the Cordilleras
+Innovation & Technology Transfer Office
+
+Contact: intto@uc-bcf.edu.ph`
+  );
+
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipientEmail}&su=${subject}&body=${body}`;
+  return openGmailComposeInWindow(gmailUrl, composeWindow);
 }
 
 window.completeBooking = async function(bookingId) {
@@ -982,6 +1084,12 @@ window.cancelBooking = async function(bookingId) {
   
   try {
     const booking = allBookings.find(b => b.id === bookingId);
+    if (!booking) {
+      alert('Booking not found. Please refresh and try again.');
+      return;
+    }
+
+    const composeWindow = openEmailComposerPlaceholder('Preparing Cancellation Email');
     
     const bookingRef = doc(db, 'tbiBookings', bookingId);
     await updateDoc(bookingRef, {
@@ -991,9 +1099,13 @@ window.cancelBooking = async function(bookingId) {
       updatedAt: Timestamp.now()
     });
     
-    sendRejectionEmail(booking, reason);
-    
-    alert('Booking cancelled successfully! Gmail compose window opened for cancellation email.');
+    const emailOpened = sendRejectionEmail(booking, reason, composeWindow);
+
+    if (emailOpened) {
+      alert('Booking cancelled successfully! Gmail compose window opened for cancellation email.');
+    } else {
+      alert('Booking cancelled, but your browser blocked the email window. Please allow popups for this site.');
+    }
     loadBookings();
     setTimeout(() => location.reload(), 1500);
   } catch (error) {
@@ -1002,7 +1114,7 @@ window.cancelBooking = async function(bookingId) {
   }
 };
 
-function sendRejectionEmail(booking, reason) {
+function sendRejectionEmail(booking, reason, composeWindow = null) {
   const recipientEmail = booking.email;
   const clientName = booking.fullName || 'Client';
   const serviceName = booking.serviceType || 'TBI Assessment';
@@ -1050,7 +1162,7 @@ Location: UC Legarda, Reeds Mercury Drugstore 2gueyo2`
   );
   
   const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipientEmail}&su=${subject}&body=${body}`;
-  window.open(gmailUrl, '_blank');
+  return openGmailComposeInWindow(gmailUrl, composeWindow);
 }
 
 function formatDate(dateString) {

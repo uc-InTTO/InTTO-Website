@@ -54,6 +54,9 @@ const timeSlotDisplay = {
   '16:30': '4:30PM - 5:00PM'
 };
 
+const timeSlotOrder = Object.keys(timeSlotDisplay);
+const timeSlotSortIndex = new Map(timeSlotOrder.map((timeSlot, index) => [timeSlot, index]));
+
 document.addEventListener('DOMContentLoaded', () => {
   loadBookings();
   loadClosedSchedules();
@@ -74,14 +77,7 @@ async function loadBookings() {
       });
     });
 
-    allBookings.sort((a, b) => {
-      const dateCompare = new Date(b.date) - new Date(a.date);
-      if (dateCompare !== 0) return dateCompare;
-      
-      const aCreated = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-      const bCreated = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-      return aCreated - bCreated;
-    });
+    allBookings.sort(sortBookingsByDateAndTime);
 
     filteredBookings = [...allBookings];
     renderBookings();
@@ -294,16 +290,43 @@ function applyFilters() {
     return true;
   });
 
-  filteredBookings.sort((a, b) => {
-    const dateCompare = new Date(b.date) - new Date(a.date);
-    if (dateCompare !== 0) return dateCompare;
-    
-    const aCreated = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-    const bCreated = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-    return aCreated - bCreated;
-  });
+  filteredBookings.sort(sortBookingsByDateAndTime);
   
   renderBookings();
+}
+
+function sortBookingsByDateAndTime(a, b) {
+  const dateA = a.date ? a.date : '';
+  const dateB = b.date ? b.date : '';
+  const dateCompare = dateB.localeCompare(dateA);
+
+  if (dateCompare !== 0) {
+    return dateCompare;
+  }
+
+  const timeCompare = getTimeSlotSortIndex(a) - getTimeSlotSortIndex(b);
+  if (timeCompare !== 0) {
+    return timeCompare;
+  }
+
+  const aCreated = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+  const bCreated = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+  return aCreated - bCreated;
+}
+
+function getTimeSlotSortIndex(booking) {
+  if (booking.timeSlot && timeSlotSortIndex.has(booking.timeSlot)) {
+    return timeSlotSortIndex.get(booking.timeSlot);
+  }
+
+  if (booking.timeSlotDisplay) {
+    const matchingTimeSlot = timeSlotOrder.find((timeSlot) => timeSlotDisplay[timeSlot] === booking.timeSlotDisplay);
+    if (matchingTimeSlot) {
+      return timeSlotSortIndex.get(matchingTimeSlot);
+    }
+  }
+
+  return Number.MAX_SAFE_INTEGER;
 }
 
 function resetFilters() {

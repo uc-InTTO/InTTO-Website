@@ -1160,7 +1160,7 @@ CANCELLATION REASON:
 ${reason}
 
 NEXT STEPS:
-We apologize for any inconvenience this may cause. You are welcome to submit a new booking request at your convenience.
+You are welcome to submit a new booking request at your convenience.
 
 To book a new appointment:
 1. Visit our booking portal at: https://intto.uc-bcf.edu.ph/tbi-assessment.html

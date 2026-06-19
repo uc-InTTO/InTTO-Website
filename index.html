@@ -63,7 +63,8 @@
                 <a href="events.html">Events</a>
                 <a href="ucolab/index.html">UColab</a>
                 <a href="sdgPage.html">SDG</a>
-                
+                <a href="admin/dashboard.html" id="adminPanelBtn" style="display:none; color:#f0a500; font-weight:600;">Admin Panel</a>
+
                 <a href="incubation.html" class="mobile-btn">Apply for Incubation</a>
             </div>
             </div>
@@ -354,6 +355,21 @@
         window.db = db;
     </script>
     
+    <script>
+    firebase.auth().onAuthStateChanged(async function(user) {
+        const btn = document.getElementById('adminPanelBtn');
+        if (!btn) return;
+        if (!user) { btn.style.display = 'none'; return; }
+        try {
+            const adminDoc = await db.collection('admins').doc(user.uid).get();
+            if (adminDoc.exists && adminDoc.data().isAdmin === true) {
+                btn.style.display = '';
+            }
+        } catch (e) {
+            // Not admin or no permission — keep hidden
+        }
+    });
+    </script>
     <script src="js/load-news-home.js"></script>
 
     <script>

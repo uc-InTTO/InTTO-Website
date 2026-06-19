@@ -100,10 +100,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function openProfileModal() {
         if (!profileModalOverlay || !profileNameInput) return;
         const currentUser = auth.currentUser;
-        if (!currentUser) return; 
+        if (!currentUser) return;
 
         profileNameInput.value = currentUser.displayName || '';
-        
+        checkAdminStatus(currentUser);
+
         clearFormErrors();
         profileModalOverlay.classList.remove('modal-hidden');
     }
@@ -751,9 +752,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!user) { adminBtn.style.display = 'none'; return; }
         try {
             const adminDoc = await db.collection('admins').doc(user.uid).get();
-            if (adminDoc.exists && adminDoc.data().isAdmin === true) { adminBtn.style.display = ''; }
-            else { adminBtn.style.display = 'none'; }
-        } catch (error) { adminBtn.style.display = 'none'; }
+            if (adminDoc.exists && adminDoc.data().isAdmin === true) {
+                adminBtn.style.display = '';
+                return;
+            }
+        } catch (e) { /* rules may block this collection */ }
+        try {
+            const userDoc = await db.collection('Registered Accounts').doc(user.uid).get();
+            if (userDoc.exists && userDoc.data().isAdmin === true) {
+                adminBtn.style.display = '';
+                return;
+            }
+        } catch (e) { /* not admin */ }
+        adminBtn.style.display = 'none';
     }
 
     auth.onAuthStateChanged((user) => {

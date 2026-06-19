@@ -47,8 +47,13 @@ function initializeNotifications() {
     // Load stored notifications first
     loadNotificationsFromStorage();
 
-    // Start listening to real-time updates
-    listenToNotifications();
+    // Wait for compat auth session to be restored before attaching Firestore listeners
+    // (firebase-auth-compat.js restores the session asynchronously from IndexedDB)
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            listenToNotifications();
+        }
+    });
 }
 
 /**
@@ -398,10 +403,5 @@ function flashNotificationDropdown() {
     }
 }
 
-// Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeNotifications);
-} else {
-    // DOM already loaded
-    initializeNotifications();
-}
+// Wait for admin auth confirmation before initializing to avoid permission errors
+document.addEventListener('adminAuthReady', initializeNotifications);

@@ -57,23 +57,23 @@ async function checkAdminAccess() {
             }
 
             try {
-                // Get user document from Firestore - using "Registered Accounts" collection as shown in your screenshot
-                const userDocRef = doc(db, 'Registered Accounts', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                
-                // LOGIC 2: If user document doesn't exist or isAdmin is false, deny access
-                if (!userDoc.exists()) {
+                // Check the admins collection (document exists = is admin)
+                const adminDocRef = doc(db, 'admins', user.uid);
+                const adminDoc = await getDoc(adminDocRef);
+
+                // LOGIC 2: If no document in admins collection, deny access
+                if (!adminDoc.exists()) {
                     redirectToHome();
                     resolve(false);
                     return;
                 }
 
-                const userData = userDoc.data();
-                const isAdmin = userData.isAdmin === true;
-                
+                const isAdmin = adminDoc.data().isAdmin === true;
+
                 // LOGIC 3: If isAdmin === true, grant access
                 if (isAdmin) {
                     document.documentElement.style.visibility = 'visible';
+                    document.dispatchEvent(new CustomEvent('adminAuthReady', { detail: { user } }));
                     resolve(true);
                 } else {
                     // User is logged in but isAdmin === false, deny access
@@ -82,7 +82,7 @@ async function checkAdminAccess() {
                 }
                 
             } catch (error) {
-                // On any error, deny access
+                console.error('[auth-check] Firestore error checking admin status:', error);
                 redirectToHome();
                 resolve(false);
             }

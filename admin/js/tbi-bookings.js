@@ -1,6 +1,7 @@
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, deleteDoc, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, addDoc, deleteDoc, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE",
@@ -8,12 +9,13 @@ const firebaseConfig = {
   projectId: "uc-intto",
   storageBucket: "uc-intto.firebasestorage.app",
   messagingSenderId: "156771180433",
-  appId: "1:156771180433:web:9aaaa56c9488bffeef0430",
-  measurementId: "G-JG29QNQGCG"
+  appId: "1:156771180433:web:4f9d57eb6b0e7882ef0430",
+  measurementId: "G-ETY9E0F1K6"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 let allBookings = [];
 let filteredBookings = [];
@@ -58,9 +60,14 @@ const timeSlotOrder = Object.keys(timeSlotDisplay);
 const timeSlotSortIndex = new Map(timeSlotOrder.map((timeSlot, index) => [timeSlot, index]));
 
 document.addEventListener('DOMContentLoaded', () => {
-  loadBookings();
-  loadClosedSchedules();
   setupEventListeners();
+  // Wait for auth state to be restored before making authenticated Firestore reads
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loadBookings();
+      loadClosedSchedules();
+    }
+  });
 });
 
 async function loadBookings() {
@@ -583,7 +590,12 @@ async function handleSingleReschedule() {
       rescheduledAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
-    
+    await setDoc(doc(db, 'reservedSlots', currentBookingId), {
+      date: newDate,
+      timeSlot: newTimeSlot,
+      status: 'rescheduled'
+    }, { merge: true });
+
     const emailOpened = sendRescheduleEmail(booking, newDate, newTimeSlot, reason, composeWindow);
 
     if (emailOpened) {
@@ -912,7 +924,12 @@ async function confirmAllReschedules() {
         rescheduledAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       });
-      
+      await setDoc(doc(db, 'reservedSlots', booking.id), {
+        date: booking.newDate,
+        timeSlot: booking.newTime,
+        status: 'rescheduled'
+      }, { merge: true });
+
       const opened = sendRescheduleEmail(
         booking,
         booking.newDate,
@@ -977,7 +994,8 @@ window.confirmBooking = async function(bookingId) {
       confirmedAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
-    
+    await setDoc(doc(db, 'reservedSlots', bookingId), { status: 'confirmed' }, { merge: true });
+
     const emailOpened = sendApprovalEmail(booking, composeWindow);
 
     if (emailOpened) {
@@ -1091,7 +1109,8 @@ window.completeBooking = async function(bookingId) {
       completedAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
-    
+    await setDoc(doc(db, 'reservedSlots', bookingId), { status: 'completed' }, { merge: true });
+
     alert('Booking marked as completed!');
     loadBookings();
     setTimeout(() => location.reload(), 500);
@@ -1121,7 +1140,8 @@ window.cancelBooking = async function(bookingId) {
       cancelledAt: Timestamp.now(),
       updatedAt: Timestamp.now()
     });
-    
+    await setDoc(doc(db, 'reservedSlots', bookingId), { status: 'cancelled' }, { merge: true });
+
     const emailOpened = sendRejectionEmail(booking, reason, composeWindow);
 
     if (emailOpened) {
@@ -1220,6 +1240,8 @@ currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay() 
 document.getElementById('openCalendarViewModal')?.addEventListener('click', () => {
   openCalendarView();
 });
+
+document.getElementById('syncReservedSlotsBtn')?.addEventListener('click', migrateToReservedSlots);
 
 document.getElementById('closeCalendarViewModal')?.addEventListener('click', () => {
   closeCalendarView();
@@ -1526,4 +1548,33 @@ async function saveScheduleClosure(type, date, timeSlots, reason) {
     reason: reason,
     createdAt: Timestamp.now()
   });
+}
+
+async function migrateToReservedSlots() {
+  const btn = document.getElementById('syncReservedSlotsBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Syncing...';
+
+  try {
+    const snapshot = await getDocs(collection(db, 'tbiBookings'));
+    let count = 0;
+    for (const docSnap of snapshot.docs) {
+      const b = docSnap.data();
+      if (b.date && b.timeSlot) {
+        await setDoc(doc(db, 'reservedSlots', docSnap.id), {
+          date: b.date,
+          timeSlot: b.timeSlot,
+          status: b.status || 'pending'
+        });
+        count++;
+      }
+    }
+    alert(`Sync complete — ${count} booking(s) are now visible on the public calendar.`);
+  } catch (error) {
+    console.error('Sync error:', error);
+    alert('Sync failed: ' + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Sync Slots';
+  }
 }

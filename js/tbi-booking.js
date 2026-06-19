@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, setDoc, doc, query, where, getDocs, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXNIo4h3Uv7Z8IGdm01zQ8K4WY4G8VLzE",
@@ -278,7 +278,7 @@ function setupEventListeners() {
 
 async function loadBookings() {
   try {
-    const bookingsRef = collection(db, 'tbiBookings');
+    const bookingsRef = collection(db, 'reservedSlots');
     const snapshot = await getDocs(bookingsRef);
     
     bookingsData = {};
@@ -352,19 +352,20 @@ async function handleBookingSubmit(e) {
     };
     
     const dateString = formatDate(selectedDate);
-    const bookingsRef = collection(db, 'tbiBookings');
+
+    // Check availability via public reservedSlots (no PII, readable by everyone)
+    const reservedSlotsRef = collection(db, 'reservedSlots');
     const q = query(
-      bookingsRef,
+      reservedSlotsRef,
       where('date', '==', dateString),
       where('timeSlot', '==', selectedTimeSlot.value)
     );
-    
+
     const existingBookings = await getDocs(q);
-    
+
     // Only fail if there is an ACTIVE booking. Cancelled does NOT block.
-    const isSlotTaken = !existingBookings.empty && existingBookings.docs.some(doc => {
-      const data = doc.data();
-      return ['pending', 'confirmed', 'rescheduled', 'completed'].includes(data.status);
+    const isSlotTaken = !existingBookings.empty && existingBookings.docs.some(d => {
+      return ['pending', 'confirmed', 'rescheduled', 'completed'].includes(d.data().status);
     });
 
     if (isSlotTaken) {
@@ -373,11 +374,15 @@ async function handleBookingSubmit(e) {
       loadBookings();
       return;
     }
-    
-    const debouncedAdd = debounce(async (data) => {
-      await addDoc(bookingsRef, data);
-    }, 1000);
-    await debouncedAdd(formData);
+
+    // Write full booking details (admin-read-only, contains PII)
+    const newBookingRef = await addDoc(collection(db, 'tbiBookings'), formData);
+    // Write public availability record (no PII, readable by everyone)
+    await setDoc(doc(db, 'reservedSlots', newBookingRef.id), {
+      date: formData.date,
+      timeSlot: formData.timeSlot,
+      status: 'pending'
+    });
     
     alert('Booking successful! You will receive a confirmation email shortly.');
     

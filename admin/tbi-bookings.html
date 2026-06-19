@@ -89,6 +89,9 @@
                     <button class="btn-view-calendar" id="openCalendarViewModal">
                         <i class="fa-solid fa-calendar-days"></i> View Calendar
                     </button>
+                    <button class="btn-view-calendar" id="syncReservedSlotsBtn" title="Sync existing bookings so they appear on the public booking calendar">
+                        <i class="fa-solid fa-rotate"></i> Sync Slots
+                    </button>
                     <button class="btn-close-schedule" id="openCloseDayModal">
                         <i class="fa-solid fa-calendar-xmark"></i> Close Day/Time
                     </button>
@@ -563,6 +566,7 @@
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
     <script>
@@ -575,7 +579,9 @@
             appId: "1:156771180433:web:4f9d57eb6b0e7882ef0430",
             measurementId: "G-ETY9E0F1K6"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const db = firebase.firestore();
 
         const menuToggle = document.querySelector('.menu-toggle');

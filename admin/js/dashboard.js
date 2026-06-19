@@ -2,7 +2,7 @@
  * Dashboard Admin Panel
  * Real-time statistics and activity from Firestore
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('adminAuthReady', function() {
     loadDashboardData();
     initializeNotifications();
 });

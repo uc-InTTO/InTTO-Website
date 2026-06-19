@@ -397,8 +397,12 @@ function initializeNotifications() {
     // Clear all notifications
     clearAllBtn?.addEventListener('click', clearAllNotifications);
 
-    // Start listening to real-time updates
-    listenToNotifications();
+    // Wait for compat auth session before attaching Firestore listeners
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            listenToNotifications();
+        }
+    });
 }
 
 /**

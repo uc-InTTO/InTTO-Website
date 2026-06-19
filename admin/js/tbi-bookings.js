@@ -1011,6 +1011,24 @@ window.confirmBooking = async function(bookingId) {
   }
 };
 
+function getWhatToBring(serviceType) {
+  if (serviceType === 'TBI Assessment 1') {
+    return `WHAT TO BRING:
+• Own Device
+• Presentation containing (5-10 mins):
+  -Design thinking process
+  -BMC`;
+  }
+  if (serviceType === 'TBI Assessment 2') {
+    return `WHAT TO BRING:
+• Short Presentation
+• Hard Copy-One Pager/Tech Brief (at least 3 copies)`;
+  }
+  return `WHAT TO BRING:
+• Short Presentation
+• Hard Copy-One Pager/Tech Brief (at least 3 copies)`;
+}
+
 function sendApprovalEmail(booking, composeWindow = null) {
   const recipientEmail = booking.email;
   const clientName = booking.fullName || 'Client';
@@ -1030,9 +1048,7 @@ BOOKING DETAILS:
 • Project: ${projectName}
 • Booking ID: #${booking.id.substring(0, 8)}
 
-WHAT TO BRING:
-• Short Presentation
-• Hard Copy-One Pager/Tech Brief (at least 3 copies)
+${getWhatToBring(serviceName)}
 
 WHAT TO WEAR:
 • Business Casual
@@ -1084,6 +1100,8 @@ UPDATED BOOKING DETAILS:
 
 Reason for reschedule:
 ${reason}
+
+${getWhatToBring(serviceName)}
 
 Please arrive 5-10 minutes before your scheduled time.
 

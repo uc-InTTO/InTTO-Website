@@ -363,7 +363,7 @@
         try {
             const adminDoc = await db.collection('admins').doc(user.uid).get();
             if (adminDoc.exists && adminDoc.data().isAdmin === true) {
-                btn.style.display = '';
+                window.location.replace('/admin/dashboard.html');
             }
         } catch (e) {
             // Not admin or no permission — keep hidden

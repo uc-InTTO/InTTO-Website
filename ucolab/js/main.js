@@ -750,8 +750,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!adminBtn) return;
         if (!user) { adminBtn.style.display = 'none'; return; }
         try {
-            const userDoc = await db.collection('Registered Accounts').doc(user.uid).get();
-            if (userDoc.exists && userDoc.data().isAdmin === true) { adminBtn.style.display = ''; } 
+            const adminDoc = await db.collection('admins').doc(user.uid).get();
+            if (adminDoc.exists && adminDoc.data().isAdmin === true) { adminBtn.style.display = ''; }
             else { adminBtn.style.display = 'none'; }
         } catch (error) { adminBtn.style.display = 'none'; }
     }

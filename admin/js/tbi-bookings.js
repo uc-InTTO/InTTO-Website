@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, addDoc, deleteDoc, query, where, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, doc, updateDoc, setDoc, addDoc, deleteDoc, query, where, orderBy, limit, startAfter, Timestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -19,6 +19,10 @@ const auth = getAuth(app);
 
 let allBookings = [];
 let filteredBookings = [];
+const BOOKINGS_PAGE_SIZE = 25;
+let currentBookingsPage = 1;
+let bookingPageCursors = [null];
+let hasNextBookingsPage = false;
 let currentBookingId = null;
 let closedSchedules = [];
 let affectedBookingsForReschedule = [];
@@ -70,14 +74,30 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-async function loadBookings() {
+async function loadBookings(page = 1) {
   try {
+    if (page === 1) {
+      resetBookingsPagination();
+    }
+
     const bookingsRef = collection(db, 'tbiBookings');
-    const q = query(bookingsRef, orderBy('createdAt', 'desc'));
+    const cursor = bookingPageCursors[page - 1];
+    const constraints = [orderBy('createdAt', 'desc'), limit(BOOKINGS_PAGE_SIZE + 1)];
+    if (cursor) {
+      constraints.push(startAfter(cursor));
+    }
+    const q = query(bookingsRef, ...constraints);
     const snapshot = await getDocs(q);
-    
+
+    const pageDocs = snapshot.docs.slice(0, BOOKINGS_PAGE_SIZE);
+    hasNextBookingsPage = snapshot.docs.length > BOOKINGS_PAGE_SIZE;
+    if (pageDocs.length > 0) {
+      bookingPageCursors[page] = pageDocs[pageDocs.length - 1];
+    }
+    currentBookingsPage = page;
+
     allBookings = [];
-    snapshot.forEach(doc => {
+    pageDocs.forEach(doc => {
       allBookings.push({
         id: doc.id,
         ...doc.data()
@@ -89,10 +109,29 @@ async function loadBookings() {
     filteredBookings = [...allBookings];
     renderBookings();
     updateStats();
+    updateBookingsPagination();
   } catch (error) {
     console.error('Error loading bookings:', error);
     showError('Failed to load bookings');
   }
+}
+
+function updateBookingsPagination() {
+  const previousButton = document.getElementById('previousBookingsPage');
+  const nextButton = document.getElementById('nextBookingsPage');
+  const status = document.getElementById('bookingsPaginationStatus');
+
+  if (!previousButton || !nextButton || !status) return;
+
+  previousButton.disabled = currentBookingsPage === 1;
+  nextButton.disabled = !hasNextBookingsPage;
+  status.textContent = `Page ${currentBookingsPage}`;
+}
+
+function resetBookingsPagination() {
+  currentBookingsPage = 1;
+  bookingPageCursors = [null];
+  hasNextBookingsPage = false;
 }
 
 function renderBookings() {
@@ -177,6 +216,16 @@ function setupEventListeners() {
   document.getElementById('dateFilter')?.addEventListener('change', applyFilters);
   document.getElementById('searchFilter')?.addEventListener('input', applyFilters);
   document.getElementById('resetFilters')?.addEventListener('click', resetFilters);
+  document.getElementById('previousBookingsPage')?.addEventListener('click', () => {
+    if (currentBookingsPage > 1) {
+      loadBookings(currentBookingsPage - 1);
+    }
+  });
+  document.getElementById('nextBookingsPage')?.addEventListener('click', () => {
+    if (hasNextBookingsPage) {
+      loadBookings(currentBookingsPage + 1);
+    }
+  });
   const downloadDropdown = document.getElementById('downloadDropdown');
   const downloadButton = document.getElementById('downloadBookingsBtn');
   const downloadMenu = document.getElementById('downloadDropdownMenu');
@@ -300,6 +349,7 @@ function applyFilters() {
   filteredBookings.sort(sortBookingsByDateAndTime);
   
   renderBookings();
+  updateBookingsPagination();
 }
 
 function sortBookingsByDateAndTime(a, b) {

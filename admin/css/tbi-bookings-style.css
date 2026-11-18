@@ -415,6 +415,44 @@ body {
     border-radius: 4px;
 }
 
+.bookings-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 18px 0 4px;
+}
+
+.btn-pagination {
+    padding: 9px 16px;
+    background: #fff;
+    border: 1px solid #166647;
+    border-radius: 8px;
+    color: #166647;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-pagination:hover:not(:disabled) {
+    background: #166647;
+    color: #fff;
+}
+
+.btn-pagination:disabled {
+    border-color: #ddd;
+    color: #aaa;
+    cursor: not-allowed;
+}
+
+.pagination-status {
+    min-width: 62px;
+    color: #666;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
 .bookings-table {
     width: 100%;
     border-collapse: collapse;

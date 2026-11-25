@@ -491,6 +491,18 @@ body {
     background: #f8f9fa;
 }
 
+.duplicate-schedule-badge {
+    display: block;
+    width: fit-content;
+    margin-top: 5px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: #fff3cd;
+    color: #856404;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
 .loading-row {
     text-align: center;
     padding: 40px !important;

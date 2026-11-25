@@ -19,6 +19,7 @@ const auth = getAuth(app);
 
 let allBookings = [];
 let filteredBookings = [];
+let duplicateBookingIds = new Set();
 const BOOKINGS_PAGE_SIZE = 25;
 let currentBookingsPage = 1;
 let bookingPageCursors = [null];
@@ -141,6 +142,14 @@ async function loadBookings(page = 1) {
 
     allBookings.sort(sortBookingsByDateAndTime);
 
+    duplicateBookingIds = new Set();
+    try {
+      duplicateBookingIds = await findDuplicateBookingIds(allBookings);
+    } catch (error) {
+      console.error('Error checking duplicate schedules:', error);
+      showError('Bookings loaded, but duplicate schedules could not be checked.');
+    }
+
     filteredBookings = [...allBookings];
     renderBookings();
     updateStats();
@@ -185,7 +194,10 @@ function renderBookings() {
   
   tbody.innerHTML = filteredBookings.map(booking => `
     <tr>
-      <td><strong>#${booking.id.substring(0, 8)}</strong></td>
+      <td>
+        <strong>#${booking.id.substring(0, 8)}</strong>
+        ${duplicateBookingIds.has(booking.id) ? '<span class="duplicate-schedule-badge" title="Matches another booking by client name, email, project, team members, and description">Duplicate</span>' : ''}
+      </td>
       <td>${booking.serviceType || 'TBI Assessment'}</td>
       <td>${booking.fullName}</td>
       <td>${booking.email}</td>
@@ -223,6 +235,53 @@ function renderBookings() {
       </td>
     </tr>
   `).join('');
+}
+
+async function findDuplicateBookingIds(bookings) {
+  const emails = [...new Set(bookings
+    .map(booking => booking.email)
+    .filter(email => typeof email === 'string' && email.trim()))];
+  const candidateBookings = [];
+
+  for (let i = 0; i < emails.length; i += 30) {
+    const snapshot = await getDocs(query(
+      collection(db, 'tbiBookings'),
+      where('email', 'in', emails.slice(i, i + 30))
+    ));
+    snapshot.forEach(doc => {
+      candidateBookings.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+  }
+
+  const bookingsByDetails = new Map();
+  candidateBookings.forEach(booking => {
+    const details = [
+      booking.fullName,
+      booking.email,
+      booking.projectName,
+      booking.teamMembers,
+      booking.projectDescription
+    ].map(value => typeof value === 'string'
+      ? value.trim().replace(/\s+/g, ' ').toLowerCase()
+      : '');
+
+    if (details.some(value => !value)) return;
+
+    const key = JSON.stringify(details);
+    if (!bookingsByDetails.has(key)) {
+      bookingsByDetails.set(key, []);
+    }
+    bookingsByDetails.get(key).push(booking.id);
+  });
+
+  return new Set(
+    [...bookingsByDetails.values()]
+      .filter(bookingIds => bookingIds.length > 1)
+      .flat()
+  );
 }
 
 function updateStats() {

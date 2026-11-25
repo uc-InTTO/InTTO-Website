@@ -82,17 +82,52 @@ async function loadBookings(page = 1) {
 
     const bookingsRef = collection(db, 'tbiBookings');
     const cursor = bookingPageCursors[page - 1];
-    const constraints = [orderBy('createdAt', 'desc'), limit(BOOKINGS_PAGE_SIZE + 1)];
+    const constraints = [orderBy('date', 'desc'), limit(BOOKINGS_PAGE_SIZE + 1)];
     if (cursor) {
       constraints.push(startAfter(cursor));
     }
-    const q = query(bookingsRef, ...constraints);
-    const snapshot = await getDocs(q);
+    let snapshot = await getDocs(query(bookingsRef, ...constraints));
 
     const pageDocs = snapshot.docs.slice(0, BOOKINGS_PAGE_SIZE);
-    hasNextBookingsPage = snapshot.docs.length > BOOKINGS_PAGE_SIZE;
-    if (pageDocs.length > 0) {
-      bookingPageCursors[page] = pageDocs[pageDocs.length - 1];
+    let lastPageDoc = pageDocs[pageDocs.length - 1];
+    let pendingDocs = snapshot.docs.slice(BOOKINGS_PAGE_SIZE);
+    hasNextBookingsPage = pendingDocs.length > 0;
+
+    if (lastPageDoc) {
+      const pageDate = lastPageDoc.data().date;
+
+      while (pendingDocs.length > 0) {
+        const nextDateIndex = pendingDocs.findIndex(doc => doc.data().date !== pageDate);
+        const sameDateDocs = nextDateIndex === -1
+          ? pendingDocs
+          : pendingDocs.slice(0, nextDateIndex);
+        pageDocs.push(...sameDateDocs);
+
+        if (sameDateDocs.length > 0) {
+          lastPageDoc = sameDateDocs[sameDateDocs.length - 1];
+        }
+
+        if (nextDateIndex !== -1) {
+          hasNextBookingsPage = true;
+          break;
+        }
+
+        if (snapshot.docs.length < BOOKINGS_PAGE_SIZE + 1) {
+          hasNextBookingsPage = false;
+          break;
+        }
+
+        snapshot = await getDocs(query(
+          bookingsRef,
+          orderBy('date', 'desc'),
+          startAfter(pendingDocs[pendingDocs.length - 1]),
+          limit(BOOKINGS_PAGE_SIZE + 1)
+        ));
+        pendingDocs = snapshot.docs;
+        hasNextBookingsPage = pendingDocs.length > 0;
+      }
+
+      bookingPageCursors[page] = lastPageDoc;
     }
     currentBookingsPage = page;
 
@@ -1277,7 +1312,11 @@ Location: UC Legarda, Reeds Mercury Drugstore 2gueyo2`
 }
 
 function formatDate(dateString) {
-  const date = new Date(dateString);
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+    ? new Date(`${dateString}T00:00:00`)
+    : new Date(dateString);
+  if (Number.isNaN(date.getTime())) return '-';
+
   return date.toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
@@ -1370,7 +1409,7 @@ async function renderCalendarView() {
     html += `<td class="time-slot-cell">${timeSlotDisplay[timeSlot]}</td>`;
     
     weekDates.forEach(date => {
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = formatDateForComparison(date);
       const cellData = getCalendarCellData(dateStr, timeSlot);
       html += `<td>${cellData}</td>`;
     });
